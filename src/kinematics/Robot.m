@@ -30,7 +30,6 @@ classdef Robot
             self.cutouts = cutouts;
         end
         
-        
         function [pose, transformations] = fwkine(self, configuration)
             n = self.nCutouts; % total number of cutouts
             ro = self.OD * 10^-3 / 2; % outer radius of tube in [m];
@@ -128,7 +127,8 @@ classdef Robot
             
             % Extract the tube pose and return
             pose = pose(1:3,:) .* 1000;
-            transformations = T;            
+            transformations = T;
+            transformations(1:3,4,:) = transformations(1:3,4,:) .*1000;
         end
         
         
