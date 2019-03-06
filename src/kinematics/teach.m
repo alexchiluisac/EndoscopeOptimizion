@@ -18,9 +18,9 @@ function H = teach(robot, configuration)
   hold on, axis equal
   
   plot3(X, Y, Z, 'k', 'LineWidth', 2.5);
-  xlabel('X[m]')
-  ylabel('Y[m]')
-  zlabel('Z[m]')
+  xlabel('X[mm]')
+  ylabel('Y[mm]')
+  zlabel('Z[mm]')
   
   triad('Matrix', eye(4), 'linewidth', 2.5);
   triad('Matrix', T(:,:,end), 'linewidth', 2.5);
