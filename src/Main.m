@@ -25,3 +25,39 @@ figure, axis equal, grid on
 scatter3(pList(1,:), pList(2,:), pList(3,:));
 xlabel('X [mm]'), ylabel('Y [mm]'), zlabel('Z [mm]');
 title('Reachable points in the task space');
+
+
+% Load ear model
+path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
+[vertices, faces, ~, ~] = stlRead(path);
+earModel.vertices = vertices;
+earModel.faces = faces;
+
+% Visualize larynx model
+plotHandle = stlPlot(vertices, faces, 'Synthetic Model');
+hold on;
+view([17.8 30.2]);
+
+t = [30 10 10];
+R = [0 0 -1; 0 1 0; 1 0 0];
+T = [R t'; 0 0 0 1];
+
+
+[P, ~] = robot.fwkine(qList(:,500));
+P = applytransform(P, T);
+
+X = P(1,:);
+Y = P(2,:);
+Z = P(3,:);
+  
+scatter3(X, Y, Z, 10, 'r', 'filled');
+hold on, axis equal
+  
+plot3(X, Y, Z, 'k', 'LineWidth', 2.5);
+xlabel('X[mm]')
+ylabel('Y[mm]')
+zlabel('Z[mm]')
+  
+%triad('Matrix', eye(4), 'linewidth', 2.5);
+triad('Matrix', T(:,:,end), 'linewidth', 2.5);
+
