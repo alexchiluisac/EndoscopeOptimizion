@@ -136,16 +136,26 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             
             robotBackbone = zeros(3,1);
             
-            for ii = 1 : 1%size(P, 2) - 1
+            for ii = 1 : size(P, 2) - 1
+                
+                distance = norm(P(:,ii+1) - P(:,ii));
+                nPts = round(distance * ptsPerMm);
+                nPts
+                
+                X = linspace(P(1,ii),P(1,ii+1), nPts);
+                Y = linspace(P(2,ii),P(2,ii+1), nPts);
+                Z = linspace(P(3,ii),P(3,ii+1), nPts);
+                
+                robotBackbone = [robotBackbone [X;Y;Z]]
+                
                 %%if mod(ii,2) == 1 % if odd -> straight section
-                    distance = norm(P(:,ii+1) - P(:,ii));
-                    nPts = distance * ptsPerMm;
-                    
-                    direction = (P(:,ii+1) - P(:,ii)) / distance;
-                    
-                    for jj = 1 : nPts
-                       robotBackbone = [robotBackbone P(:,ii) + direction * jj]; 
-                    end
+
+%                     
+%                     direction = (P(:,ii+1) - P(:,ii)) / distance;
+%                     
+%                     for jj = 1 : nPts
+%                        robotBackbone = [robotBackbone P(:,ii) + (direction * jj)/nPts]; 
+%                     end
 
                 %%else % even -> curved section
                 
