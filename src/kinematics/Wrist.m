@@ -170,7 +170,6 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             end
             
             
-            
         end
         
         
