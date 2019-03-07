@@ -107,11 +107,9 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             pose(:,2) = T(:,:,2) * [0 0 0 1]';
             
             % Iterate on the cutouts and calculate the transformations at each cutout
-            for i = 3 : (n + 2)
+            for i = 3 : 2 : (2*n + 2)
                 % !FIXME Need to account for orientation of each single
                 % cutout
-%                 T(:,:,i) = T(:,:,i-1) * ...
-%                            Trotz(alpha(i-2)) * Ts(kappa, s) * Tz(u);
 
                 T(:,:,i) = T(:,:,i-1) * ...
                            Trotz(alpha) * Ts(kappa, s);% * Tz(u);
