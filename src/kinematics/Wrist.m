@@ -40,7 +40,7 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             
             % Get the endoscope configuration
             t_displ = configuration(1) * 10^-3;
-            t_rot   = configuration(2) * pi / 180;
+            t_rot   = configuration(2);
             t_adv   = configuration(3) * 10^-3;
             
             % Define the H.T. corresponding to rotation
