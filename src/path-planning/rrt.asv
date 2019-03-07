@@ -1,4 +1,4 @@
-function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, q0, anatomyModel)
+function [qListNormalized,pList,aList] = rrt(robot, qbounds, q0, anatomyModel)
 % RRT implements the basic Rapidly-Exploring Random Trees algorithm for a
 % generic continuum robot
 %
@@ -41,11 +41,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, q0, anatomyMo
         
         qListNormalized(:,ii) = qNew;
         
-        qList(1,ii) = qNew(1);    
-        qList(2,ii) = qNew(2) * maxRot;
-        qList(3,ii) = qNew(3);
-        
-        [~,T] = robot.fwkine(qList(:,ii));
+        [~,T] = robot.fwkine(qNew);
         pList(:,ii) = T(1:3,4,end);
         aList(:,ii) = T(1:3,3,end);
         
