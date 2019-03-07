@@ -45,7 +45,7 @@ Z = bb(3,:);
 scatter3(X, Y, Z, 100, 'b', 'filled');
 
 radius = robot.OD/2*ones(1,size(bb,2));
-[A, B, C] = gencyl(bb,radius);
-cyl = surf(A,B,C,'FaceColor','blue');
+[X,Y,Z] = gencyl(bb,radius);
+cyl = surf(X,Y,Z,'FaceColor','blue');
 
 
