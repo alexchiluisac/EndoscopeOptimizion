@@ -15,7 +15,7 @@ function [qList,pList,aList] = rrt(robot, qbounds, q0, anatomyModel)
     nPoints = 1000;
     
     % algorithm parameters
-    deltaQ = [0.01 0.01 0.01]; % step
+    deltaQ = [0.05 0.05 0.05]; % step
     maxDispl = qbounds(1);
     maxRot   = qbounds(2);
     maxAdv   = qbounds(3);
@@ -34,7 +34,7 @@ function [qList,pList,aList] = rrt(robot, qbounds, q0, anatomyModel)
         qNew = move(qNearest, qRand, deltaQ);
         
         qNew(1) = qNew(1);
-        qNew(2) = qNew(2);
+        qNew(2) = qNew(2) * maxRot;
         qNew(3) = qNew(3);
         
         qList(:,ii) = qNew;

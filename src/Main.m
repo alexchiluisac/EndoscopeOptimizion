@@ -12,7 +12,7 @@ cutouts(1).alpha = 0;
 robot = Wrist(1.6, 1.85, 3, cutouts);
 %teach(robot, [0.2, 0, 0]);
 
-[qList,pList,aList] = rrt(robot, [1 1 10]);
+[qList,pList,aList] = rrt(robot, [1 2*pi 1]);
 
 figure, axis equal, grid on
 scatter3(qList(1,:), qList(2,:), qList(3,:));
