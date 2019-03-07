@@ -33,9 +33,19 @@ triad('Matrix', T(:,:,end), 'linewidth', 2.5);
 
 bb = robot.makePhysicalModel(configuration);
 
+%T = eye(4);
+%R = [0 0 1; 0 1 0; -1 0 0];
+%T(1:3,1:3) = R;
+%bb = applytransform(bb, T);
+
 X = bb(1,:);
 Y = bb(2,:);
 Z = bb(3,:);
 
 scatter3(X, Y, Z, 100, 'b', 'filled');
+
+radius = robot.OD/2*ones(1,size(bb,2));
+[A, B, C] = gencyl(bb,radius);
+cyl = surf(A,B,C,'FaceColor','blue');
+
 
