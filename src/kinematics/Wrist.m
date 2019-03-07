@@ -98,9 +98,9 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             s = h / ( 1 + ybar * kappa); % original kappa
             
             % Initialize pose and transformation matrices
-            pose = zeros(4, n + 2);
-            pose(4,:) = ones(1, n + 2);
-            T = repmat(eye(4), 1, 1, n + 2);
+            pose = zeros(4, 2*n + 2);
+            pose(4,:) = ones(1, 2*n + 2);
+            T = repmat(eye(4), 1, 1, 2*n + 2);
             
             % Calculate initial advancement and rotation
             T(:,:,2) = Tz(t_adv) * Trotz(t_rot);
@@ -114,9 +114,11 @@ classdef Wrist % !FIXME this should be a subclass of Robot
 %                            Trotz(alpha(i-2)) * Ts(kappa, s) * Tz(u);
 
                 T(:,:,i) = T(:,:,i-1) * ...
-                           Trotz(alpha) * Ts(kappa, s) * Tz(u);
+                           Trotz(alpha) * Ts(kappa, s);% * Tz(u);
+                T(:,:,i+1) = T(:,:,i) * Tz(u);        
 
                 pose(:,i) = T(:,:,i) * [0 0 0 1]';
+                pose(:,i+1) = T(:,:,i+1) * [0 0 0 1]';
             end
             
             % Extract the tube pose and return
