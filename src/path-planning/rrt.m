@@ -12,7 +12,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, q0, anatomyMo
         collisionDetection = true;
     end
     
-    nPoints = 1000;
+    nPoints = 5000;
     
     % algorithm parameters
     deltaQ = [0.05 0.05 0.05]; % step
@@ -41,9 +41,9 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, q0, anatomyMo
         
         qListNormalized(:,ii) = qNew;
         
-        qList(1,ii) = qNew(1);    
+        qList(1,ii) = qNew(1) * maxDispl;  
         qList(2,ii) = qNew(2) * maxRot;
-        qList(3,ii) = qNew(3);
+        qList(3,ii) = qNew(3) * maxAdv;
         
         [~,T] = robot.fwkine(qList(:,ii));
         pList(:,ii) = T(1:3,4,end);
