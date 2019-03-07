@@ -12,7 +12,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, q0, anatomyMo
         collisionDetection = true;
     end
     
-    nPoints = 5000;
+    nPoints = 1000;
     
     % algorithm parameters
     deltaQ = [0.05 0.05 0.05]; % step

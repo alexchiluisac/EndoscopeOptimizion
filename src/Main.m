@@ -40,7 +40,6 @@ axis equal, grid on
 xlabel('X [mm]'), ylabel('Y [mm]'), zlabel('Z [mm]');
 title('Reachable points in the task space');
 
-return
 
 % Load ear model
 path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
