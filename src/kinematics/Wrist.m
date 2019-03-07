@@ -24,7 +24,7 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             self.cutouts = cutouts;
         end
         
-        function [pose, transformations] = fwkine(self, configuration)
+        function [pose, transformations, curvature, arcLength] = fwkine(self, configuration)
             n = self.nCutouts; % total number of cutouts
             ro = self.OD * 10^-3 / 2; % outer radius of tube in [m];
             ri = self.ID * 10^-3 / 2; % inner radius of tube in [m];
@@ -123,6 +123,37 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             pose = pose(1:3,:) .* 1000;
             transformations = T;
             transformations(1:3,4,:) = transformations(1:3,4,:) .*1000;
+            
+            % Return the curvature and arc length of each cut section
+            curvature = kappa;
+            arcLength = s;
+        end
+        
+        function robotBackbone = makePhysicalModel(self, configuration)
+            ptsPerMm = 10;
+            
+            [P,T,kappa,s] = self.fwkine(configuration);
+            
+            robotBackbone = zeros(3,1);
+            
+            for ii = 1 : 1%size(P, 2) - 1
+                %%if mod(ii,2) == 1 % if odd -> straight section
+                    distance = norm(P(:,ii+1) - P(:,ii));
+                    nPts = distance * ptsPerMm;
+                    
+                    direction = (P(:,ii+1) - P(:,ii)) / distance;
+                    
+                    for jj = 1 : nPts
+                       robotBackbone = [robotBackbone P(:,ii) + direction * jj]; 
+                    end
+
+                %%else % even -> curved section
+                
+                %%end
+            end
+            
+            
+
         end
         
         
