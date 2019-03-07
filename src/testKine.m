@@ -11,7 +11,7 @@ cutouts(1).alpha = 0;
 
 configuration = [0.2, pi/4, 2];
 
-robot = Wrist(1.6, 1.85, 3, cutouts);
+robot = Wrist(1.6, 1.85, 4, cutouts);
 [P, T] = robot.fwkine(configuration);
 
 X = P(1,:);

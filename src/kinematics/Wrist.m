@@ -1,19 +1,19 @@
 classdef Wrist % !FIXME this should be a subclass of Robot
-% WRIST This class encapsulates the design parameters of a
-% notched-tube wrist.
-%
-%   Author: Loris Fichera <lfichera@wpi.edu>
-%
-%   Latest revision: 03/01/2019
+    % WRIST This class encapsulates the design parameters of a
+    % notched-tube wrist.
+    %
+    %   Author: Loris Fichera <lfichera@wpi.edu>
+    %
+    %   Latest revision: 03/01/2019
     properties
         ID        % [mm] tube inner diameter
         OD        % [mm] tube outer diameter
         nCutouts  % [int] total number of cutouts
         cutouts   % struct array - each struct contains the following fields:
-                  %   [u - spacing between i-1 and i-th notch]
-                  %   [h - height of i-th cutout             ]
-                  %   [w - width of i-th cutout              ]
-                  %   [phi - orientation of i-th cutout      ]
+        %   [u - spacing between i-1 and i-th notch]
+        %   [h - height of i-th cutout             ]
+        %   [w - width of i-th cutout              ]
+        %   [phi - orientation of i-th cutout      ]
     end
     
     methods
@@ -47,22 +47,22 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             % about the y-axis and
             % translation in x and z according to
             % constant curvature deformation
-            Ts = @(k,s) [cos(k*s) 0  sin(k*s) (1 - cos(k*s))/k; 
-                         0        1  0        0;
-                         -sin(k*s) 0 cos(k*s) sin(k*s)/k; 
-                         0 0 0 1];
-
+            Ts = @(k,s) [cos(k*s) 0  sin(k*s) (1 - cos(k*s))/k;
+                0        1  0        0;
+                -sin(k*s) 0 cos(k*s) sin(k*s)/k;
+                0 0 0 1];
+            
             % Define the H.T. corresponding to translation along z-axis
             Tz = @(a) [1 0 0 0;...
-                       0 1 0 0;...
-                       0 0 1 a;...
-                       0 0 0 1];
+                0 1 0 0;...
+                0 0 1 a;...
+                0 0 0 1];
             
             % Define the H.T. corresponding to rotation about the z-axis
             Trotz = @(alpha) [cos(alpha) -sin(alpha) 0 0; ...
-                              sin(alpha) cos(alpha)  0 0; ...
-                              0          0           1 0; ...
-                              0          0           0 1];
+                sin(alpha) cos(alpha)  0 0; ...
+                0          0           1 0; ...
+                0          0           0 1];
             
             options = optimoptions('fsolve', 'TolFun', 1e-14, 'Display', 'off'); %set fsolve options.
             
@@ -110,11 +110,11 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             for i = 3 : 2 : (2*n + 2)
                 % !FIXME Need to account for orientation of each single
                 % cutout
-
+                
                 T(:,:,i) = T(:,:,i-1) * ...
-                           Trotz(alpha) * Ts(kappa, s);% * Tz(u);
-                T(:,:,i+1) = T(:,:,i) * Tz(u);        
-
+                    Trotz(alpha) * Ts(kappa, s);% * Tz(u);
+                T(:,:,i+1) = T(:,:,i) * Tz(u);
+                
                 pose(:,i) = T(:,:,i) * [0 0 0 1]';
                 pose(:,i+1) = T(:,:,i+1) * [0 0 0 1]';
             end
@@ -129,41 +129,48 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             arcLength = s;
         end
         
+        
         function robotBackbone = makePhysicalModel(self, configuration)
             ptsPerMm = 10;
             
             [P,T,kappa,s] = self.fwkine(configuration);
+            kappa = kappa / 1000;
+            radius = 1 / kappa;
+            s = s * 1000;
             
             robotBackbone = zeros(3,1);
             
             for ii = 1 : size(P, 2) - 1
+                if mod(ii,2) == 1 % straight sections
+                    
+                    % generate points along a straight line
+                    distance = norm(P(:,ii+1) - P(:,ii));
+                    nPts = round(distance * ptsPerMm);
+                    
+                    X = linspace(P(1,ii),P(1,ii+1), nPts);
+                    Y = linspace(P(2,ii),P(2,ii+1), nPts);
+                    Z = linspace(P(3,ii),P(3,ii+1), nPts);
+                    
+                    robotBackbone = [robotBackbone [X;Y;Z]];  
                 
-                distance = norm(P(:,ii+1) - P(:,ii));
-                nPts = round(distance * ptsPerMm);
-                nPts
-                
-                X = linspace(P(1,ii),P(1,ii+1), nPts);
-                Y = linspace(P(2,ii),P(2,ii+1), nPts);
-                Z = linspace(P(3,ii),P(3,ii+1), nPts);
-                
-                robotBackbone = [robotBackbone [X;Y;Z]]
-                
-                %%if mod(ii,2) == 1 % if odd -> straight section
-
-%                     
-%                     direction = (P(:,ii+1) - P(:,ii)) / distance;
-%                     
-%                     for jj = 1 : nPts
-%                        robotBackbone = [robotBackbone P(:,ii) + (direction * jj)/nPts]; 
-%                     end
-
-                %%else % even -> curved section
-                
-                %%end
+                else % cutouts: curved sections
+                    
+                    % generate points along an arc of constant curvature
+                    % and of length s
+                    theta = 0 : s*kappa/10 : s*kappa;
+                   
+                    pts = radius .* [(1-cos(theta));
+                                     zeros(1, length(theta));
+                                     sin(theta);
+                                     ones(1, length(theta)) / radius];
+                                  
+                    robotBackbone = [robotBackbone ...
+                        applytransform(pts(1:3,:),T(:,:,ii))]; 
+                end
             end
             
             
-
+            
         end
         
         
