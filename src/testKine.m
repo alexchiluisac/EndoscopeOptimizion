@@ -9,7 +9,7 @@ cutouts(1).u = 1;
 cutouts(1).h = 1;
 cutouts(1).alpha = 0;
 
-configuration = [0.2, pi/4, 2];
+configuration = [0.2, 0, 2];
 
 robot = Wrist(1.6, 1.85, 4, cutouts);
 [P, T] = robot.fwkine(configuration);
@@ -47,5 +47,3 @@ scatter3(X, Y, Z, 100, 'b', 'filled');
 radius = robot.OD/2*ones(1,size(bb,2));
 [X,Y,Z] = gencyl(bb,radius);
 cyl = surf(X,Y,Z,'FaceColor','blue');
-
-
