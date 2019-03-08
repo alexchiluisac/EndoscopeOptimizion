@@ -75,3 +75,19 @@ zlabel('Z[mm]')
 %triad('Matrix', eye(4), 'linewidth', 2.5);
 triad('Matrix', T(:,:,end), 'linewidth', 2.5);
 
+%Surrounds backbone with cylinders  
+scatter3(X, Y, Z, 100, 'b', 'filled');
+
+radius = robot.OD/2*ones(1,size(P,2));
+[X,Y,Z] = gencyl(P,radius);
+cyl = surf(X,Y,Z,'FaceColor','blue');
+
+%intriangulation: check collision points between anatomical model and
+%endoscope
+testp = [X(:) Y(:) Z(:)];
+testintrian = intriangulation(vertices,faces,testp);
+h = trisurf(faces,vertices(:,1),vertices(:,2),vertices(:,3));
+set(h,'FaceColor','black','FaceAlpha',1/3,'EdgeColor','none');
+hold on
+plot3(testp(:,1),testp(:,2),testp(:,3),'b.');
+plot3(testp(testintrian==1,1),testp(testintrian==1,2),testp(testintrian==1,3),'ro');
