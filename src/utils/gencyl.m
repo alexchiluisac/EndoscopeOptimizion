@@ -41,8 +41,8 @@ function [x y z] = gencyl( P, R , NBetween , NArround )
     
     % Axis and angle of rotation for each cylinder
     % Careful, the order of the cross product is important for the rest
-    Qvec = cross( [0.001;0.001;1]*ones(1,N-1) , D );
-    Qang = acos(dot( [0.001;0.001;1]*ones(1,N-1) , D ) ./ L);
+    Qvec = cross( [0.0001;0.0001;1]*ones(1,N-1) , D );
+    Qang = acos(dot( [0.0001;0.0001;1]*ones(1,N-1) , D ) ./ L);
     
     % Allocation
     x = zeros( (N-1)*NBetween , NArround+1 );
