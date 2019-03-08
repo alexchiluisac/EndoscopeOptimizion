@@ -76,7 +76,7 @@ zlabel('Z[mm]')
 triad('Matrix', T(:,:,end), 'linewidth', 2.5);
 
 %Surrounds backbone with cylinders  
-scatter3(X, Y, Z, 100, 'b', 'filled');
+scatter3(X, Y, Z, 10, 'b', 'filled');
 
 radius = robot.OD/2*ones(1,size(P,2));
 [X,Y,Z] = gencyl(P,radius);
