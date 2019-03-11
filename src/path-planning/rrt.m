@@ -21,11 +21,13 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel)
     maxAdv   = qbounds(3);
             
     % initialize the tree and the starting point
-    
     qListNormalized = zeros(3, nPoints);
     qList = zeros(3, nPoints);
     pList = zeros(3, nPoints);
     aList = zeros(3, nPoints);
+    
+    % initialize the base transform
+    T_robot_in_env = anatomyModel.baseTransform;
     
     % iteratively build the tree
     hw = waitbar(0, 'Sampling the configuration space. Please wait...');
@@ -40,19 +42,19 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel)
         rot   = qNew(2) * maxRot;
         adv   = qNew(3) * maxAdv;
 %         
-        [P,T] = robot.fwkine([displ, rot, adv],eye(4));
+        [P,T] = robot.fwkine([displ, rot, adv], T_robot_in_env);
 %         P = applytransform(P, T_robot_in_env); %!FIXME T_robot_in_env needs to be calculated
-%         robotPM = robot.makePhysicalModel(qList(:,500), T_robot_in_env); %!FIXME T_robot_in_env needs to be calculated
-%         
-%         testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:)];
-%         collision = intriangulation(anatomyModel.vertices, ...
-%             anatomyModel.faces, testpts);
-%         
-%         collision = sum(collision);
-%         
-%         if collision > 1
-%             continue;
-%         end
+        robotPM = robot.makePhysicalModel(qList(:,500), T_robot_in_env); %!FIXME T_robot_in_env needs to be calculated
+        
+        testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:)];
+        collision = intriangulation(anatomyModel.vertices, ...
+            anatomyModel.faces, testpts);
+        
+        collision = sum(collision);
+        
+        if collision > 1
+            continue;
+        end
          
         % If no collision, add this point to the tree
         qListNormalized(:,ii) = qNew;
