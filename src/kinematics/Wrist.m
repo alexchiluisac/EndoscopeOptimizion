@@ -24,7 +24,7 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             self.cutouts = cutouts;
         end
         
-        function [pose, transformations, curvature, arcLength] = fwkine(self, configuration)
+        function [pose, transformations, curvature, arcLength] = fwkine(self, configuration, baseTransform)
             n = self.nCutouts; % total number of cutouts
             ro = self.OD * 10^-3 / 2; % outer radius of tube in [m];
             ri = self.ID * 10^-3 / 2; % inner radius of tube in [m];
@@ -35,6 +35,7 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             h = self.cutouts(1).h * 10^-3; % height of the cutouts in [m]
             w = self.cutouts(1).w * 10^-3; % cut depth in [m]. See Figure 4.
             alpha = self.cutouts(1).alpha * pi / 180;       %cut orientation in [rad].
+            baseTransform(1:3,end) = baseTransform(1:3,end)./1000; % converting from [mm] to [m]
             
             d = w-ro; % intermediate variable. Depth of cut as measured from y = 0. See Figure 4.
             
@@ -99,11 +100,13 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             
             % Initialize pose and transformation matrices
             pose = zeros(4, 2*n + 2);
+            pose(1:3,1) = baseTransform(1:3,end);
             pose(4,:) = ones(1, 2*n + 2);
             T = repmat(eye(4), 1, 1, 2*n + 2);
             
             % Calculate initial advancement and rotation
-            T(:,:,2) = Tz(t_adv) * Trotz(t_rot);
+            T(:,:,1) = baseTransform;
+            T(:,:,2) = baseTransform * Tz(t_adv) * Trotz(t_rot);
             pose(:,2) = T(:,:,2) * [0 0 0 1]';
             
             % Iterate on the cutouts and calculate the transformations at each cutout
@@ -133,12 +136,12 @@ classdef Wrist % !FIXME this should be a subclass of Robot
         function robotModel = makePhysicalModel(self, configuration, baseTransform)
             ptsPerMm = 10;
             
-            [P,T,kappa,s] = self.fwkine(configuration);
+            [P,T,kappa,s] = self.fwkine(configuration, baseTransform);
             kappa = kappa / 1000;
             radius = 1 / kappa;
             s = s * 1000;
             
-            robotBackbone = zeros(3,1);
+            robotBackbone = P(:,1);
             
             for ii = 1 : size(P, 2) - 1
                 if mod(ii,2) == 1 % straight sections
@@ -171,7 +174,7 @@ classdef Wrist % !FIXME this should be a subclass of Robot
                 end
             end 
             
-            robotBackbone = applytransform(robotBackbone, baseTransform);
+            %robotBackbone = applytransform(robotBackbone, baseTransform);
             
             radiusVec = self.OD/2*ones(1,size(robotBackbone,2));
             [X,Y,Z] = gencyl(robotBackbone, radiusVec);

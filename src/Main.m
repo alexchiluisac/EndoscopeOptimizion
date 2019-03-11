@@ -57,8 +57,8 @@ R = [0 0 -1; 0 1 0; 1 0 0];
 T = [R t'; 0 0 0 1];
 
 
-[P, ~] = robot.fwkine(qList(:,500));
-P = applytransform(P, T);
+[P, ~] = robot.fwkine(qList(:,500),T);
+%P = applytransform(P, T);
 
 X = P(1,:);
 Y = P(2,:);
