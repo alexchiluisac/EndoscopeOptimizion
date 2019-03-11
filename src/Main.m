@@ -76,11 +76,12 @@ zlabel('Z[mm]')
 triad('Matrix', T(:,:,end), 'linewidth', 2.5);
 
 %Surrounds backbone with cylinders  
-scatter3(X, Y, Z, 10, 'b', 'filled');
+%scatter3(X, Y, Z, 10, 'b', 'filled');
 
-radius = robot.OD/2*ones(1,size(P,2));
-[X,Y,Z] = gencyl(P,radius);
-cyl = surf(X,Y,Z,'FaceColor','blue');
+%radius = robot.OD/2*ones(1,size(P,2));
+%[X,Y,Z] = gencyl(P,radius);
+robotPM = robot.makePhysicalModel(qList(:,500), T);
+surf(robotPM.surface.X, robotPM.surface.Y, robotPM.surface.Z, 'FaceColor','blue');
 
 %intriangulation: check collision points between anatomical model and
 %endoscope

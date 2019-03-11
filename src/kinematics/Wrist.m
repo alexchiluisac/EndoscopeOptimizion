@@ -130,7 +130,7 @@ classdef Wrist % !FIXME this should be a subclass of Robot
         end
         
         
-        function robotBackbone = makePhysicalModel(self, configuration)
+        function robotModel = makePhysicalModel(self, configuration, baseTransform)
             ptsPerMm = 10;
             
             [P,T,kappa,s] = self.fwkine(configuration);
@@ -157,6 +157,8 @@ classdef Wrist % !FIXME this should be a subclass of Robot
                     
                     % generate points along an arc of constant curvature
                     % and of length s
+                    
+                    % !FIXME ensure ptspermm is met
                     theta = 0 : s*kappa/10 : s*kappa;
                    
                     pts = radius .* [(1-cos(theta));
@@ -167,135 +169,17 @@ classdef Wrist % !FIXME this should be a subclass of Robot
                     robotBackbone = [robotBackbone ...
                         applytransform(pts(1:3,:),T(:,:,ii))]; 
                 end
-            end
+            end 
             
+            robotBackbone = applytransform(robotBackbone, baseTransform);
             
+            radiusVec = self.OD/2*ones(1,size(robotBackbone,2));
+            [X,Y,Z] = gencyl(robotBackbone, radiusVec);
+            
+            robotModel.backbone = robotBackbone;
+            robotModel.surface.X = X;
+            robotModel.surface.Y = Y;
+            robotModel.surface.Z = Z;
         end
-        
-        
-        %       function obj = setCutoutOrientations(obj, cutOrientations)
-        %           for i = 1 : obj.nCutouts
-        %               obj.cutouts(i).phi = cutOrientations(i) * 360;
-        %           end
-        %       end
-        %
-        %
-        %       function show(self)
-        %           n_pts = 50;
-        %           faceColor = [0.8 0.8 0.8];
-        %           tubeLength = 10; %[mm] - arbitrary - for display purposes only
-        %                            % shows only the most distal 10 mm of the tip
-        %
-        %           hold on
-        %
-        %           currentZ = tubeLength;
-        %
-        %           for i = 1 : self.nCutouts
-        %               % display uncut section of length 'X'
-        %               [Xi,Yi,Zi] = cylinder(self.ID/2, n_pts);
-        %               [Xo,Yo,Zo] = cylinder(self.OD/2, n_pts);
-        %
-        %               % set length of this uncut section
-        %               Zi(2,:) = Zi(2,:) - Zi(2,:) + currentZ;
-        %               Zi(1,:) = Zi(1,:) - Zi(1,:) + currentZ - self.cutouts(i).x;
-        %               Zo(2,:) = Zo(2,:) - Zo(2,:) + currentZ;
-        %               Zo(1,:) = Zo(1,:) - Zo(1,:) + currentZ - self.cutouts(i).x;
-        %
-        %               % plot uncut section
-        %               hSurf = surf(Xi,Yi,Zi);
-        %               set(hSurf,'FaceColor',faceColor,'FaceAlpha',1);
-        %
-        %               hSurf = surf(Xo,Yo,Zo);
-        %               set(hSurf,'FaceColor',faceColor,'FaceAlpha',1);
-        %
-        %               % display cut section of length 'H'
-        %               [Xi,Yi,Zi] = cylinder(self.ID/2, n_pts);
-        %               [Xo,Yo,Zo] = cylinder(self.OD/2, n_pts);
-        %
-        %               % set length of this cut section
-        %               Zi(2,:) = Zi(2,:) - Zi(2,:) + currentZ - self.cutouts(i).x;
-        %               Zi(1,:) = Zi(1,:) - Zi(1,:) + currentZ - self.cutouts(i).x - self.cutouts(i).h;
-        %               Zo(2,:) = Zo(2,:) - Zo(2,:) + currentZ - self.cutouts(i).x;
-        %               Zo(1,:) = Zo(1,:) - Zo(1,:) + currentZ - self.cutouts(i).x - self.cutouts(i).h;
-        %
-        %               % select only the portion of the tube that has not been cut
-        %               sel = Yi(1,:) + self.OD/2 < self.OD - self.cutouts(i).w;
-        %               Xi = Xi(:,sel); Yi = Yi(:,sel); Zi = Zi(:,sel);
-        %
-        %               sel = Yo(1,:) + self.OD/2 < self.OD - self.cutouts(i).w;
-        %               Xo = Xo(:,sel); Yo = Yo(:,sel); Zo = Zo(:,sel);
-        %
-        %               % prepare points for rotation about tube axis
-        %               % (cutout rotated by phi)
-        %               outerCylinderAbove = [Xo(2,:); Yo(2,:); Zo(2,:)];
-        %               outerCylinderBelow = [Xo(1,:); Yo(1,:); Zo(1,:)];
-        %               innerCylinderAbove = [Xi(2,:); Yi(2,:); Zi(2,:)];
-        %               innerCylinderBelow = [Xi(1,:); Yi(1,:); Zi(1,:)];
-        %
-        %               % rotate uncut section by phi (design parameter)
-        %               phi = self.cutouts(i).phi;
-        %               R = [cosd(phi) -sind(phi) 0 0;
-        %                    sind(phi) cosd(phi)  0 0;
-        %                    0           0        1 0;
-        %                    0           0        0 1];
-        %
-        %               for j = 1 : size(outerCylinderAbove, 2)
-        %                   temp = R * [outerCylinderAbove(:,j); 1];
-        %                   outerCylinderAbove(:,j) = temp(1:3);
-        %
-        %                   temp = R * [outerCylinderBelow(:,j); 1];
-        %                   outerCylinderBelow(:,j) = temp(1:3);
-        %               end
-        %
-        %
-        %               for j = 1 : size(innerCylinderAbove, 2)
-        %
-        %                   temp = R * [innerCylinderAbove(:,j); 1];
-        %                   innerCylinderAbove(:,j) = temp(1:3);
-        %
-        %                   temp = R * [innerCylinderBelow(:,j); 1];
-        %                   innerCylinderBelow(:,j) = temp(1:3);
-        %               end
-        %
-        %               Xo = [outerCylinderBelow(1,:); outerCylinderAbove(1,:)];
-        %               Yo = [outerCylinderBelow(2,:); outerCylinderAbove(2,:)];
-        %               Zo = [outerCylinderBelow(3,:); outerCylinderAbove(3,:)];
-        %
-        %               Xi = [innerCylinderBelow(1,:); innerCylinderAbove(1,:)];
-        %               Yi = [innerCylinderBelow(2,:); innerCylinderAbove(2,:)];
-        %               Zi = [innerCylinderBelow(3,:); innerCylinderAbove(3,:)];
-        %
-        %
-        %               hSurf = surf(Xi,Yi,Zi);
-        %               set(hSurf,'FaceColor',faceColor,'FaceAlpha',1);
-        %
-        %               hSurf = surf(Xo,Yo,Zo);
-        %               set(hSurf,'FaceColor',faceColor,'FaceAlpha',1);
-        %
-        %               currentZ = currentZ - self.cutouts(i).x - self.cutouts(i).h;
-        %           end
-        %
-        %           % display base of the tube
-        %           [Xi,Yi,Zi] = cylinder(self.ID/2, n_pts);
-        %           [Xo,Yo,Zo] = cylinder(self.OD/2, n_pts);
-        %
-        %           % set length of this uncut section
-        %           Zi(2,:) = Zi(2,:) - Zi(2,:) + currentZ;
-        %           Zi(1,:) = 0;
-        %           Zo(2,:) = Zo(2,:) - Zo(2,:) + currentZ;
-        %           Zo(1,:) = 0;
-        %
-        %           % plot uncut section
-        %           hSurf = surf(Xi,Yi,Zi);
-        %           set(hSurf,'FaceColor',faceColor,'FaceAlpha',1);
-        %
-        %           hSurf = surf(Xo,Yo,Zo);
-        %           set(hSurf,'FaceColor',faceColor,'FaceAlpha',1);
-        %
-        %           axis equal, grid on
-        %           %xlabel('X [mm]'), ylabel('Y [mm]'), zlabel('Z [mm]')
-        %           view(40.8, 24.4);
-        %       end
-        %    end
     end
 end
