@@ -142,7 +142,6 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             s = s * 1000;
             
             robotBackbone = P(:,1);
-            
             for ii = 1 : size(P, 2) - 1
                 if mod(ii,2) == 1 % straight sections
                     
