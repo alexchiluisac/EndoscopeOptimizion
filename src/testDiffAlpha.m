@@ -10,8 +10,11 @@ cutouts(1).u = 1;
 cutouts(1).h = 1;
 cutouts(1).alpha = 0;
 
-% Create the robot
-robot = Wrist(1.6, 1.85, 3, cutouts);
+
+
+maxDisplacement = 1; % [mm]
+maxRotation     = 2*pi; % [rad]
+maxAdvancement  = 10; % [mm]
 
 % Load ear model
 path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
@@ -25,15 +28,34 @@ R = [0 0 -1; 0 1 0; 1 0 0];
 T = [R t'; 0 0 0 1];
 earModel.baseTransform = T;
 
-maxDisplacement = 1; % [mm]
-maxRotation     = 2*pi; % [rad]
-maxAdvancement  = 10; % [mm]
+% Estimate the reachable volume for different alpha values.
+
+reachableVolume = zeros(5,1);
+i = 1;
+
+for alpha = 0:pi/4:pi
+ 
+% Create the robot
+robot = Wrist(1.6, 1.85, 4, cutouts);
+
 [qListNormalized,qList,pList,aList] = rrt(robot, ...
     [maxDisplacement maxRotation maxAdvancement], ...
     earModel);
 
-
 [k,v] = boundary(pList(1,:)', pList(2,:)', pList(3,:)', 0.5);
+angles(i,1) = alpha;
+reachableVolume(i,1) = v;
+i = i + 1;
+
+end
+
+% Plot objective function
+angles = angles*180/pi;
+figure
+plot(angles,reachableVolume)
+axis equal, grid on
+xlabel('Angle [Degree]'), ylabel('Reachable Volume [mm3]');
+
 
 % figure
 % scatter3(qList(1,:), qList(2,:), qList(3,:));
