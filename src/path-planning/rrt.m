@@ -12,7 +12,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel)
         collisionDetection = true;
     end
     
-    nPoints = 500;
+    nPoints = 200;
     
     % algorithm parameters
     deltaQ = [0.05 0.05 0.05]; % step
@@ -30,7 +30,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel)
     % initialize the base transform
     T_robot_in_env = anatomyModel.baseTransform;
  
-    [P,T] = robot.fwkine(qList(:,1), T_robot_in_env);
+    [~,T] = robot.fwkine(qList(:,1), T_robot_in_env);
     pList(:,1) = T(1:3,4,end);
     aList(:,1) = T(1:3,3,end);
     % iteratively build the tree
@@ -80,8 +80,8 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel)
     
     close(hw);
     
-    qListNormalized = qListNormalized(:,1:jj);
-    qList = qList(:,1:jj);
-    pList = pList(:,1:jj);
-    aList = aList(:,1:jj);
+    qListNormalized = qListNormalized(:,1:jj-1);
+    qList = qList(:,1:jj-1);
+    pList = pList(:,1:jj-1);
+    aList = aList(:,1:jj-1);
 end
