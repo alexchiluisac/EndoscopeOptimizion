@@ -25,24 +25,28 @@ classdef Wrist % !FIXME this should be a subclass of Robot
         end
         
         function [pose, transformations, curvature, arcLength] = fwkine(self, configuration, baseTransform)
+            % Get the endoscope configuration
+            t_displ = configuration(1) * 10^-3;
+            t_rot   = configuration(2);
+            t_adv   = configuration(3) * 10^-3;
+            
+            % Get the kinematic parameters
             n = self.nCutouts; % total number of cutouts
             ro = self.OD * 10^-3 / 2; % outer radius of tube in [m];
             ri = self.ID * 10^-3 / 2; % inner radius of tube in [m];
             
             % !FIXME later on, we should account for wrists with non-uniform cutouts
             % !FIXME need to implement kinematics for different cut orientations (theta)
-            u = self.cutouts(1).u * 10^-3; % Length between cuts in [m]. Defined in Figure 4.
-            h = self.cutouts(1).h * 10^-3; % height of the cutouts in [m]
-            w = self.cutouts(1).w * 10^-3; % cut depth in [m]. See Figure 4.
-            alpha = self.cutouts(1).alpha * pi / 180;       %cut orientation in [rad].
+            u = self.cutouts.u .* 10^-3; % Length between cuts in [m]. Defined in Figure 4 of Swaney 2017.
+            h = self.cutouts.h .* 10^-3; % Height of the cutouts in [m]
+            w = self.cutouts.w .* 10^-3; % Cut depth in [m]. See Figure 4 again.
+            alpha = self.cutouts.alpha ; % Change in cut orientation in [rad].
+            
             baseTransform(1:3,end) = baseTransform(1:3,end)./1000; % converting from [mm] to [m]
             
             d = w-ro; % intermediate variable. Depth of cut as measured from y = 0. See Figure 4.
             
-            % Get the endoscope configuration
-            t_displ = configuration(1) * 10^-3;
-            t_rot   = configuration(2);
-            t_adv   = configuration(3) * 10^-3;
+
             
             % Define the H.T. corresponding to rotation
             % about the y-axis and
@@ -72,31 +76,43 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             % Use Hunter's integral formula calculation. It yields the same thing as the formula in the paper.
             fy = @(r,theta) (r.*cos(theta));
             fA = @(r,theta) (1);
-            phi = @(r) acos(d./r);
-            A = integral2(@(r,theta) r.*fA(r,theta), ri, ro, @(c)-phi(c), @(c)phi(c), ...
-                'AbsTol', 1e-12, 'RelTol', 1e-12);
+            %phi = @(r) acos(d./r);
             
-            ybar = 1/A*integral2(@(r,theta) r.*fy(r,theta), ri, ro, @(c)-phi(c), @(c)phi(c), ...
-                'AbsTol',1e-12,'RelTol', 1e-9);
+            A =     zeros(1, n);
+            ybar =  zeros(1, n);
+            kappa = zeros(1, n);
+            s =     zeros(1, n);
             
-            % Calculate the maximum bending for a single cutout
-            theta_max = h / (ro + ybar);
-            
-            % Calculate the tendon displacement for single cutout when
-            % this hits hard stop.
-            deltal_max = h - (ro - ri) * theta_max;
-            
-            if t_displ > deltal_max
-                disp('Warning. Tendon displacement runs over hard stop.');
-                disp(deltal_max * 1000);
+                        
+            for ii = 1 : n
+                A(ii) = integral2(@(r,theta) r.*fA(r,theta), ri, ro, ...
+                                  @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
+                                  'AbsTol', 1e-12, 'RelTol', 1e-12);
+                
+                ybar(ii) = 1 / A(ii) * integral2(@(r,theta) r.*fy(r,theta), ri, ro, ...
+                                             @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
+                                             'AbsTol',1e-12,'RelTol', 1e-9);
+                
+                % Calculate the maximum bending for this cutout
+                theta_max(ii) = h(ii) / (ro + ybar(ii));
+                
+                % Calculate the tendon displacement for this cutout when
+                % this hits the hard stop.
+                deltal_max(ii) = h(ii) - (ro - ri) * theta_max(ii);
+                
+                if t_displ > deltal_max(ii)
+                    disp('Warning. Tendon displacement runs over hard stop.');
+                    disp(deltal_max * 1000);
+                end
+                
+                % Get kappa of single cutout
+                kappa(ii) = fsolve(@(k) (-t_displ + h(ii) - 2 * (1/k - ri) * sin(k*h(ii)/(2*(1+ybar(ii)*k)))), ...
+                    500, options); % original -t
+                
+                % Get arc length of single cutout
+                s(ii) = h(ii) / ( 1 + ybar(ii) * kappa(ii)); % original kappa
+                
             end
-            
-            % Get kappa of single cutout
-            kappa = fsolve(@(k) (-t_displ + h - 2 * (1/k - ri) * sin(k*h/(2*(1+ybar*k)))), ...
-                500, options); % original -t
-            
-            % Get arc length of single cutout
-            s = h / ( 1 + ybar * kappa); % original kappa
             
             % Initialize pose and transformation matrices
             pose = zeros(4, 2*n + 2);
@@ -109,17 +125,26 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             T(:,:,2) = baseTransform * Tz(t_adv) * Trotz(t_rot);
             pose(:,2) = T(:,:,2) * [0 0 0 1]';
             
+            jj = 1; % pointer to current cutout
+            
             % Iterate on the cutouts and calculate the transformations at each cutout
             for i = 3 : 2 : (2*n + 2)
-                % !FIXME Need to account for orientation of each single
-                % cutout
+%                 T(:,:,i) = T(:,:,i-1) * ...
+%                     Trotz(alpha(jj)) * Ts(kappa(jj), s(jj));% * Tz(u);
+%                 T(:,:,i+1) = T(:,:,i) * Tz(u(jj));
+
+                T(:,:,i) = T(:,:,i-1) * Ts(kappa(jj), s(jj));
                 
-                T(:,:,i) = T(:,:,i-1) * ...
-                    Trotz(alpha) * Ts(kappa, s);% * Tz(u);
-                T(:,:,i+1) = T(:,:,i) * Tz(u);
-                
+                if jj < n
+                    T(:,:,i+1) = T(:,:,i) * Tz(u(jj)) * Trotz(alpha(jj+1));
+                else
+                    T(:,:,i+1) = T(:,:,i) * Tz(u(jj));
+                end
+
                 pose(:,i) = T(:,:,i) * [0 0 0 1]';
                 pose(:,i+1) = T(:,:,i+1) * [0 0 0 1]';
+                
+                jj = jj + 1; % move pointer to next cutout
             end
             
             % Extract the tube pose and return
@@ -137,6 +162,12 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             ptsPerMm = 10;
             
             [P,T,kappa,s] = self.fwkine(configuration, baseTransform);
+            
+            %!FIXME kappa and s are different for each cutout - need to change
+            %the code below to account for this
+            kappa = kappa(1);
+            s = s(1);
+            
             kappa = kappa / 1000;
             radius = 1 / kappa;
             s = s * 1000;
@@ -167,9 +198,9 @@ classdef Wrist % !FIXME this should be a subclass of Robot
                                      zeros(1, length(theta));
                                      sin(theta);
                                      ones(1, length(theta)) / radius];
-                                  
+                    
                     robotBackbone = [robotBackbone ...
-                        applytransform(pts(1:3,:),T(:,:,ii))]; 
+                        applytransform(pts(1:3,:), T(:,:,ii))]; 
                 end
             end 
             
