@@ -5,11 +5,6 @@ addpath('path-planning')
 addpath('utils')
 addpath('../anatomical-models')
 
-cutouts.w = [1 1 1 1];
-cutouts.u = [1 1 1 1];
-cutouts.h = [1 1 1 1];
-cutouts.alpha = [0 0 pi 0];
-
 maxDisplacement = 1; % [mm]
 maxRotation     = 2*pi; % [rad]
 maxAdvancement  = 10; % [mm]
@@ -32,8 +27,13 @@ i = 1;
 
 alpha = 0 : pi/4 : pi;
 
-for a = alpha
-    cutouts.alpha = [0 0 a 0];
+parfor ii = i : length(alpha)
+    cutouts = [];
+    cutouts.w = [1 1 1 1];
+    cutouts.u = [1 1 1 1];
+    cutouts.h = [1 1 1 1];
+    cutouts.alpha = [0 0 alpha(ii) 0];
+    
     % Create the robot
     robot = Wrist(1.6, 1.85, 4, cutouts);
     
@@ -42,9 +42,7 @@ for a = alpha
         earModel);
     
     [k,v] = boundary(pList(1,:)', pList(2,:)', pList(3,:)', 0.5);
-    reachableVolume(i,1) = v;
-    i = i + 1;
-    
+    reachableVolume(ii) = v;    
 end
 
 % Plot objective function
