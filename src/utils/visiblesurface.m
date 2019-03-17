@@ -1,63 +1,67 @@
-function seenMap = visiblesurface(p, larynxModel, approachVec)
+function seenMap = visiblesurface(viewPoint, approachVec, anatomyModel)
 %% WE'LL WRITE THE DOCUMENTATION LATER
+%  03/14/2019 still no documentation, dammit
 
-faces = larynxModel.faces;
-vertices = larynxModel.vertices;
+  faces = anatomyModel.faces;
+  vertices = anatomyModel.vertices;
+  centroids = anatomyModel.centroids;
 
-% calculate the centroids of the faces
-pcentr = zeros(size(faces, 1), 3);
-
-for ii = 1 : size(faces, 1)
-    p1 = vertices(faces(ii,1), :);
-    p2 = vertices(faces(ii,2), :);
-    p3 = vertices(faces(ii,3), :);
-    
-    pcentr(ii,1) = 1/3 * (p1(1) + p2(1) + p3(1));
-    pcentr(ii,2) = 1/3 * (p1(2) + p2(2) + p3(2));
-    pcentr(ii,3) = 1/3 * (p1(3) + p2(3) + p3(3));
-    
-end
-
-% run HPR to find the visible points
-%param = [0 0.1 0.3 1 3 10];
-param = [0.1];
-visiblePoints = zeros(5,1);
-%radiusExp = 3;
-
-ii = 1;
-for param_ii = param
-    [visiblePtsIdx,~] = HPR(pcentr, p', param_ii);
-    %[visiblePtsIdx,sphFlip] = HPR(pcentr, p', radiusExp);
-    
-    % cast rays and pick only those that are within the FOV
-    rays = bsxfun(@minus, pcentr(visiblePtsIdx,:)', p);
-    
-    % convert rays into unit vectors
-    raysu = zeros(size(rays, 1), size(rays, 2));
-    
-    for k = 1 : length(rays)
-        raysu(:,k) =  rays(:,k) / norm(rays(:,k));
-    end
-    
-    % make as many copies of approachVec as the number of rays we generated
-    approachVecRep = repmat(approachVec, 1, length(raysu));
-    
-    % see what rays fall within the "field of view" of the laser and calculate a table of mesh triangles that are "seen"
-    product = sum(approachVecRep .* raysu);
-    %FOV = 65 / 1000; % divergence angle of the laser beam 32.44 millirads
-    FOV =  120 * pi / 180;
-    withinFOVMap = (product > cos(FOV / 2));
-    
-    % see what rays hit the target within a certain distance
-    %distThreshold = 10; % [mm]
-    %distances = vecnorm(rays);
-    %withinDistanceMap = distances < distThreshold;
-    
-    seenMap = zeros(size(faces, 1), 1);
-    %seenMap(visiblePtsIdx(withinFOVMap & withinDistanceMap)) = 1;
-    seenMap(visiblePtsIdx(withinFOVMap)) = 1;
-    seenMap = logical(seenMap);
-    %visiblePoints(ii) = sum(seenMap);
-    ii = ii + 1;
-end
+  % Initialize the visibility map
+  seenMap = zeros(1, size(faces, 1));
+  
+  % Cast rays from the viewPoint to each of the centroids
+  rays = bsxfun(@minus, centroids', viewPoint);
+  
+  % Convert rays into unit vectors
+  raysu = zeros(size(rays, 1), size(rays, 2));
+  
+  for k = 1 : length(rays)
+      raysu(:,k) =  rays(:,k) / norm(rays(:,k));
+  end
+  
+  % Make as many copies of approachVec as the number of rays we generated
+  approachVecRep = repmat(approachVec, 1, length(raysu));
+  
+  % See what rays fall within the "field of view" of the camera
+  product = sum(approachVecRep .* raysu);
+  FOV =  90 * pi / 180;
+  withinFOVMap = (product > cos(FOV / 2));
+  
+  % Filter out those rays that are beyond the field of view
+  withinFOVFaces = faces(withinFOVMap, :);
+  withinFOVRays = raysu(:, withinFOVMap);
+  
+  % Now run ray-mesh intersection using the set of rays within the field of view.
+  % Each ray should be intersecting at least - one face, but it may be
+  % intersecting more! If the former, just set that face to "visible." If the
+  % latter, sort faces by their distance from the viewpoint and then mark the
+  % closest one as "visible" and the other ones as "not visible."
+  
+  % prepare the data structures required to run ray-triangle intersection
+  vert1 = vertices(faces(withinFOVFaces,1),:);
+  vert2 = vertices(faces(withinFOVFaces,2),:);
+  vert3 = vertices(faces(withinFOVFaces,3),:);
+  
+  for ii = 1 : size(withinFOVRays, 2)
+      [intersectionMap,distance,~,~,coordinates] = ...
+          TriangleRayIntersection(viewPoint', withinFOVRays(:,ii)', ...
+          vert1, vert2, vert3);
+      
+      coordinates = coordinates(intersectionMap, :);
+      
+      if size(coordinates, 1) > 1
+          [~,idx] = min(distance(intersectionMap));
+      end
+      
+      closestPoint = coordinates(idx, :);
+      difference = bsxfun(@minus, centroids', closestPoint');
+      difference = vecnorm(difference);
+      
+      [~,visibleFaceIdx] = min(difference);
+      
+      seenMap(visibleFaceIdx) = 1;
+      ii
+  end
+  
+  
 end
