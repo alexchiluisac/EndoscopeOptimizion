@@ -173,6 +173,10 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             s = s * 1000;
             
             robotBackbone = P(:,1);
+            %robotModel.surface.X = zeros(1, 21);
+            %robotModel.surface.Y = zeros(1, 21);
+            %robotModel.surface.Z = zeros(1, 21);
+            
             for ii = 1 : size(P, 2) - 1
                 if mod(ii,2) == 1 % straight sections
                     
@@ -184,7 +188,12 @@ classdef Wrist % !FIXME this should be a subclass of Robot
                     Y = linspace(P(2,ii),P(2,ii+1), nPts);
                     Z = linspace(P(3,ii),P(3,ii+1), nPts);
                     
-                    robotBackbone = [robotBackbone [X;Y;Z]];  
+                    robotBackbone = [robotBackbone [X;Y;Z]];
+                    
+                    %[Xcyl,Ycyl,Zcyl] = gencyl([X;Y;Z], self.OD/2*ones(length(X), 1));
+                    %robotModel.surface.X = [robotModel.surface.X; Xcyl];
+                    %robotModel.surface.Y = [robotModel.surface.Y; Ycyl];
+                    %robotModel.surface.Z = [robotModel.surface.Z; Zcyl];
                 
                 else % cutouts: curved sections
                     
@@ -199,8 +208,15 @@ classdef Wrist % !FIXME this should be a subclass of Robot
                                      sin(theta);
                                      ones(1, length(theta)) / radius];
                     
+                    %[Xcyl,Ycyl,Zcyl] = gencyl(pts(1:3,:), self.OD/2*ones(length(pts),1));
+     
                     robotBackbone = [robotBackbone ...
                         applytransform(pts(1:3,:), T(:,:,ii))]; 
+                    
+                    %[Xcyl,Ycyl,Zcyl] = gencyl([X;Y;Z], self.OD/2*ones(length(X),1));
+                    %robotModel.surface.X = [robotModel.surface.X; Xcyl];
+                    %robotModel.surface.Y = [robotModel.surface.Y; Ycyl];
+                    %robotModel.surface.Z = [robotModel.surface.Z; Zcyl];
                 end
             end 
             

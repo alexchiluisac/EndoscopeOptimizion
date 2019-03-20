@@ -24,7 +24,8 @@ dim=size(p,2);
 numPts=size(p,1);
 p=p-repmat(C,[numPts 1]);%Move C to the origin
 normp=sqrt(dot(p,p,2));%Calculate ||p||
-R=repmat(max(normp)*(10^param),[numPts 1]);%Sphere radius
+%R=repmat(max(normp)*(10^param),[numPts 1]);%Sphere radius
+R=repmat(max(normp)*(param),[numPts 1]);%Sphere radius
 P=p+2*repmat(R-normp,[1 dim]).*p./repmat(normp,[1 dim]);%Spherical flipping
 visiblePtInds=unique(convhulln([P;zeros(1,dim)]));%convex hull
 visiblePtInds(visiblePtInds==numPts+1)=[];
