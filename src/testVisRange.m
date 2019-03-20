@@ -3,7 +3,7 @@ clc, clear, close all
 addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
-addpath('utils/TriangleRayIntersection/')
+addpath('utils/ray-casting/')
 addpath('../anatomical-models')
 
 maxDisplacement = 1; % [mm]
@@ -11,7 +11,7 @@ maxRotation     = 2*pi; % [rad]
 maxAdvancement  = 10; % [mm]
 
 % Load ear model
-path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
+path = fullfile('..', 'anatomical-models', 'synthetic-model-closed.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
@@ -21,13 +21,13 @@ earModel.faces = faces;
 c = zeros(size(faces, 1), 3);
 
 % Calculate the base transform for the robot
-t = [30 10 10];
+t = [30 8 10];
 R = [0 0 -1; 0 1 0; 1 0 0];
 T = [R t'; 0 0 0 1];
 earModel.baseTransform = T;
 
 % Simulate the visual range
-alpha = 0;
+alpha = pi;
 cutouts = [];
 cutouts.w = [1 1 1 1];
 cutouts.u = [1 1 1 1];
@@ -41,7 +41,7 @@ robot = Wrist(1.6, 1.85, 4, cutouts);
     earModel);
 
 % Load cropped ear model (for visibility analysis)
-path = fullfile('..', 'anatomical-models', 'synthetic-model-cropped.stl');
+path = fullfile('..', 'anatomical-models', 'synthetic-model-closed-finer.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
