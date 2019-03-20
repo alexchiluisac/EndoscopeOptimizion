@@ -16,10 +16,6 @@ path = fullfile('..', 'anatomical-models', 'synthetic-model-closed.stl');
 earModel.vertices = vertices;
 earModel.faces = faces;
 
-% Calculate the centroids of the faces - this will be useful when
-% calculating visibility
-c = zeros(size(faces, 1), 3);
-
 % Calculate the base transform for the robot
 t = [30 8 10];
 R = [0 0 -1; 0 1 0; 1 0 0];

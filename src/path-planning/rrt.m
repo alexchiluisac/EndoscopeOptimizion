@@ -1,4 +1,4 @@
-function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel)
+function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel, nPoints)
 % RRT implements the basic Rapidly-Exploring Random Trees algorithm for a
 % generic continuum robot
 %
@@ -11,9 +11,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel)
     else
         collisionDetection = true;
     end
-    
-    nPoints = 50;
-    
+        
     % algorithm parameters
     deltaQ = [0.05 0.05 0.05]; % step
     maxDispl = qbounds(1);
@@ -59,7 +57,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel)
         collision = sum(collision);
         
         if collision > 1
-            disp('Collision');
+            disp('Collision detected.');
             continue;
         end
          
