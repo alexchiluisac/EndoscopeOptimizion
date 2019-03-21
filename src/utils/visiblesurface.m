@@ -20,7 +20,7 @@ function seenMap = visiblesurface(viewPoint, approachVec, anatomyModel)
   
   % See what rays fall within the "field of view" of the camera
   product = sum(approachVecRep .* raysu);
-  FOV =  90 * pi / 180;
+  FOV =  120 * pi / 180;
   seenMap = (product > cos(FOV / 2));
   seenMap = visualrange(viewPoint, vertices, double(seenMap), faces-1);
 end
