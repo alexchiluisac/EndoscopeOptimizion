@@ -12,7 +12,7 @@ clc; close all; clear all;
 % end
 % alpha = 0;
 % estimateVolume = testModel(alpha)
-ObjectiveFunction = @testModel;
+ObjectiveFunction = @reachableVolume;
 alpha0 = 0;   % Starting point
 rng default % For reproducibility
 [x,fval,exitFlag,output] = simulannealbnd(ObjectiveFunction,alpha0)
