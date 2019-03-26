@@ -1,4 +1,4 @@
-function seenMap = visiblesurface(viewPoint, approachVec, anatomyModel)
+function seenMap = visibilitymap(viewPoint, approachVec, anatomyModel)
 %% WE'LL WRITE THE DOCUMENTATION LATER
 %  03/14/2019 still no documentation, dammit
 

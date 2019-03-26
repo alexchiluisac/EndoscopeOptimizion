@@ -1,6 +1,4 @@
-function seenMap = estimateVisibleSurface(alpha)
-%% Continuum robot optimization for a cavity exploration task
-% add dependencies
+function s = visiblesurface(alpha)
 
 % define the robot's range of motion
 maxDisplacement = 1; % [mm]
@@ -37,26 +35,21 @@ nPoints = 100;
     earModel, ...
     nPoints);
 
-
-% Estimate the reachable workspace
-%shrinkFactor = 1;
-%[k,v] = boundary(pList(1,:)', pList(2,:)', pList(3,:)', shrinkFactor);
-
-%disp(['Reachable volume: ' num2str(v) ' mm3']);
-
 % Re-load the cavity model (a finer mesh this time)
 path = fullfile('..', 'anatomical-models', 'synthetic-model-finer.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
 
-% Visualize the visual range for each pose of the robot
+% Calculate the visibility map
 seenMap = zeros(1, size(earModel.vertices, 1));
 
 for ii = 1 : size(pList, 2)
-    seenMap = seenMap + visiblesurface(pList(:,ii), aList(:,ii), earModel);
+    seenMap = seenMap + estimatevisiblesurface(pList(:,ii), aList(:,ii), earModel);
 end
 
 seenMap(seenMap > 1) = 1;
 
+% Use the visibility map to estimate the total visible area
+s = seenArea(earModel, seenMap);
 end
