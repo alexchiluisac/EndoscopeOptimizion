@@ -1,4 +1,4 @@
-function s = visibleSurface(alpha)
+function v = reachablevolume(alpha)
 %% Continuum robot optimization for a cavity exploration task
 % add dependencies
 addpath('kinematics')
@@ -35,19 +35,19 @@ cutouts.alpha = [0 0 alpha 0];
 robot = Wrist(1.6, 1.85, 4, cutouts);
 
 % Run RRT to estimate the reachable workspace of the robot
-nPoints = 100;
+nPoints = 50;
 
-[~,~,pList,aList] = rrt(robot, ...
+[qListNormalized,qList,pList,aList] = rrt(robot, ...
     [maxDisplacement maxRotation maxAdvancement], ...
     earModel, ...
     nPoints);
 
 
 % Estimate the reachable workspace
-%shrinkFactor = 1;
-%[k,v] = boundary(pList(1,:)', pList(2,:)', pList(3,:)', shrinkFactor);
+shrinkFactor = 1;
+[k,v] = boundary(pList(1,:)', pList(2,:)', pList(3,:)', shrinkFactor);
 
-%disp(['Reachable volume: ' num2str(v) ' mm3']);
+disp(['Reachable volume: ' num2str(v) ' mm3']);
 
 % Re-load the cavity model (a finer mesh this time)
 path = fullfile('..', 'anatomical-models', 'synthetic-model-finer.stl');
@@ -56,31 +56,31 @@ earModel.vertices = vertices;
 earModel.faces = faces;
 
 % Visualize the visual range for each pose of the robot
-for ii = 1 : size(pList, 2)
-    seenMap = visiblesurface(pList(:,ii), aList(:,ii), earModel);
-    robotPhysicalModel = robot.makePhysicalModel(qList(:,ii), T);
-    
-    
-    
-    if ii == 1
-        h1 = stlPlot(earModel.vertices, earModel.faces, 'Visual Range (FOV: 90 degrees)', seenMap);
-        hold on
-        
-        h2 = surf(robotPhysicalModel.surface.X, ...
-            robotPhysicalModel.surface.Y, ...
-            robotPhysicalModel.surface.Z, ...
-            'FaceColor','blue');
-        
-            axis equal
-    else
-        colorMap = ones(length(vertices), 1);
-        colorMap(logical(seenMap)) = 5;
-        h1.FaceVertexCData = colorMap;
-        
-        h2.XData = robotPhysicalModel.surface.X;
-        h2.YData = robotPhysicalModel.surface.Y;
-        h2.ZData = robotPhysicalModel.surface.Z;
-    end
+% for ii = 1 : size(pList, 2)
+%     seenMap = visiblesurface(pList(:,ii), aList(:,ii), earModel);
+%     robotPhysicalModel = robot.makePhysicalModel(qList(:,ii), T);
+%     
+%     
+%     
+%     if ii == 1
+%         h1 = stlPlot(earModel.vertices, earModel.faces, 'Visual Range (FOV: 90 degrees)', seenMap);
+%         hold on
+%         
+%         h2 = surf(robotPhysicalModel.surface.X, ...
+%             robotPhysicalModel.surface.Y, ...
+%             robotPhysicalModel.surface.Z, ...
+%             'FaceColor','blue');
+%         
+%             axis equal
+%     else
+%         colorMap = ones(length(vertices), 1);
+%         colorMap(logical(seenMap)) = 5;
+%         h1.FaceVertexCData = colorMap;
+%         
+%         h2.XData = robotPhysicalModel.surface.X;
+%         h2.YData = robotPhysicalModel.surface.Y;
+%         h2.ZData = robotPhysicalModel.surface.Z;
+%     end
 %     
 %     while true
 %         disp('Press any key to continue.');
@@ -92,7 +92,7 @@ for ii = 1 : size(pList, 2)
 %                    % wait
 %         end
 %     end
-end
+%  end
 
 
 end

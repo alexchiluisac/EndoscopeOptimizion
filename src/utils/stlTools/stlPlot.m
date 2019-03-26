@@ -4,7 +4,7 @@ function h = stlPlot(v, f, name, seenMap)
 %F is the Mx3 array of faces
 %NAME is the name of the object, that will be displayed as a title
 
-figure, hold on
+%figure, hold on
 object.vertices = v;
 object.faces = f;
 

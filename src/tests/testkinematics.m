@@ -1,4 +1,4 @@
-%% Robot endoscope features.
+%% Script to test the robot kinematics
 clc, clear, close all
 addpath('kinematics')
 addpath('path-planning')
