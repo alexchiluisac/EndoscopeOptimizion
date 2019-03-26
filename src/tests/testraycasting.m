@@ -11,7 +11,8 @@ pause
 
 % add dependencies
 addpath('../kinematics')
-addpath('../path-planning')
+addpath('../path-planning')`
+addpath('../utils')
 addpath('../utils/ray-casting')
 addpath('../utils/stlTools')
 addpath('../utils/visibility')
