@@ -91,7 +91,7 @@ while true
     
     fprintf(['Seen area: ' num2str(seenArea(earModel, seenMap)) ' mm2.\n']);
     fprintf('Press "n" to move forward or "p" to move back.\n')
-    fprintf('Press any other key to stop testing and generate the reachable workspace.\n\n')
+    fprintf('Press any other key to exit.\n\n')
     
     while ~waitforbuttonpress, end
     k = get(gcf, 'CurrentCharacter');
