@@ -1,4 +1,4 @@
-function s = visiblesurface(alpha)
+function [s, seenMap] = visiblesurface(alpha)
 
 % define the robot's range of motion
 maxDisplacement = 1; % [mm]
@@ -20,12 +20,12 @@ earModel.baseTransform = T;
 % Create a robot
 %alpha = 0;
 cutouts = [];
-cutouts.w = [1 1 1 1];
-cutouts.u = [1 1 1 1];
-cutouts.h = [1 1 1 1];
-cutouts.alpha = [0 0 alpha 0];
+cutouts.w = [1 1 1 1 1 1];
+cutouts.u = [1 1 1 1 1 1];
+cutouts.h = [1 1 1 1 1 1];
+cutouts.alpha = [0 0 0 alpha 0 0];
 
-robot = Wrist(1.6, 1.85, 4, cutouts);
+robot = Wrist(1.6, 1.85, 6, cutouts);
 
 % Run RRT to estimate the reachable workspace of the robot
 nPoints = 100;
@@ -42,12 +42,13 @@ earModel.vertices = vertices;
 earModel.faces = faces;
 
 % Calculate the visibility map
-seenMap = zeros(1, size(earModel.vertices, 1));
+seenMap = zeros(size(pList, 2), size(earModel.faces, 1));
 
-for ii = 1 : size(pList, 2)
-    seenMap = seenMap + estimatevisiblesurface(pList(:,ii), aList(:,ii), earModel);
+parfor ii = 1 : size(pList, 2)
+    seenMap(ii,:) = visibilitymap(pList(:,ii), aList(:,ii), earModel);
 end
 
+seenMap = sum(seenMap, 1);
 seenMap(seenMap > 1) = 1;
 
 % Use the visibility map to estimate the total visible area
