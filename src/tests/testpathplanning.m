@@ -13,6 +13,8 @@ pause
 
 % add dependencies
 addpath('../kinematics')
+addpath('../utils')
+addpath('../utils/stlTools')
 addpath('../path-planning')
 addpath('../../anatomical-models')
 
