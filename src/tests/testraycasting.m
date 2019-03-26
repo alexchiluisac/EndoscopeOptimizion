@@ -11,7 +11,7 @@ pause
 
 % add dependencies
 addpath('../kinematics')
-addpath('../path-planning')`
+addpath('../path-planning')
 addpath('../utils')
 addpath('../utils/ray-casting')
 addpath('../utils/stlTools')
@@ -76,12 +76,11 @@ h2 = surf(robotPhysicalModel.surface.X, ...
 
 axis equal
 
-%for ii = 1 : size(pList, 2)
 while true
     seenMap = visibilitymap(pList(:,ii), aList(:,ii), earModel);
     robotPhysicalModel = robot.makePhysicalModel(qList(:,ii), T);
     
-    colorMap = ones(length(vertices), 1);
+    colorMap = ones(length(h1.FaceVertexCData), 1);
     colorMap(logical(seenMap)) = 5;
     h1.FaceVertexCData = colorMap;
     
@@ -90,6 +89,7 @@ while true
     h2.ZData = robotPhysicalModel.surface.Z;
     title(['Pose ' num2str(ii) ' of ' num2str(size(pList, 2))]);
     
+    fprintf(['Seen area: ' num2str(seenArea(earModel, seenMap)) ' mm2.\n']);
     fprintf('Press "n" to move forward or "p" to move back.\n')
     fprintf('Press any other key to stop testing and generate the reachable workspace.\n\n')
     

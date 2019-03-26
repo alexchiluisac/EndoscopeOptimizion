@@ -1,4 +1,4 @@
-function seenMap = visibilitymap(viewPoint, approachVec, anatomyModel)
+function seenFaces = visibilitymap(viewPoint, approachVec, anatomyModel)
 %% WE'LL WRITE THE DOCUMENTATION LATER
 %  03/14/2019 still no documentation, dammit
 
@@ -21,6 +21,12 @@ function seenMap = visibilitymap(viewPoint, approachVec, anatomyModel)
   % See what rays fall within the "field of view" of the camera
   product = sum(approachVecRep .* raysu);
   FOV =  120 * pi / 180;
-  seenMap = (product > cos(FOV / 2));
-  seenMap = visualrange(viewPoint, vertices, double(seenMap), faces-1);
+  seenVertices = (product > cos(FOV / 2));
+  seenVertices = visualrange(viewPoint, vertices, double(seenVertices), faces-1);
+  
+  seenFaces = seenVertices(faces);
+  seenFaces = sum(seenFaces, 1);
+  seenFaces(seenFaces < 3) = 0;
+  seenFaces(seenFaces == 3) = 1;
+  
 end
