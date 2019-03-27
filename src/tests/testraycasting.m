@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 50;
+nPoints = 1000;
 
 fprintf('*** Ray Casting test ***\n')
 fprintf('This script uses a ray-casting algorithm to estimate the visual range of our robot.\n')
@@ -21,7 +21,7 @@ addpath('../../anatomical-models')
 
 % define the robot's range of motion
 maxfprintflacement = 1; % [mm]
-maxRotation     = 2*pi; % [rad]
+maxRotation     = 4*pi; % [rad]
 maxAdvancement  = 10; % [mm]
 
 % Load cavity model
@@ -31,13 +31,13 @@ earModel.vertices = vertices;
 earModel.faces = faces;
 
 % Calculate the base transform for the robot
-t = [30 8 10];
+t = [35 10 10];
 R = [0 0 -1; 0 1 0; 1 0 0];
 T = [R t'; 0 0 0 1];
 earModel.baseTransform = T;
 
 % Create a robot
-alpha = pi;
+alpha = 0;
 cutouts = [];
 cutouts.w = [1 1 1 1 1 1];
 cutouts.u = [1 1 1 1 1 1];
@@ -102,6 +102,12 @@ while true
             if ii < 1, ii = 1; end
         case 'n'
             ii = ii + 1;
+            if ii > size(pList, 2), ii = size(pList, 2); end
+        case '-'
+            ii = ii + 10;
+            if ii < 1, ii = 1; end
+        case '+'
+            ii = ii + 10;
             if ii > size(pList, 2), ii = size(pList, 2); end
         otherwise
             break

@@ -1,14 +1,30 @@
-alpha = 0:pi/4:pi;
+addpath('cost-functions');
+
+alpha = [0 pi];
+
 v = zeros(1,length(alpha));
+seenMaps = {};
 
-parfor i = 1:length(alpha)
-
-    v(i) = testModel(alpha);
-    
+parfor i = 1 : length(alpha)
+    [v(i), seenMaps{i}] = visiblesurface(alpha(i));
 end
 
-scatter(alpha,v,20,'filled');
+figure
+scatter(alpha, v, 20, 'filled');
 xlabel('alpha[rad]');
-ylabel('Reachable Volume[mm^3]');
+ylabel('Visible Surface[mm^2]');
+ylim([0 max(v)]);
 grid on
-axis tight
+
+figure
+path = fullfile('..', 'anatomical-models', 'synthetic-model-finer.stl');
+[vertices, faces, ~, ~] = stlRead(path);
+earModel.vertices = vertices;
+earModel.faces = faces;
+
+subplot(1,2,1);
+
+for ii = 1 : 2
+   subplot(1,2,ii);
+   stlPlot(earModel.vertices, earModel.faces, num2str(alpha(ii)), seenMaps{ii});
+end
