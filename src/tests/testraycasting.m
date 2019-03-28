@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 1000;
+nPoints = 100;
 
 fprintf('*** Ray Casting test ***\n')
 fprintf('This script uses a ray-casting algorithm to estimate the visual range of our robot.\n')

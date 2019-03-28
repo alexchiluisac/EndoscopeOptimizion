@@ -1,6 +1,7 @@
 addpath('cost-functions');
 
-alpha = [0 pi];
+%alpha = [0 pi];
+alpha = pi;
 
 v = zeros(1,length(alpha));
 seenMaps = {};
@@ -17,14 +18,16 @@ ylim([0 max(v)]);
 grid on
 
 figure
-path = fullfile('..', 'anatomical-models', 'synthetic-model-finer.stl');
+path = fullfile('..', 'anatomical-models', 'synthetic-model-finer-cropped.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
 
-subplot(1,2,1);
+stlPlot(earModel.vertices, earModel.faces, num2str(alpha(1)), seenMaps{1});
 
-for ii = 1 : 2
-   subplot(1,2,ii);
-   stlPlot(earModel.vertices, earModel.faces, num2str(alpha(ii)), seenMaps{ii});
-end
+% subplot(1,2,1);
+% 
+% for ii = 1 : 1
+%    subplot(1,2,ii);
+%    stlPlot(earModel.vertices, earModel.faces, num2str(alpha(ii)), seenMaps{ii});
+% end

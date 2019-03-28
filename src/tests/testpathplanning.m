@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 500;
+nPoints = 100;
 
 fprintf('*** RRT and estimation of reachable workspace test ***\n')
 fprintf('This script is divided in two parts:\n')

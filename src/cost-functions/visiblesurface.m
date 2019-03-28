@@ -2,7 +2,7 @@ function [s, seenMap] = visiblesurface(alpha)
 
 % define the robot's range of motion
 maxDisplacement = 1; % [mm]
-maxRotation     = 2*pi; % [rad]
+maxRotation     = 4 * pi; % [rad]
 maxAdvancement  = 10; % [mm]
 
 % Load cavity model
@@ -11,8 +11,11 @@ path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
 earModel.vertices = vertices;
 earModel.faces = faces;
 
+% Load segmentation
+load(fullfile('..', 'anatomical-models', 'mesegmentation.mat'), 'ROImap');
+
 % Calculate the base transform for the robot
-t = [30 8 10];
+t = [35 10 10];
 R = [0 0 -1; 0 1 0; 1 0 0];
 T = [R t'; 0 0 0 1];
 earModel.baseTransform = T;
@@ -36,7 +39,7 @@ nPoints = 100;
     nPoints);
 
 % Re-load the cavity model (a finer mesh this time)
-path = fullfile('..', 'anatomical-models', 'synthetic-model-finer.stl');
+path = fullfile('..', 'anatomical-models', 'synthetic-model-finer-cropped.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
@@ -50,6 +53,8 @@ end
 
 seenMap = sum(seenMap, 1);
 seenMap(seenMap > 1) = 1;
+
+seenMap = seenMap & ROImap;
 
 % Use the visibility map to estimate the total visible area
 s = seenArea(earModel, seenMap);
