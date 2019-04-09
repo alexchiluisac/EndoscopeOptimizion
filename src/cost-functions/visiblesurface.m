@@ -31,7 +31,7 @@ cutouts.alpha = [0 0 0 alpha 0 0];
 robot = Wrist(1.6, 1.85, 6, cutouts);
 
 % Run RRT to estimate the reachable workspace of the robot
-nPoints = 10000;
+nPoints = 100;
 
 [~,qList,pList,aList] = rrt(robot, ...
     [maxDisplacement maxRotation maxAdvancement], ...
@@ -47,7 +47,7 @@ earModel.faces = faces;
 % Calculate the visibility map
 seenMap = zeros(size(pList, 2), size(earModel.faces, 1));
 
-parfor ii = 1 : size(pList, 2)
+for ii = 1 : size(pList, 2)
     seenMap(ii,:) = visibilitymap(pList(:,ii), aList(:,ii), earModel);
 end
 
@@ -57,5 +57,9 @@ seenMap(seenMap > 1) = 1;
 seenMap = seenMap & ROImap;
 
 % Use the visibility map to estimate the total visible area
-s = seenArea(earModel, seenMap);
+% s = seenArea(earModel, seenMap);
+
+visibleRatio = seenMap/ROImap; % must be 0<= visibleratio <=1
+s = 1-visibleRatio;
+
 end

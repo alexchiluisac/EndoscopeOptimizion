@@ -1,3 +1,5 @@
+addpath('utils/stlTools/')
+
 path = fullfile('..', 'anatomical-models', 'synthetic-model-finer-cropped.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;

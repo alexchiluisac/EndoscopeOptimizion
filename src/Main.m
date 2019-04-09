@@ -1,5 +1,8 @@
 %% Main optimization routine
 clc; close all; clear all;
+addpath('cost-functions')
+addpath('utils/visibility/')
+
 % alpha = input('Ingress the angle value [rad]: ');
 % x1 = -20:0.5:20;
 % x2 = -20:0.5:20;
@@ -14,7 +17,9 @@ clc; close all; clear all;
 % alpha = 0;
 % estimateVolume = testModel(alpha)
 
-ObjectiveFunction = @reachablevolume;
-alpha0 = 0;   % Starting point
+ObjectiveFunction = @visiblesurface;
+alpha0 = 0 ;   % Starting point
+lb = 0;
+ub = pi;
 rng default % For reproducibility
-[x,fval,exitFlag,output] = simulannealbnd(ObjectiveFunction,alpha0)
+[x,fval,exitFlag,output] = simulannealbnd(ObjectiveFunction,alpha0,lb,ub)
