@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 100;
+nPoints = 1000;
 
 fprintf('*** RRT and estimation of reachable workspace test ***\n')
 fprintf('This script is divided in two parts:\n')
@@ -32,7 +32,7 @@ earModel.vertices = vertices;
 earModel.faces = faces;
 
 % Calculate the base transform for the robot
-t = [30 8 10];
+t = [35 10 10];
 R = [0 0 -1; 0 1 0; 1 0 0];
 T = [R t'; 0 0 0 1];
 earModel.baseTransform = T;

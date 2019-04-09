@@ -31,7 +31,7 @@ cutouts.alpha = [0 0 0 alpha 0 0];
 robot = Wrist(1.6, 1.85, 6, cutouts);
 
 % Run RRT to estimate the reachable workspace of the robot
-nPoints = 100;
+nPoints = 10000;
 
 [~,qList,pList,aList] = rrt(robot, ...
     [maxDisplacement maxRotation maxAdvancement], ...

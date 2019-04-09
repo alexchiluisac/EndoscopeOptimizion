@@ -1,9 +1,8 @@
 addpath('cost-functions');
 
-%alpha = [0 pi];
-alpha = pi;
+alpha = 0:pi/4:pi;
 
-v = zeros(1,length(alpha));
+v = zeros(1, length(alpha));
 seenMaps = {};
 
 parfor i = 1 : length(alpha)
@@ -11,8 +10,8 @@ parfor i = 1 : length(alpha)
 end
 
 figure
-scatter(alpha, v, 20, 'filled');
-xlabel('alpha[rad]');
+scatter(alpha*180/pi, v, 20, 'filled');
+xlabel('alpha[degrees]');
 ylabel('Visible Surface[mm^2]');
 ylim([0 max(v)]);
 grid on
@@ -23,11 +22,9 @@ path = fullfile('..', 'anatomical-models', 'synthetic-model-finer-cropped.stl');
 earModel.vertices = vertices;
 earModel.faces = faces;
 
-stlPlot(earModel.vertices, earModel.faces, num2str(alpha(1)), seenMaps{1});
-
-% subplot(1,2,1);
-% 
-% for ii = 1 : 1
-%    subplot(1,2,ii);
-%    stlPlot(earModel.vertices, earModel.faces, num2str(alpha(ii)), seenMaps{ii});
-% end
+ subplot(3,2,1);
+ 
+ for ii = 1 : length(alpha)
+   subplot(3,2,ii);
+   stlPlot(earModel.vertices, earModel.faces, num2str(alpha(ii)), seenMaps{ii});
+end

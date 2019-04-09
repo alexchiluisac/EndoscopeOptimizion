@@ -12,7 +12,7 @@ for ii = 1 : length(faces)
         p = face(jj);
         vertex = vertices(p,:);
         
-        if vertex(1) > 20 || vertex(3) > 5.5
+        if vertex(1) > 20 || vertex(3) > 5.5 || vertex(3) < 4
             ROImap(ii) = 0;
             break;
         end
