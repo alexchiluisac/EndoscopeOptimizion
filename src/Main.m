@@ -1,6 +1,7 @@
 %% Main optimization routine
 clc; close all; clear all;
 addpath('cost-functions')
+addpath('utils')
 addpath('utils/stlTools/')
 addpath('utils/visibility/')
 addpath('kinematics')
