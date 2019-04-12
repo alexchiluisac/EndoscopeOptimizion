@@ -1,7 +1,11 @@
 %% Main optimization routine
 clc; close all; clear all;
 addpath('cost-functions')
+addpath('utils/stlTools/')
 addpath('utils/visibility/')
+addpath('kinematics')
+addpath('path-planning')
+addpath('utils/ray-casting/')
 
 % alpha = input('Ingress the angle value [rad]: ');
 % x1 = -20:0.5:20;
