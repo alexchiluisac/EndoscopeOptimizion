@@ -22,4 +22,6 @@ alpha0 = 0 ;   % Starting point
 lb = 0;
 ub = pi;
 rng default % For reproducibility
-[x,fval,exitFlag,output] = simulannealbnd(ObjectiveFunction,alpha0,lb,ub)
+options = optimoptions('simulannealbnd', 'PlotFcn', ...
+    {@saplotbestx, @saplotbestf, @saplotx, @saplotf});
+[x,fval,exitFlag,output] = simulannealbnd(ObjectiveFunction,alpha0,lb,ub,options)
