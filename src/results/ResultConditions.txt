@@ -1,0 +1,35 @@
+SimulatedAnnealing1:
+
+alpha0 = pi/2 ;   % Starting point
+lb = pi/2;
+ub = pi;
+--------------------------------------------------------------------------------------------
+Optimization terminated: change in best function value less than options.FunctionTolerance.
+
+x =
+
+    1.7923
+
+
+fval =
+
+    0.3307
+
+
+exitFlag =
+
+     1
+
+
+output = 
+
+  struct with fields:
+
+     iterations: 994
+      funccount: 995
+        message: 'Optimization terminated: change in best function value less than options.FunctionTolerance.'
+       rngstate: [1×1 struct]
+    problemtype: 'boundconstraints'
+    temperature: 2.2204e-16
+      totaltime: 2.7048e+04
+
