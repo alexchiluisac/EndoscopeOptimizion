@@ -1,9 +1,14 @@
-SimulatedAnnealing1:
+RESULT
+******************************************************************************************************************************************
 
-alpha0 = pi/2 ;   % Starting point
-lb = pi/2;
-ub = pi;
+SimulatedAnnealing1:
+ - Conditions:
+   alpha0 = pi/2 ;   % Starting point
+   lb = pi/2;
+   ub = pi;
+   nPoints = 500
 --------------------------------------------------------------------------------------------
+ - Results:
 Optimization terminated: change in best function value less than options.FunctionTolerance.
 
 x =
@@ -33,3 +38,41 @@ output =
     temperature: 2.2204e-16
       totaltime: 2.7048e+04
 
+******************************************************************************************************************************************
+
+simulated annealing2
+ - Conditions:
+   alpha0 = 0 ;   % Starting point
+   lb = 0;
+   ub = pi;
+   nPoints= 500
+--------------------------------------------------------------------------------------------
+ - Results:
+Optimization terminated: change in best function value less than options.FunctionTolerance.
+
+x =
+
+    2.8169
+
+
+fval =
+
+    0.0672
+
+
+exitFlag =
+
+     1
+
+
+output = 
+
+  struct with fields:
+
+     iterations: 628
+      funccount: 629
+        message: 'Optimization terminated: change in best function value less than options.FunctionTolerance.'
+       rngstate: [1×1 struct]
+    problemtype: 'boundconstraints'
+    temperature: 9.7308e-13
+      totaltime: 1.1308e+05
