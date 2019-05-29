@@ -58,6 +58,7 @@ classdef appController < handle
             end
         end
         
+        
         % Update the gui of the app window
         function updateGUI(self)
             % TODO: replicate the draw function
