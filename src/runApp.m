@@ -3,6 +3,7 @@
 % COgnitive MEdical Technology and Robotics Laboratory (COMET Robotics Lab)
 % Worcester Polytechnic Institute
 
+%% Program Configuration
 % Close all previous windows and add folders, sub-folders to path
 clc; close all; clear all;
 addpath(".");
@@ -17,24 +18,18 @@ addpath('gui');
 addpath('gui/images');
 
 pause('on');
-app = NotchedDesigner();
-var = 0.7;
-back = 0;
-while ~app.stopFlag
-    disp(var);
-    if back
-        var = var - 0.1;
-    else
-        var = var + 0.1;
-    end
-    
-    if var > 1.7
-        back = 1;
-    elseif var < 0.7
-        back = 0;
-    end
-    showRobot(app, var);
-    pause(0.2);
-end
 
-disp("Stopped");
+%% Robot Settings
+
+% Defining cut-outs
+cutouts.w = [1 1 1 1];
+cutouts.u = [1 1 1 1];
+cutouts.h = [1 1 1 1];
+cutouts.alpha = [0 0 pi/2 0];
+controller = appController(1.65, 1.85, 4, cutouts);
+
+%% Execution
+while ~controller.app.stopFlag
+    controller.update();
+    pause(0.1);
+end

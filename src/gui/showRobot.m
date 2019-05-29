@@ -8,9 +8,9 @@ function showRobot(app, var)
     cutouts.h = [1 1 1 1];
     cutouts.alpha = [0 0 pi 0];
 
-    configuration = [0.6, 0, 2];
+    configuration = [var, 0, 2];
 
-    robot = Wrist(var, 1.85, 4, cutouts);
+    robot = Wrist(1.65, 1.85, 4, cutouts);
     [P, T] = robot.fwkine(configuration, eye(4));
 
     X = P(1,:);
@@ -29,7 +29,7 @@ function showRobot(app, var)
     X = robotModel.surface.X;
     Y = robotModel.surface.Y;
     Z = robotModel.surface.Z;
-    surf(app.PlotAxes, X, Y, Z, 'FaceColor','green');
-    app.PlotAxes.View = [-135 35];
+    surf(app.PlotAxes, X, Y, Z, 'FaceColor','g');
+    % app.PlotAxes.View = [-135 35];
 end
 

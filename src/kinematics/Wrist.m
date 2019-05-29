@@ -1,4 +1,4 @@
-classdef Wrist % !FIXME this should be a subclass of Robot
+classdef Wrist < handle % !FIXME this should be a subclass of Robot
     % WRIST This class encapsulates the design parameters of a
     % notched-tube wrist.
     %
@@ -103,6 +103,11 @@ classdef Wrist % !FIXME this should be a subclass of Robot
                 if t_displ > deltal_max(ii)
                     disp('Warning. Tendon displacement runs over hard stop.');
                     disp(deltal_max * 1000);
+                    
+                    msgID = 'WRIST:TENDON_ERR';
+                    msg = 'Tendon displacement runs over hard stop.';
+                    tendonStop = MException(msgID, msg);
+                    throw(tendonStop);
                 end
                 
                 % Get kappa of single cutout
