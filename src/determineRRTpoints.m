@@ -18,7 +18,7 @@ maxRotation     = 2*pi; % [rad]
 maxAdvancement  = 10; % [mm]
 
 % Load cavity model
-path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
+path = fullfile('anatomical-models', 'synthetic-model.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
@@ -40,7 +40,7 @@ cutouts.alpha = [0 0 0 alpha 0 0];
 robot = Wrist(1.6, 1.85, 4, cutouts);
 
 % Run RRT to estimate the reachable workspace of the robot
-nPoints = [50 50 50 50 50 50];
+nPoints = [100 100 100 100 100 100];
 
 % Initialize data variables to store the results
 reachableWorkspace = {};
