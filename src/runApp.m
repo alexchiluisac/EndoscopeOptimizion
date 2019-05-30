@@ -16,7 +16,9 @@ addpath('path-planning');
 addpath('utils/ray-casting/');
 addpath('gui');
 addpath('gui/images');
-
+addpath('+arduinoaddons');
+addpath('+arduinoaddons/+Nunchuk');
+addpath('+arduinoaddons/+Nunchuk/src');
 pause('on');
 
 %% Robot Settings
