@@ -3,12 +3,13 @@ classdef appController < handle
     %   Detailed explanation goes here
     
     properties
-        wrist;          % Currently loaded wrist object
-        configuration;  % Configuration of the wrist
-                         % Three-element array
-                         % [displacement, rotation, advancement]
-        app;            % The front-end app
-        error;          % Error flag
+        wrist;              % Currently loaded wrist object
+        configuration;      % Configuration of the wrist
+                                % Three-element array
+                                % [displacement, rotation, advancement]
+        app;                % The front-end app
+        error;              % Error flag
+        arduinoControl   % Arduino Controller object
     end
     
     methods
@@ -24,14 +25,23 @@ classdef appController < handle
             
             % Robot configuration
             self.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement];
+            
+            % Arduino controller
+            self.arduinoControl = arduinoController();
         end
         
         % The main update function
         function update(self)
             %% Updating values
             self.error = 0;
-            self.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement]
             
+            % KEYBOARD CONTROL
+            % self.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement]
+            
+            self.arduinoControl.updateValues();
+            self.configuration = self.configuration + [self.arduinoControl.joyX, self.arduinoControl.joyY, 0];
+            
+            fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
             %% Draw
             
             % Clear the current axes
