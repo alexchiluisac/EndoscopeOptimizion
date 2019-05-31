@@ -35,13 +35,19 @@ classdef appController < handle
             %% Updating values
             self.error = 0;
             
+            %% CONTROL METHODS
             % KEYBOARD CONTROL
             % self.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement]
             
-            self.arduinoControl.updateValues();
-            self.configuration = self.configuration + [self.arduinoControl.joyX, self.arduinoControl.joyY, 0];
+            % JOYSTICK CONTROL
+            % self.arduinoControl.updateValues();
+            % self.configuration = self.configuration + [self.arduinoControl.joyX, self.arduinoControl.joyY, 0];
             
-            fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
+            % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
+            
+            self.arduinoControl.updateNunchukValues();
+            fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
+            self.configuration = self.configuration + [self.arduinoControl.zdir, self.arduinoControl.joyX, self.arduinoControl.joyY];
             %% Draw
             
             % Clear the current axes

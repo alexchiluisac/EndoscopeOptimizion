@@ -21,6 +21,16 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
         Pins = {'A4','A5'};
     end
     
+    properties(Access = public)
+        analogX;
+        analogY;
+        accelX;
+        accelY;
+        accelZ;
+        buttonZ;
+        buttonC;
+    end
+    
     methods(Hidden, Access = public)
         function self = NunchukAddon(parentObject)
             %NUNCHUKADDON Construct an instance of this class
@@ -68,20 +78,21 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
            disp("Calling Init");
            sendCommand(self, self.LibraryName, cmdID, []);
         end
-        function update(self)
+        function nunchukResults = update(self)
             cmdID = self.NUNCHUK_UPDATE;
             
             out = sendCommand(self, self.LibraryName, cmdID, []);
-            analogX = 256 * out(1) + out(2);
-            analogY = 256 * out(3) + out(4);
-            accelX = 256 * out(5) + out(6);
-            accelY = 256 * out(7) + out(8);
-            accelZ = 256 * out(9) + out(10);
-            buttonZ = out(11);
-            buttonC = out(12);
-            fprintf("|joyX: %d | joyY: %d | Ax: %d | Ay: %d | Az: %d | bZ: %d | bC: %d | \n", analogX, analogY, accelX, accelY, accelZ, buttonZ, buttonC);  
+            self.analogX = 256 * out(1) + out(2);
+            self.analogY = 256 * out(3) + out(4);
+            self.accelX = 256 * out(5) + out(6);
+            self.accelY = 256 * out(7) + out(8);
+            self.accelZ = 256 * out(9) + out(10);
+            self.buttonZ = out(11);
+            self.buttonC = out(12);
+            % fprintf("|joyX: %d | joyY: %d | Ax: %d | Ay: %d | Az: %d | bZ: %d | bC: %d | \n", self.analogX, self.analogY, self.accelX, self.accelY, self.accelZ, self.buttonZ, self.buttonC);  
             
-            disp(out);
+            nunchukResults = [self.analogX self.analogY self.accelX self.accelY self.accelZ self.buttonZ self.buttonC];
+            
         end
     end
 end
