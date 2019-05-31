@@ -71,7 +71,17 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
         function update(self)
             cmdID = self.NUNCHUK_UPDATE;
             
-            sendCommand(self, self.LibraryName, cmdID, []);
+            out = sendCommand(self, self.LibraryName, cmdID, []);
+            analogX = 256 * out(1) + out(2);
+            analogY = 256 * out(3) + out(4);
+            accelX = 256 * out(5) + out(6);
+            accelY = 256 * out(7) + out(8);
+            accelZ = 256 * out(9) + out(10);
+            buttonZ = out(11);
+            buttonC = out(12);
+            fprintf("|joyX: %d | joyY: %d | Ax: %d | Ay: %d | Az: %d | bZ: %d | bC: %d | \n", analogX, analogY, accelX, accelY, accelZ, buttonZ, buttonC);  
+            
+            disp(out);
         end
     end
 end

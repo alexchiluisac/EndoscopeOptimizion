@@ -14,10 +14,22 @@ const char MSG_CREATE_ERROR_NUNCHUCK[]            PROGMEM = "Could not create Nu
 #define NUNCHUK_CREATE            0x00
 #define NUNCHUK_UPDATE            0x01
 #define NUNCHUK_INIT              0x02
+
+union {
+    float fval;
+    byte bval[4];
+} floatAsBytes;
+
 class Nunchuk: public LibraryBase {
 public:
   ArduinoNunchuk *nunchuk;
-
+  uint16_t analogX;
+  uint16_t analogY;
+  uint16_t accelX;
+  uint16_t accelY;
+  uint16_t accelZ;
+  char zButton;
+  char cButton;
 public:
   Nunchuk(MWArduinoClass& a) {
     libName = "Nunchuk/Nunchuk";
@@ -42,7 +54,8 @@ public:
       case NUNCHUK_UPDATE:
       {
         nunchukUpdate();
-        sendResponseMsg(cmdID, 0, 0);
+        byte results[12] = {highByte(analogX), lowByte(analogX), highByte(analogY), lowByte(analogY), highByte(accelX), lowByte(accelX), highByte(accelY), lowByte(accelY), highByte(accelZ), lowByte(accelZ), zButton, cButton};
+        sendResponseMsg(cmdID, results, 12);
         break;
       }
       default:
@@ -61,6 +74,13 @@ public:
 
   void nunchukUpdate() {
     nunchuk -> update();
+    analogX = nunchuk->analogX;
+    analogY = nunchuk->analogY;
+    accelX = nunchuk->accelX;
+    accelY = nunchuk->accelY;
+    accelZ = nunchuk->accelZ;
+    zButton = nunchuk->zButton;
+    cButton = nunchuk->cButton;
     debugPrint(MSG_UPDATE_NUNCHUCK);
   }
 
