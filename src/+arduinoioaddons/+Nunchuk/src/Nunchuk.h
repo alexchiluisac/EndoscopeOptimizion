@@ -1,26 +1,26 @@
-#include "ArduinoNunchuk.h";
 #include "LibraryBase.h"
+#include <ArduinoNunchuk.h>
 
 // Nunchuk Methods
-const char MSG_CREATE_NUNCHUCK[]            PROGMEM = "Arduino::nunchuk = ArduinoNunchuk();";
+const char MSG_CREATE_NUNCHUCK[]            PROGMEM = "Arduino::nunchuk = new ArduinoNunchuk();";
 const char MSG_UPDATE_NUNCHUCK[]            PROGMEM = "Arduino::nunchuk->update();";
-const char MSG_SENDBYTE_NUNCHUCK[]          PROGMEM = "Arduino::nunchuk->_sendByte(%hhx, %hhx);"
+const char MSG_INIT_NUNCHUCK[]            PROGMEM = "Arduino::nunchuk->init();";
+
+// TODO delete object
 
 // Errors
 const char MSG_CREATE_ERROR_NUNCHUCK[]            PROGMEM = "Could not create Nunchuk \n";
 
-
-#define NUNCHUK_CREATE            0x00;
-#define NUNCHUK_UPDATE            0x01;
-#define NUNCHUK_SENDBYTE          0x02;
-
-class ArduinoNunchuk: public LibraryBase {
+#define NUNCHUK_CREATE            0x00
+#define NUNCHUK_UPDATE            0x01
+#define NUNCHUK_INIT              0x02
+class Nunchuk: public LibraryBase {
 public:
   ArduinoNunchuk *nunchuk;
 
 public:
-  ArduinoNunchuk(MWArduinoClass& a) {
-    libName = "NunchukAddon";
+  Nunchuk(MWArduinoClass& a) {
+    libName = "Nunchuk/Nunchuk";
     a.registerLibrary(this);
   }
 
@@ -33,15 +33,15 @@ public:
         sendResponseMsg(cmdID, 0, 0);
         break;
       }
-      case NUNCHUK_UPDATE:
+      case NUNCHUK_INIT:
       {
-        nunchukUpdate();
+        nunchukInit();
         sendResponseMsg(cmdID, 0, 0);
         break;
       }
-      case NUNCHUK_SENDBYTE:
+      case NUNCHUK_UPDATE:
       {
-        nunchukSendByte(dataIn[0], dataIn[1]);
+        nunchukUpdate();
         sendResponseMsg(cmdID, 0, 0);
         break;
       }
@@ -64,8 +64,8 @@ public:
     debugPrint(MSG_UPDATE_NUNCHUCK);
   }
 
-  void nunchukSendByte(byte data, byte location) {
-    nunchuk -> _sendByte(data, location);
-    debugPrint(MSG_SENDBYTE_NUNCHUCK);
+  void nunchukInit() {
+    nunchuk -> init();
+    debugPrint(MSG_INIT_NUNCHUCK);
   }
-}
+};

@@ -5,19 +5,20 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
     properties(Access = private, Constant = true)
         NUNCHUK_CREATE = hex2dec('00')
         NUNCHUK_UPDATE = hex2dec('01')
-        NUNCHUK_SENDBYTE = hex2dec('02')
+        NUNCHUK_INIT = hex2dec('02')
     end
     
     properties(Access = protected, Constant = true)
-       LibraryName = 'Nunchuk/NunchukAddon'
-       DependentLibraries = {}
-       LibraryHeaderFiles = 'ArduinoNunchuk/ArduinoNunchuk.h'
-       CppHeaderFile = fullfile(arduinoio.FilePath(mfilename('fullpath')), 'src', 'NunchukAddon.h')
-       CppClassName = 'ArduinoNunchuk'
+        LibraryName = 'Nunchuk/Nunchuk'
+        DependentLibraries = {}
+        LibraryHeaderFiles = 'ArduinoNunchuk/ArduinoNunchuk.h'
+        CppHeaderFile = fullfile(arduinoio.FilePath(mfilename('fullpath')), 'src', 'Nunchuk.h')
+        CppClassName = 'Nunchuk'
     end
     
     properties(Access = private)
-       ResourceOwner = 'Nunchuk/NunchukAddon';
+        ResourceOwner = 'Nunchuk/Nunchuk';
+        Pins = {'A4','A5'};
     end
     
     methods(Hidden, Access = public)
@@ -25,8 +26,16 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
             %NUNCHUKADDON Construct an instance of this class
             %   Detailed explanation goes here
             
+            try
+                p = inputParser;
+                addParameter(p, 'DataPins', []);
+            catch e
+                throwAsCaller(e);
+            end
+            
             self.Parent = parentObject;
-            self.Pins = {'A4','A5'};
+            disp(self.Pins);
+            
             
             count = getResourceCount(self.Parent, self.ResourceOwner);
             
@@ -42,22 +51,27 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
             %   Detailed explanation goes here
             try
                 cmdID = self.NUNCHUK_CREATE;
-
+                
                 configurePinResource(self.Parent, 'A4', self.ResourceOwner,'I2C');
                 configurePinResource(self.Parent, 'A5', self.ResourceOwner,'I2C');
-
+                
                 sendCommand(self, self.LibraryName, cmdID, []);
             catch e
-               throwAsCaller(e); 
+                throwAsCaller(e);
             end
         end
     end
     
     methods(Access = public)
-        function update(self)
-           cmdID = self.NUNCHUK_UPDATE;
-           
+        function init(self)
+           cmdID = self.NUNCHUK_INIT;
+           disp("Calling Init");
            sendCommand(self, self.LibraryName, cmdID, []);
+        end
+        function update(self)
+            cmdID = self.NUNCHUK_UPDATE;
+            
+            sendCommand(self, self.LibraryName, cmdID, []);
         end
     end
 end
