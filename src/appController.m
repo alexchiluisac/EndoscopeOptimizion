@@ -5,11 +5,13 @@ classdef appController < handle
     properties
         wrist;              % Currently loaded wrist object
         configuration;      % Configuration of the wrist
-                                % Three-element array
-                                % [displacement, rotation, advancement]
+        % Three-element array
+        % [displacement, rotation, advancement]
         app;                % The front-end app
         error;              % Error flag
-        arduinoControl   % Arduino Controller object
+        arduinoControl;   % Arduino Controller object
+        
+        initialFlag; % Keep track of first loop
     end
     
     methods
@@ -46,18 +48,46 @@ classdef appController < handle
             % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
             
             self.arduinoControl.updateNunchukValues();
-            fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
             self.configuration = self.configuration + [self.arduinoControl.zdir, self.arduinoControl.joyX, self.arduinoControl.joyY];
-            %% Draw
             
-            % Clear the current axes
-            cla(self.app.PlotAxes);
+            % Debugging -- print configuration change values
+            % fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
+            
+            %% Draw
+            %cla(self.app.PlotAxes);
             
             try
+                %                 if ~self.initialFlag
+                %                     clear(blackLine);
+                %                     clear(redBalls);
+                %                     clear(wristSurface);
+                %                 else
+                %                     self.initialFlag = false;
+                %                 end
+                % disp(self.app.PlotAxes.Children);
                 
-                self.updateGUI();
+                %                 delete(findobj(self.app.PlotAxes.Children.graphics, 'Type','scatter'));
+                %                 delete(findobj(self.app.PlotAxes.Children.graphics, 'Type','Surface'));
+                %                 delete(findobj(self.app.PlotAxes.Children.graphics, 'Type','Plot'));
+                %
+                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
+                if ~isempty(axesHandlesToChildObjects)
+                    delete(axesHandlesToChildObjects);
+                end
+                
+                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
+                if ~isempty(axesHandlesToChildObjects)
+                    delete(axesHandlesToChildObjects);
+                end
+                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
+                if ~isempty(axesHandlesToChildObjects)
+                    delete(axesHandlesToChildObjects);
+                end
+                
+                if ~isempty(self.app.transform)
+                    [blackLine, redBalls, wristSurface] = self.updateGUI();
+                end
             catch ME
-                
                 self.error = 1;
                 
                 msgID = 'CNTRLR:GUIError';
@@ -76,27 +106,29 @@ classdef appController < handle
         
         
         % Update the gui of the app window
-        function updateGUI(self)
+        function [blackLine, redBalls, wristSurface] = updateGUI(self)
             % TODO: replicate the draw function
-            [P, T] = self.wrist.fwkine(self.configuration, eye(4));
-
+            
+            [P, T] = self.wrist.fwkine(self.configuration, self.app.transform);
+            
+            
             X = P(1,:);
             Y = P(2,:);
             Z = P(3,:);
             
             % Draw red circles
-            scatter3(self.app.PlotAxes, X, Y, Z, 100, 'r', 'filled');
-
+            redBalls = scatter3(self.app.PlotAxes, X, Y, Z, 100, 'r', 'filled');
+            
             % Draw black line
-            plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.5);
-
-            robotModel = self.wrist.makePhysicalModel(self.configuration, eye(4));
-
+            blackLine = plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.5);
+            
+            robotModel = self.wrist.makePhysicalModel(self.configuration, self.app.transform);
+            
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;
             Z = robotModel.surface.Z;
             
-            surf(self.app.PlotAxes, X, Y, Z, 'FaceColor','g');
+            wristSurface = surf(self.app.PlotAxes, X, Y, Z, 'FaceColor','g');
             % app.PlotAxes.View = [-135 35];
         end
         

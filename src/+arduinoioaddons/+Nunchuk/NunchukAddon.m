@@ -100,8 +100,8 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
             self.buttonZ = out(11);
             self.buttonC = out(12);
             
-            
-            fprintf("|joyX: %d | joyY: %d | Ax: %d | Ay: %d | Az: %d | bZ: %d | bC: %d | \n", self.analogX, self.analogY, self.accelX, self.accelY, self.accelZ, self.buttonZ, self.buttonC);
+            % Debugging -- Print Raw values
+            % fprintf("|joyX: %d | joyY: %d | Ax: %d | Ay: %d | Az: %d | bZ: %d | bC: %d | \n", self.analogX, self.analogY, self.accelX, self.accelY, self.accelZ, self.buttonZ, self.buttonC);
             
             % Return the values from the update function
             nunchukResults = [self.analogX self.analogY self.accelX self.accelY self.accelZ self.buttonZ self.buttonC];

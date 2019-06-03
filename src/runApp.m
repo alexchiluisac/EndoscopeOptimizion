@@ -5,8 +5,9 @@
 
 %% Program Configuration
 % Close all previous windows and add folders, sub-folders to path
-clc; close all; clear all;
+clc; close all; clear classes;
 addpath(".");
+addpath("../anatomical-models");
 addpath('cost-functions'); 
 addpath('utils');
 addpath('utils/stlTools/');
