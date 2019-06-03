@@ -74,6 +74,9 @@ classdef arduinoController < handle
                 tempY = (tempY - 127) ./ 108;
             end
             
+            % Joystick Function
+            % a(t) = ((50)^t - 1) * 0.025
+            
             % Value must be above threshold to move
             if abs(tempX) > threshold
                 if tempX > 0

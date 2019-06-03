@@ -24,6 +24,7 @@ classdef appController < handle
             
             % The front-end app
             self.app = NotchedDesigner();
+            camlight(self.app.PlotAxes, 'headlight');
             
             % Robot configuration
             self.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement];
@@ -84,9 +85,7 @@ classdef appController < handle
                     delete(axesHandlesToChildObjects);
                 end
                 
-                if ~isempty(self.app.transform)
-                    [blackLine, redBalls, wristSurface] = self.updateGUI();
-                end
+                [blackLine, redBalls, wristSurface] = self.updateGUI();
             catch ME
                 self.error = 1;
                 
@@ -102,6 +101,11 @@ classdef appController < handle
             else
                 self.printDiag('', '');
             end
+            
+            self.app.PlotAxes.XGrid = 'on';
+            self.app.PlotAxes.YGrid = 'on';
+            self.app.PlotAxes.ZGrid = 'on';
+            
         end
         
         
@@ -109,7 +113,11 @@ classdef appController < handle
         function [blackLine, redBalls, wristSurface] = updateGUI(self)
             % TODO: replicate the draw function
             
-            [P, T] = self.wrist.fwkine(self.configuration, self.app.transform);
+            if ~isempty(self.app.transform)
+                [P, T] = self.wrist.fwkine(self.configuration, self.app.transform);
+            else
+                [P, T] = self.wrist.fwkine(self.configuration, eye(4));
+            end
             
             
             X = P(1,:);
@@ -117,19 +125,24 @@ classdef appController < handle
             Z = P(3,:);
             
             % Draw red circles
-            redBalls = scatter3(self.app.PlotAxes, X, Y, Z, 100, 'r', 'filled');
+            redBalls = scatter3(self.app.PlotAxes, X, Y, Z, 50, 'r', 'filled');
             
             % Draw black line
-            blackLine = plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.5);
+            blackLine = plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.0);
             
-            robotModel = self.wrist.makePhysicalModel(self.configuration, self.app.transform);
             
+            if ~isempty(self.app.transform)
+                robotModel = self.wrist.makePhysicalModel(self.configuration, self.app.transform);
+            else
+                robotModel = self.wrist.makePhysicalModel(self.configuration, eye(4));
+            end
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;
             Z = robotModel.surface.Z;
-            
-            wristSurface = surf(self.app.PlotAxes, X, Y, Z, 'FaceColor','g');
-            % app.PlotAxes.View = [-135 35];
+            C = X.*Y.*Z;
+            wristSurface = surf(self.app.PlotAxes, X, Y, Z, C, 'FaceColor', ...
+                'g', 'FaceLighting','gouraud', ...
+                'AmbientStrength',0.5, 'EdgeColor', 'k', 'LineWidth', 0.3);
         end
         
         % Print something in the dialog box of the app

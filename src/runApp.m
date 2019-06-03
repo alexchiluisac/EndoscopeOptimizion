@@ -36,5 +36,5 @@ controller = appController(1.65, 1.85, 4, cutouts);
 % Main loop
 while ~controller.app.stopFlag
     controller.update(); % Update the interface, control values
-    pause(0.1); % Slow-down the looping
+    pause(0.15); % Slow-down the looping
 end
