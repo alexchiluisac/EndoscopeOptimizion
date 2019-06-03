@@ -104,6 +104,8 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
                     disp('Warning. Tendon displacement runs over hard stop.');
                     disp(deltal_max * 1000);
                     
+                    % Throw an error
+                    % Used to interrupt interface drawing
                     msgID = 'WRIST:TENDON_ERR';
                     msg = 'Tendon displacement runs over hard stop.';
                     tendonStop = MException(msgID, msg);

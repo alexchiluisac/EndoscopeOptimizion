@@ -16,10 +16,8 @@ addpath('path-planning');
 addpath('utils/ray-casting/');
 addpath('gui');
 addpath('gui/images');
-addpath('+arduinoaddons');
-addpath('+arduinoaddons/+Nunchuk');
 
-pause('on');
+pause('on'); % Allow for the pausing of the program
 
 %% Robot Settings
 
@@ -28,10 +26,14 @@ cutouts.w = [1 1 1 1];
 cutouts.u = [1 1 1 1];
 cutouts.h = [1 1 1 1];
 cutouts.alpha = [0 0 pi/2 0];
+
+% Create the controller object, start the interface
 controller = appController(1.65, 1.85, 4, cutouts);
 
 %% Execution
+
+% Main loop
 while ~controller.app.stopFlag
-    controller.update();
-    pause(0.1);
+    controller.update(); % Update the interface, control values
+    pause(0.1); % Slow-down the looping
 end

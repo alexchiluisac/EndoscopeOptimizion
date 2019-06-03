@@ -34,11 +34,13 @@ classdef arduinoController < handle
         
         function updateNunchukValues(self)
             threshold = 0.25; % Threshold value to avoid drift of joystick
-            scaleFactor = 0.1; % To reduce the intensity
+            rotScaleFactor = 0.25; % To reduce the intensity of rotation
+            advScaleFactor = 0.25; % To reduce the intensity of advancement
+            tendonScaleFactor = 0.1; % Reduce intensity of tendon pull
             
             results2 = update(self.nunchukAdd);
-            tempX = results2(1);
-            tempY = results2(2);
+            tempX = results2(1); % Store temporary to do more calculations
+            tempY = results2(2); % Store temporary to do more calculations
             self.accX = results2(3);
             self.accY = results2(4);
             self.accZ = results2(5);
@@ -47,8 +49,8 @@ classdef arduinoController < handle
             
             % possible values
             % Joystick
-                % X: 20 - 231
-                % Y: 25 - 230
+                % X: 20 - 231, rest 123 - 125
+                % Y: 25 - 230, rest 127 - 132
             % Accelerometer
                 % X: 0 - 1024
                 % Y: 0 - 1024
@@ -56,21 +58,47 @@ classdef arduinoController < handle
             % Buttons
                 % Z: 0 - 1
                 % C: 0 - 1
-            tempX = (tempX - 105) ./ 105; 
-            tempY = (tempY - 105) ./ 105;
             
+            %% Joystick Values 
+            % Filter out the rest values
+            if tempX <= 125 && tempX >= 123
+               tempX = 0;
+            else 
+               tempX = (tempX - 125) ./ 107; 
+            end
+            
+            % Filter out the rest values
+            if tempY <= 132 && tempY >= 127
+                tempY = 0;
+            else
+                tempY = (tempY - 127) ./ 108;
+            end
+            
+            % Value must be above threshold to move
             if abs(tempX) > threshold
-               self.joyX = tempX .* scaleFactor;
+                if tempX > 0
+                    self.joyX = (((50 .^ (tempX)) - 1) * 0.025) .* rotScaleFactor;
+                else
+                    self.joyX = -(((50 .^ (-tempX)) - 1) * 0.025) .* rotScaleFactor;
+                end
             else
                self.joyX = 0;
             end
             
+            % Value must be above threshold to move
             if abs(tempY) > threshold
-               self.joyY = tempY .* scaleFactor; 
+                
+                if tempY > 0
+                    self.joyY = (((50 .^ (tempY)) - 1) * 0.025) .* advScaleFactor;
+                else
+                    self.joyY = -(((50 .^ (- tempY)) - 1) * 0.025) .* advScaleFactor;
+                end
+                    
             else
                self.joyY = 0;
             end
             
+            %% Tendon Values
             if self.buttonC
                 self.zdir = 1;
             else 
@@ -81,15 +109,14 @@ classdef arduinoController < handle
                 end
             end
             
-            self.zdir = self.zdir * 0.1;
+            self.zdir = self.zdir * tendonScaleFactor;
         end
         
         function updateJoyValues(self)
             %UPDATEVALUES Update the values of the arduino object
             %   Read the joystick and other values and store them in the
-            %   arduino object.
+            %   arduino object. Depricated
             
-
             threshold = 0.1; % Threshold value to avoid drift of joystick
             scaleFactor = 0.1; % To reduce the intensity
             
@@ -113,8 +140,6 @@ classdef arduinoController < handle
             else
                self.joyY = 0;
             end
-            
-            
         end
     end
 end
