@@ -34,7 +34,12 @@ classdef appController < handle
         end
         
         % The main update function
-        function update(self)
+        function update(self, obj, event)
+            %% Check Termination Flag
+            if self.app.stopFlag
+                self.delete(0,0); % Terminate the program
+            end
+            
             %% Updating values
             self.error = 0;
             
@@ -105,9 +110,15 @@ classdef appController < handle
             self.app.PlotAxes.XGrid = 'on';
             self.app.PlotAxes.YGrid = 'on';
             self.app.PlotAxes.ZGrid = 'on';
-            
+            drawnow;
         end
         
+        function delete(self, obj, event)
+            stop(obj);
+            self.arduinoControl.delete();
+            delete(self.arduinoControl);
+            self.app.delete();
+        end
         
         % Update the gui of the app window
         function [blackLine, redBalls, wristSurface] = updateGUI(self)

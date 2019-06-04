@@ -23,11 +23,17 @@ classdef arduinoController < handle
         nunchukAdd;
     end
     
-    methods
+    methods (Access = public)
+        function delete(self)
+            clear self.arduino;
+        end
+    end
+    
+    methods (Access = public)
         function self = arduinoController()
             %ARDUINOCONTROLLER constructor method
             %   Create an arduino controller
-            self.arduino = arduino('COM11', 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', false, 'Trace', true);
+            self.arduino = arduino('COM11', 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', true, 'Trace', true);
             self.nunchukAdd = addon(self.arduino, 'Nunchuk/Nunchuk');
             init(self.nunchukAdd);
         end

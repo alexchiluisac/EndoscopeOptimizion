@@ -7,16 +7,16 @@
 % Close all previous windows and add folders, sub-folders to path
 clc; close all; clear classes;
 addpath(".");
-addpath("../anatomical-models");
-addpath('cost-functions'); 
-addpath('utils');
-addpath('utils/stlTools/');
-addpath('utils/visibility/');
-addpath('kinematics');
-addpath('path-planning');
-addpath('utils/ray-casting/');
-addpath('gui');
-addpath('gui/images');
+addpath("anatomical-models");
+addpath('/src/cost-functions'); 
+addpath('src/utils');
+addpath('src/utils/stlTools/');
+addpath('src/utils/visibility/');
+addpath('src/kinematics');
+addpath('src/path-planning');
+addpath('src/utils/ray-casting/');
+addpath('src/gui');
+addpath('src/gui/images');
 
 pause('on'); % Allow for the pausing of the program
 
@@ -33,12 +33,16 @@ controller = appController(1.65, 1.85, 4, cutouts);
 
 %% Execution
 
-profile on;
 
-% Main loop
-while ~controller.app.stopFlag
-    controller.update(); % Update the interface, control values
-    drawnow;
+try
+    appTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
+        'fixedRate');
+    appTimer.TimerFcn = @controller.update;
+    appTimer.ErrorFcn = @controller.delete;
+    start(appTimer);
+catch ME
+    controller.delete();
+    delete(controller);
+    rethrow(ME)
 end
 
-profile viewer;
