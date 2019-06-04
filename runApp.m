@@ -8,7 +8,7 @@
 clc; close all; clear classes;
 addpath(".");
 addpath("anatomical-models");
-addpath('/src/cost-functions'); 
+addpath('src/cost-functions'); 
 addpath('src/utils');
 addpath('src/utils/stlTools/');
 addpath('src/utils/visibility/');
