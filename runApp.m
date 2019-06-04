@@ -23,26 +23,13 @@ pause('on'); % Allow for the pausing of the program
 %% Robot Settings
 
 % Defining cut-outs
-cutouts.w = [1 1 1 1];
-cutouts.u = [1 1 1 1];
-cutouts.h = [1 1 1 1];
+cutouts.w = [1 2 3 4];
+cutouts.u = [1 2 3 4];
+cutouts.h = [1 2 3 4];
 cutouts.alpha = [0 0 pi/2 0];
 
 % Create the controller object, start the interface
 controller = appController(1.65, 1.85, 4, cutouts);
 
-%% Execution
 
-
-try
-    appTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
-        'fixedRate');
-    appTimer.TimerFcn = @controller.update;
-    appTimer.ErrorFcn = @controller.delete;
-    start(appTimer);
-catch ME
-    controller.delete();
-    delete(controller);
-    rethrow(ME)
-end
 

@@ -3,7 +3,6 @@ classdef appController < handle
     %   Detailed explanation goes here
     
     properties
-        wrist;              % Currently loaded wrist object
         configuration;      % Configuration of the wrist
         % Three-element array
         % [displacement, rotation, advancement]
@@ -12,6 +11,8 @@ classdef appController < handle
         arduinoControl;   % Arduino Controller object
         
         initialFlag; % Keep track of first loop
+        
+        loopTimer % Looping call-back timer
     end
     
     methods
@@ -19,11 +20,8 @@ classdef appController < handle
             %APPCONTROLLER Construct an instance of this class
             %   The controller behind the front-end app
             
-            % The wrist object of loaded robot
-            self.wrist = Wrist(ID, OD, nCutouts, cutouts);
-            
             % The front-end app
-            self.app = NotchedDesigner();
+            self.app = NotchedDesigner(ID, OD, nCutouts, cutouts);
             camlight(self.app.PlotAxes, 'headlight');
             
             % Robot configuration
@@ -31,12 +29,30 @@ classdef appController < handle
             
             % Arduino controller
             self.arduinoControl = arduinoController();
+            
+            % Start the application
+            self.startApp();
+        end
+        
+        function startApp(self)
+            try
+                self.loopTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
+                    'fixedRate');
+                self.loopTimer.TimerFcn = @self.update;
+                self.loopTimer.ErrorFcn = @self.delete;
+                start(self.loopTimer);
+            catch ME
+                controller.delete();
+                delete(controller);
+                rethrow(ME)
+            end
         end
         
         % The main update function
         function update(self, obj, event)
             %% Check Termination Flag
             if self.app.stopFlag
+                stop(self.loopTimer);
                 self.delete(0,0); % Terminate the program
             end
             
@@ -90,7 +106,8 @@ classdef appController < handle
                     delete(axesHandlesToChildObjects);
                 end
                 
-                [blackLine, redBalls, wristSurface] = self.updateGUI();
+                [blackLine, redBalls, wristSurface] = self.updateSimulation();
+                
             catch ME
                 self.error = 1;
                 
@@ -114,6 +131,7 @@ classdef appController < handle
         end
         
         function delete(self, obj, event)
+            delete(self.loopTimer);
             stop(obj);
             self.arduinoControl.delete();
             delete(self.arduinoControl);
@@ -121,19 +139,19 @@ classdef appController < handle
         end
         
         % Update the gui of the app window
-        function [blackLine, redBalls, wristSurface] = updateGUI(self)
+        function [blackLine, redBalls, wristSurface] = updateSimulation(self)
             % TODO: replicate the draw function
             
             if ~isempty(self.app.transform)
-                self.wrist.fwkine(self.configuration, self.app.transform);
+                self.app.wrist.fwkine(self.configuration, self.app.transform);
             else
-                self.wrist.fwkine(self.configuration, eye(4));
+                self.app.wrist.fwkine(self.configuration, eye(4));
             end
             
             
-            X = self.wrist.pose(1,:);
-            Y = self.wrist.pose(2,:);
-            Z = self.wrist.pose(3,:);
+            X = self.app.wrist.pose(1,:);
+            Y = self.app.wrist.pose(2,:);
+            Z = self.app.wrist.pose(3,:);
             
             % Draw red circles
             redBalls = scatter3(self.app.PlotAxes, X, Y, Z, 50, 'r', 'filled');
@@ -143,15 +161,14 @@ classdef appController < handle
             
             
             if ~isempty(self.app.transform)
-                robotModel = self.wrist.makePhysicalModel();
+                robotModel = self.app.wrist.makePhysicalModel();
             else
-                robotModel = self.wrist.makePhysicalModel();
+                robotModel = self.app.wrist.makePhysicalModel();
             end
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;
             Z = robotModel.surface.Z;
-            C = X.*Y.*Z;
-            wristSurface = surf(self.app.PlotAxes, X, Y, Z, C, 'FaceColor', ...
+            wristSurface = surf(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
                 'g', 'FaceLighting','gouraud', ...
                 'AmbientStrength',0.5, 'EdgeColor', 'k', 'LineWidth', 0.3);
         end
