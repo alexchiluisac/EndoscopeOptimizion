@@ -114,15 +114,15 @@ classdef appController < handle
             % TODO: replicate the draw function
             
             if ~isempty(self.app.transform)
-                [P, T] = self.wrist.fwkine(self.configuration, self.app.transform);
+                self.wrist.fwkine(self.configuration, self.app.transform);
             else
-                [P, T] = self.wrist.fwkine(self.configuration, eye(4));
+                self.wrist.fwkine(self.configuration, eye(4));
             end
             
             
-            X = P(1,:);
-            Y = P(2,:);
-            Z = P(3,:);
+            X = self.wrist.pose(1,:);
+            Y = self.wrist.pose(2,:);
+            Z = self.wrist.pose(3,:);
             
             % Draw red circles
             redBalls = scatter3(self.app.PlotAxes, X, Y, Z, 50, 'r', 'filled');
@@ -132,9 +132,9 @@ classdef appController < handle
             
             
             if ~isempty(self.app.transform)
-                robotModel = self.wrist.makePhysicalModel(self.configuration, self.app.transform);
+                robotModel = self.wrist.makePhysicalModel();
             else
-                robotModel = self.wrist.makePhysicalModel(self.configuration, eye(4));
+                robotModel = self.wrist.makePhysicalModel();
             end
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;

@@ -27,7 +27,7 @@ classdef arduinoController < handle
         function self = arduinoController()
             %ARDUINOCONTROLLER constructor method
             %   Create an arduino controller
-            self.arduino = arduino('COM11', 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', true, 'Trace', true);
+            self.arduino = arduino('COM11', 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', false, 'Trace', true);
             self.nunchukAdd = addon(self.arduino, 'Nunchuk/Nunchuk');
             init(self.nunchukAdd);
         end

@@ -14,6 +14,12 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
         %   [h - height of i-th cutout             ]
         %   [w - width of i-th cutout              ]
         %   [phi - orientation of i-th cutout      ]
+        
+        % Forward Kinematics Parameters
+        pose                % The position and orientation
+        transformations     % Transformation matrix
+        curvature           % Curvature of the wrist links
+        arcLength           % Arc length of the wrist links
     end
     
     methods
@@ -24,7 +30,7 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
             self.cutouts = cutouts;
         end
         
-        function [pose, transformations, curvature, arcLength] = fwkine(self, configuration, baseTransform)
+        function fwkine(self, configuration, baseTransform)
             % Get the endoscope configuration
             t_displ = configuration(1) * 10^-3;
             t_rot   = configuration(2);
@@ -155,21 +161,22 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
             end
             
             % Extract the tube pose and return
-            pose = pose(1:3,:) .* 1000;
-            transformations = T;
-            transformations(1:3,4,:) = transformations(1:3,4,:) .*1000;
-            
+            self.pose = pose(1:3,:) .* 1000;
+            self.transformations = T;
+            self.transformations(1:3,4,:) = self.transformations(1:3,4,:) .*1000;
             % Return the curvature and arc length of each cut section
-            curvature = kappa;
-            arcLength = s;
+            self.curvature = kappa;
+            self.arcLength = s;
         end
         
         
-        function robotModel = makePhysicalModel(self, configuration, baseTransform)
+        function robotModel = makePhysicalModel(self)
             ptsPerMm = 10;
             
-            [P,T,kappa,s] = self.fwkine(configuration, baseTransform);
-            
+            P = self.pose;
+            T = self.transformations;
+            kappa = self.curvature;
+            s = self.arcLength;
             %!FIXME kappa and s are different for each cutout - need to change
             %the code below to account for this
             kappa = kappa(1);

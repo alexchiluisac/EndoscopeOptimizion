@@ -33,8 +33,12 @@ controller = appController(1.65, 1.85, 4, cutouts);
 
 %% Execution
 
+profile on;
+
 % Main loop
 while ~controller.app.stopFlag
     controller.update(); % Update the interface, control values
-    pause(0.15); % Slow-down the looping
+    drawnow;
 end
+
+profile viewer;
