@@ -6,7 +6,7 @@
 %% Program Configuration
 % Close all previous windows and add folders, sub-folders to path
 clc; close all; clear classes;
-addpath(".");
+addpath("src");
 addpath("anatomical-models");
 addpath('src/cost-functions'); 
 addpath('src/utils');
@@ -23,9 +23,9 @@ pause('on'); % Allow for the pausing of the program
 %% Robot Settings
 
 % Defining cut-outs
-cutouts.w = [1 2 3 4];
-cutouts.u = [1 2 3 4];
-cutouts.h = [1 2 3 4];
+cutouts.w = [1 1 1 1];
+cutouts.u = [1 1 1 1];
+cutouts.h = [1 1 1 1];
 cutouts.alpha = [0 0 pi/2 0];
 
 % Create the controller object, start the interface
