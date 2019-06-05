@@ -22,6 +22,8 @@ pause('on'); % Allow for the pausing of the program
 
 %% Robot Settings
 
+profile on;
+
 % Defining cut-outs
 cutouts.w = [1 1 1 1];
 cutouts.u = [1 1 1 1];
