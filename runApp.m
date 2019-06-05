@@ -30,6 +30,3 @@ cutouts.alpha = [0 0 pi/2 0];
 
 % Create the controller object, start the interface
 controller = appController(1.65, 1.85, 4, cutouts);
-
-
-

@@ -1,6 +1,7 @@
 classdef appController < handle
-    %APPCONTROLLER Summary of this class goes here
-    %   Detailed explanation goes here
+    %APPCONTROLLER Main controller of the Notched Designer App
+    %       Handles the control and drawing of the Notched Designer MATLAB
+    %       app as well as the ArduinoNunchuk control interface.
     
     properties
         configuration;      % Configuration of the wrist
@@ -67,17 +68,17 @@ classdef appController < handle
             % self.arduinoControl.updateValues();
             % self.configuration = self.configuration + [self.arduinoControl.joyX, self.arduinoControl.joyY, 0];
             
-            % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
-            
             self.arduinoControl.updateNunchukValues();
-            self.configuration = self.configuration + [self.arduinoControl.zdir, self.arduinoControl.joyX, self.arduinoControl.joyY];
+            self.configuration = self.configuration + [self.arduinoControl.zdir, -self.arduinoControl.joyX, self.arduinoControl.joyY];
+            self.app.Advancement.Text = num2str(self.configuration(3));
+            self.app.Rotation.Text = num2str(self.configuration(2));
+            self.app.TendonDisplacement.Text = num2str(self.configuration(1));
             
             % Debugging -- print configuration change values
             % fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
+            % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
             
             %% Draw
-            %cla(self.app.PlotAxes);
-            
             try
                 %                 if ~self.initialFlag
                 %                     clear(blackLine);
@@ -106,7 +107,7 @@ classdef appController < handle
                     delete(axesHandlesToChildObjects);
                 end
                 
-                [blackLine, redBalls, wristSurface] = self.updateSimulation();
+                self.updateSimulation();
                 
             catch ME
                 self.error = 1;
@@ -139,7 +140,7 @@ classdef appController < handle
         end
         
         % Update the gui of the app window
-        function [blackLine, redBalls, wristSurface] = updateSimulation(self)
+        function updateSimulation(self)
             % TODO: replicate the draw function
             
             if ~isempty(self.app.transform)
@@ -154,10 +155,10 @@ classdef appController < handle
             Z = self.app.wrist.pose(3,:);
             
             % Draw red circles
-            redBalls = scatter3(self.app.PlotAxes, X, Y, Z, 50, 'r', 'filled');
+            scatter3(self.app.PlotAxes, X, Y, Z, 50, 'r', 'filled');
             
             % Draw black line
-            blackLine = plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.0);
+            plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.0);
             
             
             if ~isempty(self.app.transform)
@@ -168,9 +169,9 @@ classdef appController < handle
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;
             Z = robotModel.surface.Z;
-            wristSurface = surf(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
-                'g', 'FaceLighting','gouraud', ...
-                'AmbientStrength',0.5, 'EdgeColor', 'k', 'LineWidth', 0.3);
+            surf(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
+                '#5cb5db', 'FaceLighting','gouraud', ...
+                'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
         end
         
         % Print something in the dialog box of the app

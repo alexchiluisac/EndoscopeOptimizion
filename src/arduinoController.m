@@ -42,7 +42,7 @@ classdef arduinoController < handle
             threshold = 0.25; % Threshold value to avoid drift of joystick
             rotScaleFactor = 0.25; % To reduce the intensity of rotation
             advScaleFactor = 0.25; % To reduce the intensity of advancement
-            tendonScaleFactor = 0.1; % Reduce intensity of tendon pull
+            tendonScaleFactor = 0.05; % Reduce intensity of tendon pull
             
             results2 = update(self.nunchukAdd);
             tempX = results2(1); % Store temporary to do more calculations
@@ -109,10 +109,12 @@ classdef arduinoController < handle
             
             %% Tendon Values
             if self.buttonC
-                self.zdir = 1;
+                % Release tendon
+                self.zdir = -1;
             else 
                 if self.buttonZ
-                    self.zdir = -1;
+                    % Tension tendon
+                    self.zdir = 1;
                 else
                     self.zdir = 0;
                 end

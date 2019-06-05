@@ -4,7 +4,8 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
     %
     %   Author: Loris Fichera <lfichera@wpi.edu>
     %
-    %   Latest revision: 03/01/2019
+    %   Edited by Floris van Rossum to make optimization changes.
+    %   Latest revision: 06/05/2019
     properties
         ID        % [mm] tube inner diameter
         OD        % [mm] tube outer diameter
@@ -171,7 +172,7 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
         
         
         function robotModel = makePhysicalModel(self)
-            ptsPerMm = 10;
+            ptsPerMm = 5;
             
             P = self.pose;
             T = self.transformations;
