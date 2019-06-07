@@ -50,7 +50,7 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
             end
             
             self.Parent = parentObject;
-            disp(self.Pins);
+            % disp(self.Pins);
             
             count = getResourceCount(self.Parent, self.ResourceOwner);
             

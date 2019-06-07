@@ -36,8 +36,12 @@ classdef appController < handle
         end
         
         function startApp(self)
+
+            self.app.PlotAxes.XGrid = 'on';
+            self.app.PlotAxes.YGrid = 'on';
+            self.app.PlotAxes.ZGrid = 'on';
             try
-                self.loopTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
+                self.loopTimer = timer('Period', 0.1, 'BusyMode', 'drop', 'ExecutionMode', ...
                     'fixedRate');
                 self.loopTimer.TimerFcn = @self.update;
                 self.loopTimer.ErrorFcn = @self.delete;
@@ -47,6 +51,7 @@ classdef appController < handle
                 delete(controller);
                 rethrow(ME)
             end
+            
         end
         
         % The main update function
@@ -80,24 +85,12 @@ classdef appController < handle
             
             %% Draw
             try
-                %                 if ~self.initialFlag
-                %                     clear(blackLine);
-                %                     clear(redBalls);
-                %                     clear(wristSurface);
-                %                 else
-                %                     self.initialFlag = false;
-                %                 end
-                % disp(self.app.PlotAxes.Children);
                 
-                %                 delete(findobj(self.app.PlotAxes.Children.graphics, 'Type','scatter'));
-                %                 delete(findobj(self.app.PlotAxes.Children.graphics, 'Type','Surface'));
-                %                 delete(findobj(self.app.PlotAxes.Children.graphics, 'Type','Plot'));
-                %
+                % Delete specific graphical objects from the GUI
                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
                 if ~isempty(axesHandlesToChildObjects)
                     delete(axesHandlesToChildObjects);
                 end
-                
                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
                 if ~isempty(axesHandlesToChildObjects)
                     delete(axesHandlesToChildObjects);
@@ -107,7 +100,7 @@ classdef appController < handle
                     delete(axesHandlesToChildObjects);
                 end
                 
-                self.updateSimulation();
+                self.updateSimulation(); % Call the main update function
                 
             catch ME
                 self.error = 1;
@@ -124,14 +117,10 @@ classdef appController < handle
             else
                 self.printDiag('', '');
             end
-            
-            self.app.PlotAxes.XGrid = 'on';
-            self.app.PlotAxes.YGrid = 'on';
-            self.app.PlotAxes.ZGrid = 'on';
-            drawnow;
         end
         
         function delete(self, obj, event)
+            profile viewer;
             delete(self.loopTimer);
             stop(obj);
             self.arduinoControl.delete();
@@ -155,10 +144,10 @@ classdef appController < handle
             Z = self.app.wrist.pose(3,:);
             
             % Draw red circles
-            scatter3(self.app.PlotAxes, X, Y, Z, 50, 'r', 'filled');
+            % scatter3(self.app.PlotAxes, X, Y, Z, 50, 'r', 'filled');
             
             % Draw black line
-            plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.0);
+            % plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.0);
             
             
             if ~isempty(self.app.transform)
@@ -169,9 +158,10 @@ classdef appController < handle
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;
             Z = robotModel.surface.Z;
-            surf(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
+            surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
                 '#5cb5db', 'FaceLighting','gouraud', ...
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
+            hold(self.app.PlotAxes, 'on');
         end
         
         % Print something in the dialog box of the app

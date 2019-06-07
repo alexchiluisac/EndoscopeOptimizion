@@ -18,8 +18,6 @@ addpath('src/utils/ray-casting/');
 addpath('src/gui');
 addpath('src/gui/images');
 
-pause('on'); % Allow for the pausing of the program
-
 %% Robot Settings
 
 profile on;

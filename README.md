@@ -1,4 +1,4 @@
-# Notched Tube Designer
+# Notched Endoscope Designer
 An application for the design and simulation of notched-tube endoscopes. Through
 uploading an STL, the user can control the notched-tube endoscope with a Wii nunchuk.
 

@@ -76,8 +76,6 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
                 0          0           1 0; ...
                 0          0           0 1];
             
-            options = optimoptions('fsolve', 'TolFun', 1e-14, 'Display', 'off'); %set fsolve options.
-            
             %% Calculations
             % Calculate ybar (Equation 1 from [Swaney2017]).
             % Use Hunter's integral formula calculation. It yields the same thing as the formula in the paper.
@@ -90,15 +88,26 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
             kappa = zeros(1, n);
             s =     zeros(1, n);
             
+            
                         
             for ii = 1 : n
-                A(ii) = integral2(@(r,theta) r.*fA(r,theta), ri, ro, ...
-                                  @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
-                                  'AbsTol', 1e-12, 'RelTol', 1e-12);
+                phio = 2 * acos(d(ii) / ro);
+                phii = 2 * acos(d(ii) / ri);
                 
-                ybar(ii) = 1 / A(ii) * integral2(@(r,theta) r.*fy(r,theta), ri, ro, ...
-                                             @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
-                                             'AbsTol',1e-12,'RelTol', 1e-9);
+                ybaro = (4 * ro * (sin(0.5 * phio)) ^ 3)/ (3 * (phio - sin(phio)));
+                ybari = (4 * ri * (sin(0.5 * phii)) ^ 3)/ (3 * (phio - sin(phii)));
+                
+                Ao = ( (ro ^ 2) * ( phio - sin(phio))) / 2;
+                Ai = ( (ri ^ 2) * ( phii - sin(phii))) / 2;
+                
+                ybar(ii) = (ybaro * Ao - ybari * Ai) / (Ao - Ai);
+%                 A(ii) = integral2(@(r,theta) r.*fA(r,theta), ri, ro, ...
+%                                   @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
+%                                   'AbsTol', 1e-12, 'RelTol', 1e-12);
+%                 
+%                 ybar(ii) = 1 / A(ii) * integral2(@(r,theta) r.*fy(r,theta), ri, ro, ...
+%                                              @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
+%                                              'AbsTol',1e-12,'RelTol', 1e-9);
                 
                 % Calculate the maximum bending for this cutout
                 theta_max(ii) = h(ii) / (ro + ybar(ii));
@@ -120,8 +129,10 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
                 end
                 
                 % Get kappa of single cutout
-                kappa(ii) = fsolve(@(k) (-t_displ + h(ii) - 2 * (1/k - ri) * sin(k*h(ii)/(2*(1+ybar(ii)*k)))), ...
-                    500, options); % original -t
+                
+                kappa(ii) = (t_displ) / (h(ii) * (ri + ybar(ii)) - t_displ * ybar(ii));
+                % kappa(ii) = fsolve(@(k) (-t_displ + h(ii) - 2 * (1/k - ri) * sin(k*h(ii)/(2*(1+ybar(ii)*k)))), ...
+                    % 500, options); % original -t
                 
                 % Get arc length of single cutout
                 s(ii) = h(ii) / ( 1 + ybar(ii) * kappa(ii)); % original kappa
@@ -238,7 +249,7 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
             %robotBackbone = applytransform(robotBackbone, baseTransform);
             
             radiusVec = self.OD/2*ones(1,size(robotBackbone,2));
-            [X,Y,Z] = gencyl(robotBackbone, radiusVec);
+            [X,Y,Z] = gencyl(robotBackbone, radiusVec, 2, 5);
             
             robotModel.backbone = robotBackbone;
             robotModel.surface.X = X;
