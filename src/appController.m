@@ -74,8 +74,13 @@ classdef appController < handle
             % self.configuration = self.configuration + [self.arduinoControl.joyX, self.arduinoControl.joyY, 0];
             
             self.arduinoControl.updateNunchukValues();
-            self.configuration = self.configuration + [self.arduinoControl.zdir, -self.arduinoControl.joyX, self.arduinoControl.joyY];
-            self.app.Advancement.Text = num2str(self.configuration(3));
+            
+            if self.configuration(1) <= 0 && self.arduinoControl.zdir < 0
+                self.configuration = self.configuration + [0, -self.arduinoControl.joyX, self.arduinoControl.joyY];
+            else
+                self.configuration = self.configuration + [self.arduinoControl.zdir, -self.arduinoControl.joyX, self.arduinoControl.joyY];
+            end
+                self.app.Advancement.Text = num2str(self.configuration(3));
             self.app.Rotation.Text = num2str(self.configuration(2));
             self.app.TendonDisplacement.Text = num2str(self.configuration(1));
             
@@ -104,18 +109,13 @@ classdef appController < handle
                 
             catch ME
                 self.error = 1;
-                
-                msgID = 'CNTRLR:GUIError';
-                msg = 'Unable to update GUI';
-                exception = MException(msgID, msg);
-                
-                % throw(exception);
+                exception = ME;
             end
             
             if self.error
-                self.printDiag(msgID ,msg);
+                self.app.printError(exception);
             else
-                self.printDiag('', '');
+                self.app.printError([]);
             end
             drawnow limitrate;
         end
@@ -162,18 +162,6 @@ classdef appController < handle
                 '#5cb5db', 'FaceLighting','gouraud', ...
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
             % hold(self.app.PlotAxes, 'on');
-        end
-        
-        % Print something in the dialog box of the app
-        function printDiag(self, errorid, errortext)
-            
-            if strlength(errortext) > 1
-                self.app.ErrorPanel.Visible = 'on';
-                self.app.ErrorPanel.Title = 'Error:';
-                self.app.ErrorLabel.Text = strcat(errorid, errortext);
-            else
-                self.app.ErrorPanel.Visible = 'off';
-            end
         end
     end
 end
