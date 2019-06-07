@@ -249,7 +249,7 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
             %robotBackbone = applytransform(robotBackbone, baseTransform);
             
             radiusVec = self.OD/2*ones(1,size(robotBackbone,2));
-            [X,Y,Z] = gencyl(robotBackbone, radiusVec, 2, 5);
+            [X,Y,Z] = gencyl(robotBackbone, radiusVec, 2, 10);
             
             robotModel.backbone = robotBackbone;
             robotModel.surface.X = X;

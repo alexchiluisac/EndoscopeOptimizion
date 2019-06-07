@@ -41,7 +41,7 @@ classdef appController < handle
             self.app.PlotAxes.YGrid = 'on';
             self.app.PlotAxes.ZGrid = 'on';
             try
-                self.loopTimer = timer('Period', 0.1, 'BusyMode', 'drop', 'ExecutionMode', ...
+                self.loopTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
                     'fixedRate');
                 self.loopTimer.TimerFcn = @self.update;
                 self.loopTimer.ErrorFcn = @self.delete;
@@ -117,10 +117,10 @@ classdef appController < handle
             else
                 self.printDiag('', '');
             end
+            drawnow limitrate;
         end
         
         function delete(self, obj, event)
-            profile viewer;
             delete(self.loopTimer);
             stop(obj);
             self.arduinoControl.delete();
@@ -161,7 +161,7 @@ classdef appController < handle
             surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
                 '#5cb5db', 'FaceLighting','gouraud', ...
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
-            hold(self.app.PlotAxes, 'on');
+            % hold(self.app.PlotAxes, 'on');
         end
         
         % Print something in the dialog box of the app

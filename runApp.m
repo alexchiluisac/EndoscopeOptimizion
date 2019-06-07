@@ -20,8 +20,6 @@ addpath('src/gui/images');
 
 %% Robot Settings
 
-profile on;
-
 % Defining cut-outs
 cutouts.w = [1 1 1 1];
 cutouts.u = [1 1 1 1];
