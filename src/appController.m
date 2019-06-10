@@ -36,7 +36,7 @@ classdef appController < handle
         end
         
         function startApp(self)
-
+            
             self.app.PlotAxes.XGrid = 'on';
             self.app.PlotAxes.YGrid = 'on';
             self.app.PlotAxes.ZGrid = 'on';
@@ -91,28 +91,28 @@ classdef appController < handle
             % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
             
             %% Draw
-            try
-                
-                % Delete specific graphical objects from the GUI
-                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
-                if ~isempty(axesHandlesToChildObjects)
-                    delete(axesHandlesToChildObjects);
-                end
-                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
-                if ~isempty(axesHandlesToChildObjects)
-                    delete(axesHandlesToChildObjects);
-                end
-                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
-                if ~isempty(axesHandlesToChildObjects)
-                    delete(axesHandlesToChildObjects);
-                end
-                
-                self.updateSimulation(); % Call the main update function
-                
-            catch ME
-                self.error = 1;
-                exception = ME;
+            %             try
+            %
+            % Delete specific graphical objects from the GUI
+            axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
+            if ~isempty(axesHandlesToChildObjects)
+                delete(axesHandlesToChildObjects);
             end
+            axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
+            if ~isempty(axesHandlesToChildObjects)
+                delete(axesHandlesToChildObjects);
+            end
+            axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
+            if ~isempty(axesHandlesToChildObjects)
+                delete(axesHandlesToChildObjects);
+            end
+            
+            self.updateSimulation(); % Call the main update function
+            
+            %             catch ME
+            %                 self.error = 1;
+            %                 exception = ME;
+            %             end
             
             if self.error
                 self.app.printError(exception);
@@ -163,7 +163,37 @@ classdef appController < handle
             surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
                 '#5cb5db', 'FaceLighting','gouraud', ...
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
-            % hold(self.app.PlotAxes, 'on');
+            
+            if ~isempty(self.app.meMesh)
+                X = rmmissing(X);
+                Y = rmmissing(Y);
+                Z = rmmissing(Z);
+                totalX = X(:);
+                totalY = Y(:);
+                totalZ = Z(:);
+                
+                total = [totalX totalY totalZ];
+                lol.vertices = total;
+                
+                % disp("HERERERERE");
+                
+                % disp("HERERERERE2");
+                self.app.meMesh.vertices = self.app.meMesh.Vertices;
+                [collisionResult, DistanceNumber, cpobj1, cpobj2]  = CollisionDetection(self.app.meMesh, lol);
+                DistanceNumber
+                cpobj1
+                cpobj2
+                
+                self.app.MinimumDistanceNumber.Text = num2str(DistanceNumber);
+                if collisionResult
+                    self.app.CollisionStateLabel.Text = 'Yes';
+                else
+                    self.app.CollisionStateLabel.Text = 'No';
+                end
+                % hold(self.app.PlotAxes, 'on');
+            else
+                self.app.CollisionStateLabel.Text = 'No';
+            end
         end
     end
 end
