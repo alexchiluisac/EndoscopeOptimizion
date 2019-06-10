@@ -42,7 +42,7 @@ classdef appController < handle
             self.app.PlotAxes.ZGrid = 'on';
             try
                 self.loopTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
-                    'fixedRate');
+                    'fixedDelay');
                 self.loopTimer.TimerFcn = @self.update;
                 self.loopTimer.ErrorFcn = @self.delete;
                 start(self.loopTimer);
@@ -80,8 +80,10 @@ classdef appController < handle
             else
                 self.configuration = self.configuration + [self.arduinoControl.zdir, -self.arduinoControl.joyX, self.arduinoControl.joyY];
             end
-                self.app.Advancement.Text = num2str(self.configuration(3));
-            self.app.Rotation.Text = num2str(self.configuration(2));
+            
+            self.app.Advancement.Text = num2str(self.configuration(3));
+            m = 2 * pi;
+            self.app.Rotation.Text = num2str(mod(self.configuration(2), m));
             self.app.TendonDisplacement.Text = num2str(self.configuration(1));
             
             % Debugging -- print configuration change values
