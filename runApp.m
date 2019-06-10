@@ -21,10 +21,11 @@ addpath('src/gui/images');
 %% Robot Settings
 
 % Defining cut-outs
-cutouts.w = [1 1 1 1];
-cutouts.u = [1 1 1 1];
-cutouts.h = [1 1 1 1];
+% Width of cut: 85% of the OD
+cutouts.w = 1.275 * ones(4);
+cutouts.u = ones(4);
+cutouts.h = ones(4);
 cutouts.alpha = [0 0 pi/2 0];
 
 % Create the controller object, start the interface
-controller = appController(1.65, 1.85, 4, cutouts);
+controller = appController(1.3, 1.5, 4, cutouts);
