@@ -5,56 +5,67 @@ classdef appController < handle
     
     properties
         configuration;      % Configuration of the wrist
-        % Three-element array
-        % [displacement, rotation, advancement]
-        app;                % The front-end app
-        error;              % Error flag
+            % Three-element array
+            % [displacement, rotation, advancement]
+        app;                % Front-end Application Designer App
+        error;              % Error flag to display error in app
         arduinoControl;   % Arduino Controller object
-        
-        initialFlag; % Keep track of first loop
-        
+            % Controls Arduino and Hardware Control Interface, updates and
+            % reads the Nunchuk values from the arduino.
+        initialFlag; % Track whether this is the first loop or not
         loopTimer % Looping call-back timer
+            % Controls the looping of the entire project
     end
     
     methods
         function self = appController(ID, OD, nCutouts, cutouts)
-            %APPCONTROLLER Construct an instance of this class
+            %APPCONTROLLER Construct an instance of the appController class
             %   The controller behind the front-end app
             
-            % The front-end app
+            % Initialize the front-end app
             self.app = NotchedDesigner(ID, OD, nCutouts, cutouts);
-            camlight(self.app.PlotAxes, 'headlight');
             
-            % Robot configuration
+            % Configure the robot configuration
             self.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement];
             
-            % Arduino controller
+            % Initialize the arduino controller
             self.arduinoControl = arduinoController();
             
             % Start the application
             self.startApp();
         end
         
+        % Application start-up function
         function startApp(self)
             
-            self.app.PlotAxes.XGrid = 'on';
-            self.app.PlotAxes.YGrid = 'on';
-            self.app.PlotAxes.ZGrid = 'on';
+            % Error handling statment
             try
+                
+                % Initialize the looping timer
                 self.loopTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
                     'fixedDelay');
+                
+                % Configure the looping function 
                 self.loopTimer.TimerFcn = @self.update;
+                
+                % Set-up and error function to handle termination of the
+                % program
                 self.loopTimer.ErrorFcn = @self.delete;
+                
+                % Start the looping timer
                 start(self.loopTimer);
             catch ME
-                controller.delete();
+                % Error handling
+                % Remove all children objects
+                controller.delete(); 
                 delete(controller);
                 rethrow(ME)
             end
             
         end
         
-        % The main update function
+        % UPDATE
+        % The main looping function of the entire program
         function update(self, obj, event)
             %% Check Termination Flag
             if self.app.stopFlag
@@ -66,21 +77,25 @@ classdef appController < handle
             self.error = 0;
             
             %% CONTROL METHODS
-            % KEYBOARD CONTROL
+            
+            % Legacy -- KEYBOARD CONTROL
             % self.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement]
             
-            % JOYSTICK CONTROL
+            % Legacy -- JOYSTICK CONTROL
             % self.arduinoControl.updateValues();
             % self.configuration = self.configuration + [self.arduinoControl.joyX, self.arduinoControl.joyY, 0];
             
+            % Ask arduino to retrieve new Nunchuk values
             self.arduinoControl.updateNunchukValues();
             
+            % Update the robot configuration based on control values
             if self.configuration(1) <= 0 && self.arduinoControl.zdir < 0
                 self.configuration = self.configuration + [0, -self.arduinoControl.joyX, self.arduinoControl.joyY];
             else
                 self.configuration = self.configuration + [self.arduinoControl.zdir, -self.arduinoControl.joyX, self.arduinoControl.joyY];
             end
             
+            % Display robot configuration on the App screen
             self.app.Advancement.Text = num2str(self.configuration(3));
             m = 2 * pi;
             self.app.Rotation.Text = num2str(mod(self.configuration(2), m));
@@ -91,35 +106,48 @@ classdef appController < handle
             % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
             
             %% Draw
-            try
-                %
+            
+            % Error handling for the graphics and kinematics
+            try 
+                
                 % Delete specific graphical objects from the GUI
+                
+                % Delete the surface plot of the wrist
                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
                 if ~isempty(axesHandlesToChildObjects)
                     delete(axesHandlesToChildObjects);
                 end
-                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
-                if ~isempty(axesHandlesToChildObjects)
-                    delete(axesHandlesToChildObjects);
-                end
-                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
-                if ~isempty(axesHandlesToChildObjects)
-                    delete(axesHandlesToChildObjects);
-                end
                 
-                self.updateSimulation(); % Call the main update function
+                
+                % Legacy code -- removing the scatter plot and robot
+                % backbone
+%                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
+%                 if ~isempty(axesHandlesToChildObjects)
+%                     delete(axesHandlesToChildObjects);
+%                 end
+%                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
+%                 if ~isempty(axesHandlesToChildObjects)
+%                     delete(axesHandlesToChildObjects);
+%                 end
+
+                % Update the simulation: Grapics + kinematics
+                self.updateSimulation(); 
                 
             catch ME
+                % Catch any error and display on the app to let user know
+                % what is going on
                 self.error = 1;
                 exception = ME;
             end
             
+            % Print the error if there is one
             if self.error
                 self.app.printError(exception);
             else
                 self.app.printError([]);
             end
-            %hold(self.app.PlotAxes, 'off');
+            
+            % Force the draw, limited to 20 FPS
             drawnow limitrate;
         end
         
