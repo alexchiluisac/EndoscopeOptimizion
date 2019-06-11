@@ -91,39 +91,39 @@ classdef appController < handle
             % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
             
             %% Draw
-            %             try
-            %
-            % Delete specific graphical objects from the GUI
-            axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
-            if ~isempty(axesHandlesToChildObjects)
-                delete(axesHandlesToChildObjects);
+            try
+                %
+                % Delete specific graphical objects from the GUI
+                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
+                if ~isempty(axesHandlesToChildObjects)
+                    delete(axesHandlesToChildObjects);
+                end
+                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
+                if ~isempty(axesHandlesToChildObjects)
+                    delete(axesHandlesToChildObjects);
+                end
+                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
+                if ~isempty(axesHandlesToChildObjects)
+                    delete(axesHandlesToChildObjects);
+                end
+                
+                self.updateSimulation(); % Call the main update function
+                
+            catch ME
+                self.error = 1;
+                exception = ME;
             end
-            axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
-            if ~isempty(axesHandlesToChildObjects)
-                delete(axesHandlesToChildObjects);
-            end
-            axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
-            if ~isempty(axesHandlesToChildObjects)
-                delete(axesHandlesToChildObjects);
-            end
-            
-            self.updateSimulation(); % Call the main update function
-            
-            %             catch ME
-            %                 self.error = 1;
-            %                 exception = ME;
-            %             end
             
             if self.error
                 self.app.printError(exception);
             else
                 self.app.printError([]);
             end
+            %hold(self.app.PlotAxes, 'off');
             drawnow limitrate;
         end
         
         function delete(self, obj, event)
-            delete(self.loopTimer);
             stop(obj);
             self.arduinoControl.delete();
             delete(self.arduinoControl);
@@ -139,11 +139,6 @@ classdef appController < handle
             else
                 self.app.wrist.fwkine(self.configuration, eye(4));
             end
-            
-            
-            X = self.app.wrist.pose(1,:);
-            Y = self.app.wrist.pose(2,:);
-            Z = self.app.wrist.pose(3,:);
             
             % Draw red circles
             % scatter3(self.app.PlotAxes, X, Y, Z, 50, 'r', 'filled');
@@ -163,37 +158,77 @@ classdef appController < handle
             surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
                 '#5cb5db', 'FaceLighting','gouraud', ...
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
+            %hold(self.app.PlotAxes, 'on');
             
-            if ~isempty(self.app.meMesh)
-                X = rmmissing(X);
-                Y = rmmissing(Y);
-                Z = rmmissing(Z);
-                totalX = X(:);
-                totalY = Y(:);
-                totalZ = Z(:);
-                
-                total = [totalX totalY totalZ];
-                lol.vertices = total;
-                
-                % disp("HERERERERE");
-                
-                % disp("HERERERERE2");
-                self.app.meMesh.vertices = self.app.meMesh.Vertices;
-                [collisionResult, DistanceNumber, cpobj1, cpobj2]  = CollisionDetection(self.app.meMesh, lol);
-                DistanceNumber
-                cpobj1
-                cpobj2
-                
-                self.app.MinimumDistanceNumber.Text = num2str(DistanceNumber);
-                if collisionResult
-                    self.app.CollisionStateLabel.Text = 'Yes';
+            if self.app.collisionFlag
+                if ~isempty(self.app.meMesh)
+                    self.detectCollision() % Perform collision detection
                 else
                     self.app.CollisionStateLabel.Text = 'No';
                 end
-                % hold(self.app.PlotAxes, 'on');
-            else
-                self.app.CollisionStateLabel.Text = 'No';
             end
+            
+            if self.app.ToggleHeadVisionCheckBox.Value
+                self.drawHead(); % Draw the head projection graph
+            end
+        end
+        
+        function detectCollision(self)
+            X = rmmissing(X);
+            Y = rmmissing(Y);
+            Z = rmmissing(Z);
+            totalX = X(:);
+            totalY = Y(:);
+            totalZ = Z(:);
+            
+            total = [totalX totalY totalZ];
+            lol.vertices = total;
+            
+            % disp("HERERERERE");
+            
+            % disp("HERERERERE2");
+            self.app.meMesh.vertices = self.app.meMesh.Vertices;
+            [collisionResult, DistanceNumber, cpobj1, cpobj2]  = CollisionDetection(self.app.meMesh, lol);
+            
+            if collisionResult
+                self.app.CollisionStateLabel.Text = 'Yes';
+            else
+                [X, Y, Z] = sphere;
+                radius = 1;
+                XX = X * radius + cpobj1(1);
+                YY = Y * radius + cpobj1(2);
+                ZZ = Z * radius + cpobj1(3);
+                surface(self.app.PlotAxes, XX, YY, ZZ);
+                
+                XX = X * radius + cpobj2(1);
+                YY = Y * radius + cpobj2(2);
+                ZZ = Z * radius + cpobj2(3);
+                surface(self.app.PlotAxes, XX, YY, ZZ);
+                
+                self.app.MinimumDistanceNumber.Text = num2str(DistanceNumber);
+                self.app.CollisionStateLabel.Text = 'No';
+                % K = convhull(self.app.meMesh.me.Vertices)
+                % trimesh(self.app.PlotAxes, K, self.app.meMesh.me.Vertices(:,1), self.app.meMesh.me.Vertices(:, 2), self.app.meMesh.me.Vertices(:, 3));
+            end
+            % hold(self.app.PlotAxes, 'on');
+        end
+        
+        function drawHead(self)
+            cla(self.app.HeadAxes);
+            copyobj(self.app.PlotAxes.Children, self.app.HeadAxes);
+            axis(self.app.HeadAxes, 'equal');
+            xi = self.app.wrist.pose(1, end - 1);
+            yi = self.app.wrist.pose(2, end - 1);
+            zi = self.app.wrist.pose(3, end - 1);
+            xf = self.app.wrist.pose(1,end);
+            yf = self.app.wrist.pose(2,end);
+            zf = self.app.wrist.pose(3,end);
+            diffx = xf - xi;
+            diffy = yf - yi;
+            diffz = zf - zi;
+            campos(self.app.HeadAxes, [xf, yf, zf])
+            camtarget(self.app.HeadAxes, [xf + diffx, yf + diffy, zf + diffz])
+            camva(self.app.HeadAxes, self.app.HeadVisionFOVangleSlider.Value);
         end
     end
 end

@@ -12,11 +12,12 @@ addpath('src/cost-functions');
 addpath('src/utils');
 addpath('src/utils/stlTools/');
 addpath('src/utils/visibility/');
-addpath('src/kinematics');
+addpath('src/kinematics'); 
 addpath('src/path-planning');
 addpath('src/utils/ray-casting/');
 addpath('src/gui');
 addpath('src/gui/images');
+addpath('src/collision/MatlabCode');
 
 %% Robot Settings
 
