@@ -161,11 +161,14 @@ classdef appController < handle
             %hold(self.app.PlotAxes, 'on');
             
             if self.app.collisionFlag
-                if ~isempty(self.app.meMesh)
-                    self.detectCollision() % Perform collision detection
+                if ~isempty(self.app.osMesh)
+                    self.detectCollision('triangular');
+                    % self.detectCollision('GJK'); % Perform
                 else
                     self.app.CollisionStateLabel.Text = 'No';
                 end
+            else
+                self.app.CollisionStateLabel.Text = 'No';
             end
             
             if self.app.ToggleHeadVisionCheckBox.Value
@@ -173,44 +176,77 @@ classdef appController < handle
             end
         end
         
-        function detectCollision(self)
-            X = rmmissing(X);
-            Y = rmmissing(Y);
-            Z = rmmissing(Z);
-            totalX = X(:);
-            totalY = Y(:);
-            totalZ = Z(:);
-            
-            total = [totalX totalY totalZ];
-            lol.vertices = total;
-            
-            % disp("HERERERERE");
-            
-            % disp("HERERERERE2");
-            self.app.meMesh.vertices = self.app.meMesh.Vertices;
-            [collisionResult, DistanceNumber, cpobj1, cpobj2]  = CollisionDetection(self.app.meMesh, lol);
-            
-            if collisionResult
-                self.app.CollisionStateLabel.Text = 'Yes';
-            else
-                [X, Y, Z] = sphere;
-                radius = 1;
-                XX = X * radius + cpobj1(1);
-                YY = Y * radius + cpobj1(2);
-                ZZ = Z * radius + cpobj1(3);
-                surface(self.app.PlotAxes, XX, YY, ZZ);
+        function detectCollision(self, type)
+            if strcmp(type, 'GJK')
+                robotModel = self.app.wrist.robotModel;
+                X = robotModel.surface.X;
+                Y = robotModel.surface.Y;
+                Z = robotModel.surface.Z;
+                X = rmmissing(X);
+                Y = rmmissing(Y);
+                Z = rmmissing(Z);
+                totalX = X(:);
+                totalY = Y(:);
+                totalZ = Z(:);
                 
-                XX = X * radius + cpobj2(1);
-                YY = Y * radius + cpobj2(2);
-                ZZ = Z * radius + cpobj2(3);
-                surface(self.app.PlotAxes, XX, YY, ZZ);
+                total = [totalX totalY totalZ];
+                lol.vertices = total;
                 
-                self.app.MinimumDistanceNumber.Text = num2str(DistanceNumber);
-                self.app.CollisionStateLabel.Text = 'No';
-                % K = convhull(self.app.meMesh.me.Vertices)
-                % trimesh(self.app.PlotAxes, K, self.app.meMesh.me.Vertices(:,1), self.app.meMesh.me.Vertices(:, 2), self.app.meMesh.me.Vertices(:, 3));
+                % disp("HERERERERE");
+                
+                % disp("HERERERERE2");
+                self.app.meMesh.vertices = self.app.meMesh.Vertices;
+                [collisionResult, DistanceNumber, cpobj1, cpobj2]  = CollisionDetection(self.app.osMesh, lol);
+                
+                if collisionResult
+                    self.app.CollisionStateLabel.Text = 'Yes';
+                else
+                    [X, Y, Z] = sphere;
+                    radius = 1;
+                    XX = X * radius + cpobj1(1);
+                    YY = Y * radius + cpobj1(2);
+                    ZZ = Z * radius + cpobj1(3);
+                    surface(self.app.PlotAxes, XX, YY, ZZ);
+                    
+                    XX = X * radius + cpobj2(1);
+                    YY = Y * radius + cpobj2(2);
+                    ZZ = Z * radius + cpobj2(3);
+                    surface(self.app.PlotAxes, XX, YY, ZZ);
+                    
+                    self.app.MinimumDistanceNumber.Text = num2str(DistanceNumber);
+                    self.app.CollisionStateLabel.Text = 'No';
+                    % K = convhull(self.app.meMesh.me.Vertices)
+                    % trimesh(self.app.PlotAxes, K, self.app.meMesh.me.Vertices(:,1), self.app.meMesh.me.Vertices(:, 2), self.app.meMesh.me.Vertices(:, 3));
+                end
+                % hold(self.app.PlotAxes, 'on');
             end
-            % hold(self.app.PlotAxes, 'on');
+            
+            if strcmp(type, 'triangular')
+                
+                robotModel = self.app.wrist.robotModel;
+                X = robotModel.surface.X;
+                Y = robotModel.surface.Y;
+                Z = robotModel.surface.Z;
+                X = rmmissing(X);
+                Y = rmmissing(Y);
+                Z = rmmissing(Z);
+                totalX = X(:);
+                totalY = Y(:);
+                totalZ = Z(:);
+                total = [totalX totalY totalZ];
+                collision = intriangulation(self.app.osMesh.Vertices, self.app.osMesh.Faces, total);
+                collision = sum(collision)
+                if collision > 1
+                    disp('Collision detected.');
+                    
+                end
+                if collision
+                    self.app.CollisionStateLabel.Text = 'Yes';
+                    disp("BOOM");
+                else
+                    self.app.CollisionStateLabel.Text = 'No';
+                end
+            end
         end
         
         function drawHead(self)

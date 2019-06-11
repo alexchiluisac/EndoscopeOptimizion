@@ -23,9 +23,9 @@ addpath('src/collision/MatlabCode');
 
 % Defining cut-outs
 % Width of cut: 85% of the OD
-cutouts.w = 1.275 * ones(4);
-cutouts.u = ones(4);
-cutouts.h = ones(4);
+cutouts.w = [1.275 1.275 1.275 1.275];
+cutouts.u = [1 1 1 1];
+cutouts.h = [1 1 1 1];
 cutouts.alpha = [0 0 pi/2 0];
 
 % Create the controller object, start the interface

@@ -21,6 +21,7 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
         transformations     % Transformation matrix
         curvature           % Curvature of the wrist links
         arcLength           % Arc length of the wrist links
+        robotModel          % A model of the robot
     end
     
     methods
@@ -255,6 +256,7 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
             robotModel.surface.X = X;
             robotModel.surface.Y = Y;
             robotModel.surface.Z = Z;
+            self.robotModel = robotModel;
         end
     end
 end
