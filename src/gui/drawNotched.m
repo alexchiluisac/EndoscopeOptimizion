@@ -2,18 +2,21 @@ function drawNotched(app)
 %DRAWNOTCHED Draw a notched tube with notches and arrows to the notches
 %   Created as a visual explanation of the currently designed tube in the
 %   design tab.
-currentlySelected = str2double(app.NotchID.Value);
+
+currentlySelected = str2double(app.NotchID.Value); 
 ax = app.NotchedAxes;
 cla(ax); % clear the axes
 
-cuts = app.wrist.cutouts; % Cuts in the wrist
+cuts = app.wrist.cutouts; % Current cuts in the wrist
 od = app.wrist.OD; % Outer dimension of the wrist
 counter = 1;
 previousZ = 0;
 
 %% Draw cannulae
-baseZ = 2;
+baseZ = 2; % Representation of canula is 2mm tall
 [X,Y,Z] = cylinder(od);
+
+% Set height of cylinder
 Z(1,:) = 0;
 Z(2,:) = baseZ;
 surf(ax, X, Y, Z ,'facecolor', '#232528', 'edgecolor', '#585d68','LineWidth', 0.003)

@@ -12,4 +12,4 @@ addpath('path-planning');
 addpath('utils/ray-casting/');
 addpath('gui');
 addpath('gui/images');
-
+addpath('src/collision/MatlabCode');
