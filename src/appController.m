@@ -15,6 +15,7 @@ classdef appController < handle
         initialFlag; % Track whether this is the first loop or not
         loopTimer % Looping call-back timer
             % Controls the looping of the entire project
+        loopCounter = 0;
     end
     
     methods
@@ -32,14 +33,27 @@ classdef appController < handle
             self.arduinoControl = arduinoController();
             
             % Start the application
-            self.startApp();
+            % self.startApp();
+            self.loopingAlternative();
+            
+        end
+        
+        % An alternative to the timer application
+        function loopingAlternative(self)
+            
+            while ~self.app.stopFlag
+               self.update(0,0);
+               self.loopCounter = self.loopCounter + 1;
+               disp(self.loopCounter);
+               pause(0.05);
+            end
         end
         
         % Application start-up function
         function startApp(self)
             
             % Error handling statment
-            try
+             try
                 
                 % Initialize the looping timer
                 self.loopTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
@@ -50,7 +64,7 @@ classdef appController < handle
                 
                 % Set-up and error function to handle termination of the
                 % program
-                self.loopTimer.ErrorFcn = @self.delete;
+                %self.loopTimer.ErrorFcn = @self.delete;
                 
                 % Start the looping timer
                 start(self.loopTimer);
@@ -108,7 +122,7 @@ classdef appController < handle
             %% Draw
             
             % Error handling for the graphics and kinematics
-            try 
+%             try 
                 
                 % Delete specific graphical objects from the GUI
                 
@@ -133,12 +147,12 @@ classdef appController < handle
                 % Update the simulation: Grapics + kinematics
                 self.updateSimulation(); 
                 
-            catch ME
-                % Catch any error and display on the app to let user know
-                % what is going on
-                self.error = 1;
-                exception = ME;
-            end
+%             catch ME
+%                 % Catch any error and display on the app to let user know
+%                 % what is going on
+%                 self.error = 1;
+%                 exception = ME;
+%             end
             
             % Print the error if there is one
             if self.error
@@ -212,6 +226,27 @@ classdef appController < handle
             if self.app.ToggleHeadVisionCheckBox.Value
                 self.drawHead(); % Draw the head projection graph
             end
+            
+            if self.app.RayTraceAreaVisibilityCheckBox.Value && ~isempty(self.app.osMesh)
+               [faces, vertices] = self.checkRayTrace(); 
+               
+               faces
+               vertices
+               patch(self.app.PlotAxes, 'Faces', self.app.meMesh.Faces(faces), 'Vertices', self.app.meMesh.Vertices(vertices), 'FaceColor', ...
+                '#dbd955', 'FaceLighting','gouraud', ...
+                'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
+            end
+            
+            
+            
+        end
+        
+        
+        % CHECKRAYTRACE
+        % Check the visibility of the wrist
+        function [seenFaces2, seenVertices2] = checkRayTrace(self)
+            % TODO -- implement ray trace target area check here
+            [seenFaces2, seenVertices2] = visiblesurfaceApp(self.app);
         end
         
         % DETECTCOLLISION
