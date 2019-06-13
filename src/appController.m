@@ -16,6 +16,8 @@ classdef appController < handle
         loopTimer % Looping call-back timer
             % Controls the looping of the entire project
         loopCounter = 0;
+        
+        rayCastingPatch;
     end
     
     methods
@@ -33,8 +35,8 @@ classdef appController < handle
             self.arduinoControl = arduinoController();
             
             % Start the application
-            % self.startApp();
-            self.loopingAlternative();
+            self.startApp();
+            %self.loopingAlternative();
             
         end
         
@@ -56,7 +58,7 @@ classdef appController < handle
              try
                 
                 % Initialize the looping timer
-                self.loopTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
+                self.loopTimer = timer('Period', 1.0, 'BusyMode', 'drop', 'ExecutionMode', ...
                     'fixedDelay');
                 
                 % Configure the looping function 
@@ -64,7 +66,7 @@ classdef appController < handle
                 
                 % Set-up and error function to handle termination of the
                 % program
-                %self.loopTimer.ErrorFcn = @self.delete;
+                self.loopTimer.ErrorFcn = @self.delete;
                 
                 % Start the looping timer
                 start(self.loopTimer);
@@ -83,8 +85,7 @@ classdef appController < handle
         function update(self, obj, event)
             %% Check Termination Flag
             if self.app.stopFlag
-                stop(self.loopTimer);
-                self.delete(0,0); % Terminate the program
+                self.delete(self.loopTimer,0); % Terminate the program
             end
             
             %% Updating values
@@ -230,11 +231,16 @@ classdef appController < handle
             if self.app.RayTraceAreaVisibilityCheckBox.Value && ~isempty(self.app.osMesh)
                [faces, vertices] = self.checkRayTrace(); 
                
-               faces
-               vertices
-               patch(self.app.PlotAxes, 'Faces', self.app.meMesh.Faces(faces), 'Vertices', self.app.meMesh.Vertices(vertices), 'FaceColor', ...
+               faces = faces';
+               size(self.app.meMesh.Faces);
+               size(faces);
+               result = self.app.meMesh.Faces .* faces;
+               lol = result(all(result,2), :);
+               delete(self.rayCastingPatch);
+               self.rayCastingPatch = patch(self.app.PlotAxes, 'Faces', lol, 'Vertices', self.app.meMesh.Vertices, 'FaceColor', ...
                 '#dbd955', 'FaceLighting','gouraud', ...
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
+            self.app.RayTraceAreaVisibilityCheckBox.Value = false;
             end
             
             

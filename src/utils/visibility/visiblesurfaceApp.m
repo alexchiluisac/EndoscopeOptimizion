@@ -22,5 +22,5 @@ magVec = sqrt((diffx)^2 + (diffy)^2 + (diffz)^2);
 unitVec = [diffx/magVec, diffy/magVec, diffz/magVec];
 notUnitVec = [diffx, diffy, diffz];
 
-[seenFaces, seenVertices] = visibilitymap([xf yf zf], notUnitVec, app.meMesh);
+[seenFaces, seenVertices] = visibilitymap([xf yf zf], unitVec, app.meMesh);
 end
