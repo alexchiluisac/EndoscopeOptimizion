@@ -1,7 +1,7 @@
 function [seenFaces, seenVertices] = visibilitymap(viewPoint, approachVec, anatomyModel)
 %% WE'LL WRITE THE DOCUMENTATION LATER
 %  03/14/2019 still no documentation, dammit
-
+  
   faces = anatomyModel.faces;
   vertices = anatomyModel.vertices;
   viewPoint = viewPoint';
@@ -10,7 +10,7 @@ function [seenFaces, seenVertices] = visibilitymap(viewPoint, approachVec, anato
 %   size(rays)
 %   length(rays)
   % Convert rays into unit vectors
-  size(rays)
+  
   raysu = zeros(size(rays, 1), size(rays, 2));
   
   for k = 1 : length(rays)
@@ -29,6 +29,17 @@ function [seenFaces, seenVertices] = visibilitymap(viewPoint, approachVec, anato
   product = sum(approachVecRep' .* raysu);
   FOV =  90 * pi / 180;
   seenVertices = (product > cos(FOV / 2));
+  
+%   osVertices = osVertices';
+% 
+%   osFaces = osFaces';
+%   vertices = horzcat(vertices, osVertices);
+%   
+  % vertices = [vertices osVertices];
+  %size(faces)
+%   %size(osFaces)
+%   facesUpdate = osFaces + max(max(faces));
+%   faces = horzcat(faces, facesUpdate);
   seenVertices = visualrange(viewPoint, vertices, double(seenVertices), faces-1);
   
   seenFaces = seenVertices(faces);

@@ -5,16 +5,16 @@ classdef appController < handle
     
     properties
         configuration;      % Configuration of the wrist
-            % Three-element array
-            % [displacement, rotation, advancement]
+        % Three-element array
+        % [displacement, rotation, advancement]
         app;                % Front-end Application Designer App
         error;              % Error flag to display error in app
         arduinoControl;   % Arduino Controller object
-            % Controls Arduino and Hardware Control Interface, updates and
-            % reads the Nunchuk values from the arduino.
+        % Controls Arduino and Hardware Control Interface, updates and
+        % reads the Nunchuk values from the arduino.
         initialFlag; % Track whether this is the first loop or not
         loopTimer % Looping call-back timer
-            % Controls the looping of the entire project
+        % Controls the looping of the entire project
         loopCounter = 0;
         
         rayCastingPatch;
@@ -35,8 +35,8 @@ classdef appController < handle
             self.arduinoControl = arduinoController();
             
             % Start the application
-            self.startApp();
-            %self.loopingAlternative();
+            % self.startApp();
+            self.loopingAlternative();
             
         end
         
@@ -44,10 +44,10 @@ classdef appController < handle
         function loopingAlternative(self)
             
             while ~self.app.stopFlag
-               self.update(0,0);
-               self.loopCounter = self.loopCounter + 1;
-               disp(self.loopCounter);
-               pause(0.05);
+                self.update(0,0);
+                self.loopCounter = self.loopCounter + 1;
+                disp(self.loopCounter);
+                pause(0.05);
             end
         end
         
@@ -55,13 +55,13 @@ classdef appController < handle
         function startApp(self)
             
             % Error handling statment
-             try
+            try
                 
                 % Initialize the looping timer
-                self.loopTimer = timer('Period', 1.0, 'BusyMode', 'drop', 'ExecutionMode', ...
-                    'fixedDelay');
+                self.loopTimer = timer('Period', 0.1, 'BusyMode', 'drop', 'ExecutionMode', ...
+                    'fixedRate');
                 
-                % Configure the looping function 
+                % Configure the looping function
                 self.loopTimer.TimerFcn = @self.update;
                 
                 % Set-up and error function to handle termination of the
@@ -73,7 +73,7 @@ classdef appController < handle
             catch ME
                 % Error handling
                 % Remove all children objects
-                controller.delete(); 
+                controller.delete();
                 delete(controller);
                 rethrow(ME)
             end
@@ -123,37 +123,37 @@ classdef appController < handle
             %% Draw
             
             % Error handling for the graphics and kinematics
-%             try 
-                
-                % Delete specific graphical objects from the GUI
-                
-                % Delete the surface plot of the wrist
-                axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
-                if ~isempty(axesHandlesToChildObjects)
-                    delete(axesHandlesToChildObjects);
-                end
-                
-                
-                % Legacy code -- removing the scatter plot and robot
-                % backbone
-%                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
-%                 if ~isempty(axesHandlesToChildObjects)
-%                     delete(axesHandlesToChildObjects);
-%                 end
-%                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
-%                 if ~isempty(axesHandlesToChildObjects)
-%                     delete(axesHandlesToChildObjects);
-%                 end
-
-                % Update the simulation: Grapics + kinematics
-                self.updateSimulation(); 
-                
-%             catch ME
-%                 % Catch any error and display on the app to let user know
-%                 % what is going on
-%                 self.error = 1;
-%                 exception = ME;
-%             end
+            %             try
+            
+            % Delete specific graphical objects from the GUI
+            
+            % Delete the surface plot of the wrist
+            axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
+            if ~isempty(axesHandlesToChildObjects)
+                delete(axesHandlesToChildObjects);
+            end
+            
+            
+            % Legacy code -- removing the scatter plot and robot
+            % backbone
+            %                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
+            %                 if ~isempty(axesHandlesToChildObjects)
+            %                     delete(axesHandlesToChildObjects);
+            %                 end
+            %                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
+            %                 if ~isempty(axesHandlesToChildObjects)
+            %                     delete(axesHandlesToChildObjects);
+            %                 end
+            
+            % Update the simulation: Grapics + kinematics
+            self.updateSimulation();
+            
+            %             catch ME
+            %                 % Catch any error and display on the app to let user know
+            %                 % what is going on
+            %                 self.error = 1;
+            %                 exception = ME;
+            %             end
             
             % Print the error if there is one
             if self.error
@@ -171,7 +171,7 @@ classdef appController < handle
         function delete(self, obj, event)
             stop(obj); % Stop the timer
             self.arduinoControl.delete(); % Delete the arduino controller children
-            delete(self.arduinoControl); % Delete the arduino controller 
+            delete(self.arduinoControl); % Delete the arduino controller
             self.app.delete(); % Delete this
         end
         
@@ -195,7 +195,7 @@ classdef appController < handle
             % plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.0);
             
             robotModel = self.app.wrist.makePhysicalModel();
-
+            
             % Draw the robot surface model
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;
@@ -229,18 +229,19 @@ classdef appController < handle
             end
             
             if self.app.RayTraceAreaVisibilityCheckBox.Value && ~isempty(self.app.osMesh)
-               [faces, vertices] = self.checkRayTrace(); 
-               
-               faces = faces';
-               size(self.app.meMesh.Faces);
-               size(faces);
-               result = self.app.meMesh.Faces .* faces;
-               lol = result(all(result,2), :);
-               delete(self.rayCastingPatch);
-               self.rayCastingPatch = patch(self.app.PlotAxes, 'Faces', lol, 'Vertices', self.app.meMesh.Vertices, 'FaceColor', ...
-                '#dbd955', 'FaceLighting','gouraud', ...
-                'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
-            self.app.RayTraceAreaVisibilityCheckBox.Value = false;
+                [faces, vertices] = self.checkRayTrace();
+                
+                faces = faces';
+                
+                result = self.app.totalMesh.Faces .* faces;
+                lol = result(all(result,2), :);
+                delete(self.rayCastingPatch);
+                self.rayCastingPatch = patch(self.app.PlotAxes, 'Faces', lol, ...
+                    'Vertices', self.app.totalMesh.Vertices, 'FaceColor', ...
+                    '#fcf92f', 'FaceLighting','gouraud', ...
+                    'AmbientStrength',0.5, 'EdgeColor', '#585d68', ...
+                    'LineWidth', 0.003, 'FaceAlpha', 0.8);
+                self.app.RayTraceAreaVisibilityCheckBox.Value = false;
             end
             
             
@@ -250,15 +251,36 @@ classdef appController < handle
         
         % CHECKRAYTRACE
         % Check the visibility of the wrist
-        function [seenFaces2, seenVertices2] = checkRayTrace(self)
+        function [seenFaces, seenVertices] = checkRayTrace(self)
             % TODO -- implement ray trace target area check here
-            [seenFaces2, seenVertices2] = visiblesurfaceApp(self.app);
+            self.app.totalMesh.vertices = self.app.totalMesh.Vertices';
+            self.app.totalMesh.faces = self.app.totalMesh.Faces';
+            
+            % Location behind the head
+            xi = self.app.wrist.pose(1, end - 1);
+            yi = self.app.wrist.pose(2, end - 1);
+            zi = self.app.wrist.pose(3, end - 1);
+            
+            % Location of the head
+            xf = self.app.wrist.pose(1,end);
+            yf = self.app.wrist.pose(2,end);
+            zf = self.app.wrist.pose(3,end);
+            
+            % Difference between the two
+            diffx = xf - xi;
+            diffy = yf - yi;
+            diffz = zf - zi;
+            
+            magVec = sqrt((diffx)^2 + (diffy)^2 + (diffz)^2);
+            unitVec = [diffx/magVec, diffy/magVec, diffz/magVec];
+            notUnitVec = [diffx, diffy, diffz];
+            [seenFaces, seenVertices] = visibilitymap([xf yf zf], unitVec, self.app.totalMesh);
         end
         
         % DETECTCOLLISION
         % type - string - Representing the desired collision option
-            % 'GJK' - For GJK collision detection
-            % 'triangular' - For intriangulation collision detection
+        % 'GJK' - For GJK collision detection
+        % 'triangular' - For intriangulation collision detection
         function detectCollision(self, type)
             if strcmp(type, 'GJK')
                 % Perform GJK collision detection
