@@ -18,6 +18,7 @@ classdef appController < handle
         loopCounter = 0;
         
         rayCastingPatch;
+        collisionScatter;
     end
     
     methods
@@ -35,7 +36,7 @@ classdef appController < handle
             self.arduinoControl = arduinoController();
             
             % Start the application
-            % self.startApp();
+            %self.startApp();
             self.loopingAlternative();
             
         end
@@ -46,7 +47,7 @@ classdef appController < handle
             while ~self.app.stopFlag
                 self.update(0,0);
                 self.loopCounter = self.loopCounter + 1;
-                disp(self.loopCounter);
+                %disp(self.loopCounter);
                 pause(0.05);
             end
         end
@@ -346,8 +347,16 @@ classdef appController < handle
                 total = [totalX totalY totalZ];
                 
                 % Call the intriangulation collsion detection
-                collision = intriangulation(self.app.osMesh.Vertices, self.app.osMesh.Faces, total);
+                [collision points] = intriangulation(self.app.osMesh.Vertices, self.app.osMesh.Faces, total);
                 collision = sum(collision);
+                
+                if ~isempty(points)
+                    points
+                    delete(self.collisionScatter);
+                    self.collisionScatter = scatter3(self.app.PlotAxes, ...
+                        points(:, 1), points(:, 2), points(:, 3), ...
+                        5, 'filled', 'MarkerFaceColor', '#e22424');
+                end
                 
                 if collision
                     self.app.CollisionStateLabel.Text = 'Yes';
