@@ -1,0 +1,34 @@
+ --- Notched Endoscope Research Design Software --- 
+COgnitive MEdical Technology (COMET) Laboratory 
+Professor Loris Fichera 
+Software by: Floris van Rossum 
+
+
+ --- INSTRUCTIONS --- 
+ 
+ --- YOUR NOTCHED TUBE --- 
+Created on: 14-Jun-2019 16:12:20 at, Tube Parameters: 
+Notch 1 
+	 Spacing: 1 mm 
+	 Alpha:   1 rad
+	 Width:   1 mm
+	 Height: 1 mm
+
+Notch 2 
+	 Spacing: 1 mm 
+	 Alpha:   1 rad
+	 Width:   1 mm
+	 Height: 1 mm
+
+Notch 3 
+	 Spacing: 1 mm 
+	 Alpha:   1 rad
+	 Width:   1 mm
+	 Height: 1 mm
+
+Notch 4 
+	 Spacing: 1 mm 
+	 Alpha:   1 rad
+	 Width:   1 mm
+	 Height: 1 mm
+

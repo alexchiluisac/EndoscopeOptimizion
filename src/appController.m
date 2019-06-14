@@ -351,7 +351,6 @@ classdef appController < handle
                 collision = sum(collision);
                 
                 if ~isempty(points)
-                    points
                     delete(self.collisionScatter);
                     self.collisionScatter = scatter3(self.app.PlotAxes, ...
                         points(:, 1), points(:, 2), points(:, 3), ...
