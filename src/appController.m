@@ -37,7 +37,7 @@ classdef appController < handle
             
             % Start the application
             self.startApp();
-            %self.loopingAlternative();
+            % self.loopingAlternative();
             
         end
         
@@ -54,13 +54,12 @@ classdef appController < handle
         
         % Application start-up function
         function startApp(self)
-            
             % Error handling statment
             try
                 
                 % Initialize the looping timer
-                self.loopTimer = timer('Period', 0.1, 'BusyMode', 'drop', 'ExecutionMode', ...
-                    'fixedRate');
+                self.loopTimer = timer('Period', 0.25, 'BusyMode', 'drop', 'ExecutionMode', ...
+                    'fixedSpacing');
                 
                 % Configure the looping function
                 self.loopTimer.TimerFcn = @self.update;
@@ -89,13 +88,18 @@ classdef appController < handle
                 self.delete(self.loopTimer,0); % Terminate the program
             end
             
+            % disp(self.app.PlotAxes.Children)
             %% Updating values
             self.error = 0;
             
             %% CONTROL METHODS
             
             % Ask arduino to retrieve new Nunchuk values
+            
             self.arduinoControl.updateNunchukValues();
+%             self.arduinoControl.zdir = 0;
+%             self.arduinoControl.joyX = 0;
+%             self.arduinoControl.joyY = 0;
             
             % Update the robot configuration based on control values
             % Only if the robot tendon displacement is greater than 0
@@ -145,7 +149,9 @@ classdef appController < handle
             end
             
             % Force the draw, limited to 20 FPS
-            drawnow limitrate;
+            % drawnow limitrate;
+            hold(self.app.PlotAxes, 'off');
+            
         end
         
         % DELETE
@@ -160,7 +166,7 @@ classdef appController < handle
         % UPDATESIMULATION
         % Update the Simulation and Kinematics of the app
         function updateSimulation(self)
-            
+            hold(self.app.PlotAxes, 'on');
             % Perform transform if necessary
             if ~isempty(self.app.transform)
                 % STL is loaded, draw wrist in STL
@@ -188,7 +194,7 @@ classdef appController < handle
             
             % Draw the new robot surface
             self.robotSurface = surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
-                '#5cb5db', 'FaceLighting','gouraud', ...
+                '#5cb5db', ...
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
             
             % Check if collision detection is necessary
@@ -223,11 +229,13 @@ classdef appController < handle
                 result = self.app.totalMesh.Faces .* faces;
                 lol = result(all(result,2), :);
                 delete(self.rayCastingPatch);
+                hold(self.app.PlotAxes, 'on');
                 self.rayCastingPatch = patch(self.app.PlotAxes, 'Faces', lol, ...
                     'Vertices', self.app.totalMesh.Vertices, 'FaceColor', ...
                     '#fcf92f', 'FaceLighting','gouraud', ...
                     'AmbientStrength',0.5, 'EdgeColor', '#585d68', ...
                     'LineWidth', 0.003, 'FaceAlpha', 0.8);
+                
                 self.app.RayTraceAreaVisibilityCheckBox.Value = false;
             end
             
@@ -298,12 +306,12 @@ classdef appController < handle
                     YY = Y * radius + cpobj1(2);
                     ZZ = Z * radius + cpobj1(3);
                     surface(self.app.PlotAxes, XX, YY, ZZ);
-                    
+                    hold(self.app.PlotAxes, 'on');
                     XX = X * radius + cpobj2(1);
                     YY = Y * radius + cpobj2(2);
                     ZZ = Z * radius + cpobj2(3);
                     surface(self.app.PlotAxes, XX, YY, ZZ);
-                    
+                    hold(self.app.PlotAxes, 'on');
                     self.app.MinimumDistanceNumber.Text = num2str(DistanceNumber);
                     self.app.CollisionStateLabel.Text = 'No';
                     % K = convhull(self.app.meMesh.me.Vertices)
@@ -338,6 +346,7 @@ classdef appController < handle
                 
                 if ~isempty(points)
                     delete(self.collisionScatter);
+                    hold(self.app.PlotAxes, 'on');
                     self.collisionScatter = scatter3(self.app.PlotAxes, ...
                         points(:, 1), points(:, 2), points(:, 3), ...
                         5, 'filled', 'MarkerFaceColor', '#e22424');
@@ -412,7 +421,7 @@ classdef appController < handle
             X = [xi (xi + length * unit_x)];
             Y = [yi (yi + length * unit_y)];
             Z = [zi (zi + length * unit_z)];
-            
+            hold(self.app.PlotAxes, 'on');
             delete(self.app.visionLine);
             self.app.visionLine = plot3(self.app.PlotAxes, X, Y, Z, 'Color', '#e51919', ...
                 'LineWidth', 0.3);
