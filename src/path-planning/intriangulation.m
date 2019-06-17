@@ -97,7 +97,7 @@ for n = 1:heavytest+1,
     % x-direction:
     % has only to be done for those points, that were not determinable in the first step --> cl
     [in2,cl2, pointReturn2] = VOXELISEinternal(testp(cl,2),testp(cl,3),testp(cl,1),meshXYZ(:,[2,3,1],:));
-    pointReturn = [pointReturn; pointReturn2];
+    %pointReturn = [pointReturn; pointReturn2];
     % Use results of x-direction that determined "inside"
     in(cl(in2==1)) = 1;
     % remaining indices with unclear result
@@ -106,7 +106,7 @@ for n = 1:heavytest+1,
     % y-direction:
     % has only to be done for those points, that were not determinable in the first and second step --> cl
     [in3,cl3, pointReturn3] = VOXELISEinternal(testp(cl,3),testp(cl,1),testp(cl,2),meshXYZ(:,[3,1,2],:));
-    pointReturn = [pointReturn ; pointReturn3];
+    %pointReturn = [pointReturn ; pointReturn3];
     % Use results of y-direction that determined "inside"
     in(cl(in3==1)) = 1;
     % remaining indices with unclear result

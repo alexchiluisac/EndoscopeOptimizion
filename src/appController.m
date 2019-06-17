@@ -13,6 +13,8 @@ classdef appController < handle
         % reads the Nunchuk values from the arduino.
         initialFlag; % Track whether this is the first loop or not
         loopTimer % Looping call-back timer
+        drawingTimer % Looping draw timer
+        controlsTimer % Get controller values
         % Controls the looping of the entire project
         loopCounter = 0;
         
@@ -45,7 +47,8 @@ classdef appController < handle
         function loopingAlternative(self)
             
             while ~self.app.stopFlag
-                self.update(0,0);
+                self.updateValues(0,0);
+                self.updateGraphics(0,0);
                 self.loopCounter = self.loopCounter + 1;
                 %disp(self.loopCounter);
                 pause(0.05);
@@ -56,20 +59,43 @@ classdef appController < handle
         function startApp(self)
             % Error handling statment
             try
-                
                 % Initialize the looping timer
-                self.loopTimer = timer('Period', 0.25, 'BusyMode', 'drop', 'ExecutionMode', ...
+                self.loopTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
                     'fixedSpacing');
                 
                 % Configure the looping function
-                self.loopTimer.TimerFcn = @self.update;
+                self.loopTimer.TimerFcn = @self.updateValues;
                 
                 % Set-up and error function to handle termination of the
                 % program
                 self.loopTimer.ErrorFcn = @self.delete;
                 
+                % Initialize the looping timer
+                self.drawingTimer = timer('Period', 0.1, 'BusyMode', 'drop', 'ExecutionMode', ...
+                    'fixedRate');
+                
+                % Configure the looping function
+                self.drawingTimer.TimerFcn = @self.updateGraphics;
+                
+                % Set-up and error function to handle termination of the
+                % program
+                self.drawingTimer.ErrorFcn = @self.delete;
+                
+                                % Initialize the looping timer
+                self.controlsTimer = timer('Period', 0.1, 'BusyMode', 'drop', 'ExecutionMode', ...
+                    'fixedRate');
+                
+                % Configure the looping function
+                self.controlsTimer.TimerFcn = @self.updateControls;
+                
+                % Set-up and error function to handle termination of the
+                % program
+                self.controlsTimer.ErrorFcn = @self.delete;
+                
                 % Start the looping timer
                 start(self.loopTimer);
+                start(self.drawingTimer);
+                start(self.controlsTimer);
             catch ME
                 % Error handling
                 % Remove all children objects
@@ -80,26 +106,13 @@ classdef appController < handle
             
         end
         
-        % UPDATE
-        % The main looping function of the entire program
-        function update(self, obj, event)
-            %% Check Termination Flag
-            if self.app.stopFlag
-                self.delete(self.loopTimer,0); % Terminate the program
-            end
-            
-            % disp(self.app.PlotAxes.Children)
-            %% Updating values
-            self.error = 0;
-            
-            %% CONTROL METHODS
-            
-            % Ask arduino to retrieve new Nunchuk values
+        function updateControls(self, obj, event)
+                        % Ask arduino to retrieve new Nunchuk values
             
             self.arduinoControl.updateNunchukValues();
-%             self.arduinoControl.zdir = 0;
-%             self.arduinoControl.joyX = 0;
-%             self.arduinoControl.joyY = 0;
+            %             self.arduinoControl.zdir = 0;
+            %             self.arduinoControl.joyX = 0;
+            %             self.arduinoControl.joyY = 0;
             
             % Update the robot configuration based on control values
             % Only if the robot tendon displacement is greater than 0
@@ -117,20 +130,66 @@ classdef appController < handle
             
             self.app.configuration = self.app.configuration + [0, -self.arduinoControl.joyX, 0];
             
+             
+            % Debugging -- print configuration change values
+            % fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
+            % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
+           
+            
+        end
+        
+        
+        % UPDATEGRAPHICS
+        % Timer called function to update graphics
+        function updateGraphics(self, obj, event)
+            if self.app.stopFlag
+                self.delete(self.loopTimer,0); % Terminate the program
+            end
+            
             % Display robot configuration on the App screen
             self.app.Advancement.Text = num2str(self.app.configuration(3));
             m = 2 * pi;
             self.app.Rotation.Text = num2str(mod(self.app.configuration(2), m));
             self.app.TendonDisplacement.Text = num2str(self.app.configuration(1));
+           
+            robotModel = self.app.wrist.robotModel;
+                        
+            % Draw the robot surface model
+            X = robotModel.surface.X;
+            Y = robotModel.surface.Y;
+            Z = robotModel.surface.Z;
             
-            % Debugging -- print configuration change values
-            % fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
-            % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
+            % Delete the previous drawing
+            delete(self.robotSurface);
             
+            % Draw the new robot surface
+            self.robotSurface = surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
+                '#5cb5db', ...
+                'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
+            
+            hold(self.app.PlotAxes, 'off');
+            
+        end
+        
+        % UPDATEVALUES
+        % The main looping function of the entire program for data
+        function updateValues(self, obj, event)
+            %% Check Termination Flag
+            if self.app.stopFlag
+                self.delete(self.loopTimer,0); % Terminate the program
+            end
+            
+            % disp(self.app.PlotAxes.Children)
+            %% Updating values
+            self.error = 0;
+            
+            %% CONTROL METHODS
+            
+ 
             %% Draw
             
             % Error handling for the graphics and kinematics
-            try 
+            try
                 % Update the simulation: Grapics + kinematics
                 self.updateSimulation();
                 
@@ -150,8 +209,7 @@ classdef appController < handle
             
             % Force the draw, limited to 20 FPS
             % drawnow limitrate;
-            hold(self.app.PlotAxes, 'off');
-            
+
         end
         
         % DELETE
@@ -182,20 +240,7 @@ classdef appController < handle
             % Draw black line -- backbone
             % plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.0);
             
-            robotModel = self.app.wrist.makePhysicalModel();
-            
-            % Draw the robot surface model
-            X = robotModel.surface.X;
-            Y = robotModel.surface.Y;
-            Z = robotModel.surface.Z;
-            
-            % Delete the previous drawing
-            delete(self.robotSurface);
-            
-            % Draw the new robot surface
-            self.robotSurface = surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
-                '#5cb5db', ...
-                'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
+            self.app.wrist.makePhysicalModel();
             
             % Check if collision detection is necessary
             if self.app.collisionFlag
@@ -229,7 +274,6 @@ classdef appController < handle
                 result = self.app.totalMesh.Faces .* faces;
                 lol = result(all(result,2), :);
                 delete(self.rayCastingPatch);
-                hold(self.app.PlotAxes, 'on');
                 self.rayCastingPatch = patch(self.app.PlotAxes, 'Faces', lol, ...
                     'Vertices', self.app.totalMesh.Vertices, 'FaceColor', ...
                     '#fcf92f', 'FaceLighting','gouraud', ...
