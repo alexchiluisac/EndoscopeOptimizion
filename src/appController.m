@@ -4,9 +4,8 @@ classdef appController < handle
     %       app as well as the ArduinoNunchuk control interface.
     
     properties
-        configuration;      % Configuration of the wrist
-        % Three-element array
-        % [displacement, rotation, advancement]
+        % configuration;      % Configuration of the wrist
+
         app;                % Front-end Application Designer App
         error;              % Error flag to display error in app
         arduinoControl;   % Arduino Controller object
@@ -19,6 +18,7 @@ classdef appController < handle
         
         rayCastingPatch;
         collisionScatter;
+        
     end
     
     methods
@@ -30,7 +30,7 @@ classdef appController < handle
             self.app = NotchedDesigner(ID, OD, nCutouts, cutouts);
             
             % Configure the robot configuration
-            self.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement];
+            self.app.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement];
             
             % Initialize the arduino controller
             self.arduinoControl = arduinoController();
@@ -105,17 +105,17 @@ classdef appController < handle
             self.arduinoControl.updateNunchukValues();
             
             % Update the robot configuration based on control values
-            if self.configuration(1) <= 0 && self.arduinoControl.zdir < 0
-                self.configuration = self.configuration + [0, -self.arduinoControl.joyX, self.arduinoControl.joyY];
+            if self.app.configuration(1) <= 0 && self.arduinoControl.zdir < 0
+                self.app.configuration = self.app.configuration + [0, -self.arduinoControl.joyX, self.arduinoControl.joyY];
             else
-                self.configuration = self.configuration + [self.arduinoControl.zdir, -self.arduinoControl.joyX, self.arduinoControl.joyY];
+                self.app.configuration = self.app.configuration + [self.arduinoControl.zdir, -self.arduinoControl.joyX, self.arduinoControl.joyY];
             end
             
             % Display robot configuration on the App screen
-            self.app.Advancement.Text = num2str(self.configuration(3));
+            self.app.Advancement.Text = num2str(self.app.configuration(3));
             m = 2 * pi;
-            self.app.Rotation.Text = num2str(mod(self.configuration(2), m));
-            self.app.TendonDisplacement.Text = num2str(self.configuration(1));
+            self.app.Rotation.Text = num2str(mod(self.app.configuration(2), m));
+            self.app.TendonDisplacement.Text = num2str(self.app.configuration(1));
             
             % Debugging -- print configuration change values
             % fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
@@ -183,10 +183,10 @@ classdef appController < handle
             % Perform transform if necessary
             if ~isempty(self.app.transform)
                 % STL is loaded, draw wrist in STL
-                self.app.wrist.fwkine(self.configuration, self.app.transform);
+                self.app.wrist.fwkine(self.app.configuration, self.app.transform);
             else
                 % STL is not loaded, draw wrist at origin (0,0,0)
-                self.app.wrist.fwkine(self.configuration, eye(4));
+                self.app.wrist.fwkine(self.app.configuration, eye(4));
             end
             
             % Draw red circles -- joints
@@ -245,8 +245,9 @@ classdef appController < handle
                 self.app.RayTraceAreaVisibilityCheckBox.Value = false;
             end
             
-            
-            
+            if self.app.ToggleVisionLineCheckBox.Value
+                self.drawVisionLine();
+            end
         end
         
         
@@ -274,7 +275,6 @@ classdef appController < handle
             
             magVec = sqrt((diffx)^2 + (diffy)^2 + (diffz)^2);
             unitVec = [diffx/magVec, diffy/magVec, diffz/magVec];
-            notUnitVec = [diffx, diffy, diffz];
             [seenFaces, seenVertices] = visibilitymap([xf yf zf], unitVec, self.app.totalMesh);
         end
         
@@ -400,6 +400,36 @@ classdef appController < handle
             
             % Change the FOV depending on the FOV slider on the UI
             camva(self.app.HeadAxes, self.app.HeadVisionFOVangleSlider.Value);
+        end
+        
+        function drawVisionLine(self)
+            length = 10;
+            % Location behind the head
+            xi = self.app.wrist.pose(1, end - 1);
+            yi = self.app.wrist.pose(2, end - 1);
+            zi = self.app.wrist.pose(3, end - 1);
+            
+            % Location of the head
+            xf = self.app.wrist.pose(1,end);
+            yf = self.app.wrist.pose(2,end);
+            zf = self.app.wrist.pose(3,end);
+            
+            % Difference between the two
+            diffx = xf - xi;
+            diffy = yf - yi;
+            diffz = zf - zi;
+            
+            n = norm([diffx diffy diffz]);
+            unit_x = diffx / n;
+            unit_y = diffy / n;
+            unit_z = diffz / n;
+            X = [xi (xi + length * unit_x)];
+            Y = [yi (yi + length * unit_y)];
+            Z = [zi (zi + length * unit_z)];
+            
+            delete(self.app.visionLine);
+            self.app.visionLine = plot3(self.app.PlotAxes, X, Y, Z, 'Color', '#e51919', ...
+                'LineWidth', 0.3);
         end
     end
 end
