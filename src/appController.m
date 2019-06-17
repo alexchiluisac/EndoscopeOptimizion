@@ -5,7 +5,7 @@ classdef appController < handle
     
     properties
         % configuration;      % Configuration of the wrist
-
+        
         app;                % Front-end Application Designer App
         error;              % Error flag to display error in app
         arduinoControl;   % Arduino Controller object
@@ -18,7 +18,7 @@ classdef appController < handle
         
         rayCastingPatch;
         collisionScatter;
-        
+        robotSurface;
     end
     
     methods
@@ -36,8 +36,8 @@ classdef appController < handle
             self.arduinoControl = arduinoController();
             
             % Start the application
-            %self.startApp();
-            self.loopingAlternative();
+            self.startApp();
+            %self.loopingAlternative();
             
         end
         
@@ -94,22 +94,24 @@ classdef appController < handle
             
             %% CONTROL METHODS
             
-            % Legacy -- KEYBOARD CONTROL
-            % self.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement]
-            
-            % Legacy -- JOYSTICK CONTROL
-            % self.arduinoControl.updateValues();
-            % self.configuration = self.configuration + [self.arduinoControl.joyX, self.arduinoControl.joyY, 0];
-            
             % Ask arduino to retrieve new Nunchuk values
             self.arduinoControl.updateNunchukValues();
             
             % Update the robot configuration based on control values
+            % Only if the robot tendon displacement is greater than 0
             if self.app.configuration(1) <= 0 && self.arduinoControl.zdir < 0
-                self.app.configuration = self.app.configuration + [0, -self.arduinoControl.joyX, self.arduinoControl.joyY];
+                self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
             else
-                self.app.configuration = self.app.configuration + [self.arduinoControl.zdir, -self.arduinoControl.joyX, self.arduinoControl.joyY];
+                self.app.configuration = self.app.configuration + [self.arduinoControl.zdir, 0, 0];
             end
+            
+            if self.app.configuration(3) <= 0 && self.arduinoControl.joyY < 0
+                self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
+            else
+                self.app.configuration = self.app.configuration + [0, 0, self.arduinoControl.joyY];
+            end
+            
+            self.app.configuration = self.app.configuration + [0, -self.arduinoControl.joyX, 0];
             
             % Display robot configuration on the App screen
             self.app.Advancement.Text = num2str(self.app.configuration(3));
@@ -124,37 +126,16 @@ classdef appController < handle
             %% Draw
             
             % Error handling for the graphics and kinematics
-            %             try
-            
-            % Delete specific graphical objects from the GUI
-            
-            % Delete the surface plot of the wrist
-            axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Surface');
-            if ~isempty(axesHandlesToChildObjects)
-                delete(axesHandlesToChildObjects);
+            try 
+                % Update the simulation: Grapics + kinematics
+                self.updateSimulation();
+                
+            catch ME
+                % Catch any error and display on the app to let user know
+                % what is going on
+                self.error = 1;
+                exception = ME;
             end
-            
-            
-            % Legacy code -- removing the scatter plot and robot
-            % backbone
-            %                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Scatter');
-            %                 if ~isempty(axesHandlesToChildObjects)
-            %                     delete(axesHandlesToChildObjects);
-            %                 end
-            %                 axesHandlesToChildObjects = findobj(self.app.PlotAxes.Children, 'Type', 'Line');
-            %                 if ~isempty(axesHandlesToChildObjects)
-            %                     delete(axesHandlesToChildObjects);
-            %                 end
-            
-            % Update the simulation: Grapics + kinematics
-            self.updateSimulation();
-            
-            %             catch ME
-            %                 % Catch any error and display on the app to let user know
-            %                 % what is going on
-            %                 self.error = 1;
-            %                 exception = ME;
-            %             end
             
             % Print the error if there is one
             if self.error
@@ -201,7 +182,12 @@ classdef appController < handle
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;
             Z = robotModel.surface.Z;
-            surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
+            
+            % Delete the previous drawing
+            delete(self.robotSurface);
+            
+            % Draw the new robot surface
+            self.robotSurface = surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
                 '#5cb5db', 'FaceLighting','gouraud', ...
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
             
@@ -214,8 +200,8 @@ classdef appController < handle
                     % Perform triangular collision detection
                     self.detectCollision('triangular');
                     
-                    % Perform GJK collision detection
-                    % self.detectCollision('GJK'); % Perform
+                    % Perform GJK collision detection -- not working yet
+                    % self.detectCollision('GJK');
                 else
                     self.app.CollisionStateLabel.Text = 'No Ossicle Model Loaded';
                 end
