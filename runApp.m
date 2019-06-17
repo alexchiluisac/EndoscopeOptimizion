@@ -1,6 +1,6 @@
 %% Main function for Notched Tube Designer App
 % Created by: Floris van Rossum, 5/28/2019
-% COgnitive MEdical Technology and Robotics Laboratory (COMET Robotics Lab)
+% COgnitive MEdical Technology Robotics Laboratory (COMET Robotics Lab)
 % Worcester Polytechnic Institute
 
 %% Program Configuration

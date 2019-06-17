@@ -1,34 +1,43 @@
  --- Notched Endoscope Research Design Software --- 
 COgnitive MEdical Technology (COMET) Laboratory 
+Worcester Polytechnic Institute (WPI) 
 Professor Loris Fichera 
 Software by: Floris van Rossum 
+https://github.com/comet-lab/Shoemaker-Levy
 
 
  --- INSTRUCTIONS --- 
- 
+	The notched tube is described below. Notches are numbered starting at 1 
+and up to the specified number of notches. The lowest numbered notches 
+are at the base of the Notched Endoscope, and the higher numbered notches
+are closer to the distal end.
+Read more instructions at: 
+
+
  --- YOUR NOTCHED TUBE --- 
-Created on: 14-Jun-2019 16:12:20 at, Tube Parameters: 
-Notch 1 
+Created on: 17-Jun-2019 10:17:13 
+Notched Endoscope Parameters: 
+Notch 1 Parameters: 
 	 Spacing: 1 mm 
-	 Alpha:   1 rad
+	 Alpha:   1 radians
 	 Width:   1 mm
-	 Height: 1 mm
+	 Height:  1 mm
 
-Notch 2 
+Notch 2 Parameters: 
 	 Spacing: 1 mm 
-	 Alpha:   1 rad
+	 Alpha:   1 radians
 	 Width:   1 mm
-	 Height: 1 mm
+	 Height:  1 mm
 
-Notch 3 
+Notch 3 Parameters: 
 	 Spacing: 1 mm 
-	 Alpha:   1 rad
+	 Alpha:   1 radians
 	 Width:   1 mm
-	 Height: 1 mm
+	 Height:  1 mm
 
-Notch 4 
+Notch 4 Parameters: 
 	 Spacing: 1 mm 
-	 Alpha:   1 rad
+	 Alpha:   1 radians
 	 Width:   1 mm
-	 Height: 1 mm
+	 Height:  1 mm
 
