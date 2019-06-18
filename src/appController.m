@@ -272,7 +272,7 @@ classdef appController < handle
                     % Perform GJK collision detection -- not working yet
                     % self.detectCollision('GJK');
                 else
-                    self.app.CollisionStateLabel.Text = 'No Ossicle Model Loaded';
+                    self.app.CollisionStateLabel.Text = 'No Model Loaded';
                 end
             else
                 % Switch text to off
@@ -284,15 +284,17 @@ classdef appController < handle
                 self.drawHead(); % Draw the head projection graph
             end
             
+            % Only perform ray-trace visibility if there is a model loaded
             if self.app.RayTraceAreaVisibilityCheckBox.Value && ~isempty(self.app.osMesh)
-                [faces, vertices] = self.checkRayTrace();
                 
+                % Perform ray tracing, return hit faces and vertices
+                [faces, vertices] = self.checkRayTrace();
                 faces = faces';
                 
                 result = self.app.totalMesh.Faces .* faces;
-                lol = result(all(result,2), :);
+                filtered = result(all(result,2), :);
                 delete(self.rayCastingPatch);
-                self.rayCastingPatch = patch(self.app.PlotAxes, 'Faces', lol, ...
+                self.rayCastingPatch = patch(self.app.PlotAxes, 'Faces', filtered, ...
                     'Vertices', self.app.totalMesh.Vertices, 'FaceColor', ...
                     '#fcf92f', 'FaceLighting','gouraud', ...
                     'AmbientStrength',0.5, 'EdgeColor', '#585d68', ...
@@ -309,9 +311,9 @@ classdef appController < handle
         
         
         % CHECKRAYTRACE
-        % Check the visibility of the wrist
+        % Check the visibility of the models to the wrist
         function [seenFaces, seenVertices] = checkRayTrace(self)
-            % TODO -- implement ray trace target area check here
+            
             self.app.totalMesh.vertices = self.app.totalMesh.Vertices';
             self.app.totalMesh.faces = self.app.totalMesh.Faces';
             
@@ -330,6 +332,8 @@ classdef appController < handle
             diffy = yf - yi;
             diffz = zf - zi;
             
+            % Calculate the unit vector originating from the head of the
+            % wrist
             magVec = sqrt((diffx)^2 + (diffy)^2 + (diffz)^2);
             unitVec = [diffx/magVec, diffy/magVec, diffz/magVec];
             [seenFaces, seenVertices] = visibilitymap([xf yf zf], unitVec, self.app.totalMesh);
@@ -404,9 +408,10 @@ classdef appController < handle
                 total = [totalX totalY totalZ];
                 
                 % Call the intriangulation collsion detection
-                [collision points] = intriangulation(self.app.osMesh.Vertices, self.app.osMesh.Faces, total);
+                [collision, points] = intriangulation(self.app.osMesh.Vertices, self.app.osMesh.Faces, total);
                 collision = sum(collision);
                 
+                % Draw the collision points on the plot
                 if ~isempty(points)
                     delete(self.collisionScatter);
                     hold(self.app.PlotAxes, 'on');
@@ -460,6 +465,9 @@ classdef appController < handle
             camva(self.app.HeadAxes, self.app.HeadVisionFOVangleSlider.Value);
         end
         
+        % DRAWVISIONLINE
+        % Draw a line representation of the orientation of the head of the
+        % wrist of the robot.
         function drawVisionLine(self)
             length = 10;
             % Location behind the head
@@ -477,10 +485,13 @@ classdef appController < handle
             diffy = yf - yi;
             diffz = zf - zi;
             
+            % Calculate the unit vector originating from the head
             n = norm([diffx diffy diffz]);
             unit_x = diffx / n;
             unit_y = diffy / n;
             unit_z = diffz / n;
+            
+            % Calculate the start and end point of the vision line
             X = [xi (xi + length * unit_x)];
             Y = [yi (yi + length * unit_y)];
             Z = [zi (zi + length * unit_z)];

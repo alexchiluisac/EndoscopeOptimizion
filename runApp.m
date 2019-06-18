@@ -1,3 +1,4 @@
+function runApp()
 %% Main function for Notched Tube Designer App
 % Created by: Floris van Rossum, 5/28/2019
 % COgnitive MEdical Technology Robotics Laboratory (COMET Robotics Lab)
@@ -36,3 +37,5 @@ nCutouts = 4; % Number of cutouts in the robot
 
 % Create the controller object, start the interface
 controller = appController(id, od, nCutouts, cutouts);
+
+end

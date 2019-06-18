@@ -13,7 +13,7 @@ classdef arduinoController < handle
         joySel = 0;     % The joystick selector value
         
         % Nunchuk values
-        buttonZ = 0;    
+        buttonZ = 0;
         buttonC = 0;
         zdir = 0;
         accX = 0;
@@ -33,7 +33,15 @@ classdef arduinoController < handle
         function self = arduinoController()
             %ARDUINOCONTROLLER constructor method
             %   Create an arduino controller
-            self.arduino = arduino('COM11', 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', true, 'Trace', true);
+            try
+                % Attempt to load arduino without building, if not possible
+                % do a rebuild of the code on the board
+                self.arduino = arduino('COM11', 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', false, 'Trace', true);
+            catch
+                disp("Rebuilding Arduino Code");
+                self.arduino = arduino('COM11', 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', true, 'Trace', true);
+            end
+            
             self.nunchukAdd = addon(self.arduino, 'Nunchuk/Nunchuk');
             init(self.nunchukAdd);
         end
@@ -55,25 +63,26 @@ classdef arduinoController < handle
             
             % possible values
             % Joystick
-                % X: 20 - 231, rest 123 - 125
-                % Y: 25 - 230, rest 127 - 132
+            % X: 20 - 231, rest 123 - 125
+            % Y: 25 - 230, rest 127 - 132
             % Accelerometer
-                % X: 0 - 1024
-                % Y: 0 - 1024
-                % Z: 0 - 1024
+            % X: 0 - 1024
+            % Y: 0 - 1024
+            % Z: 0 - 1024
             % Buttons
-                % Z: 0 - 1
-                % C: 0 - 1
+            % Z: 0 - 1
+            % C: 0 - 1
             
-            %% Joystick Values 
-            % Filter out the rest values
+            %% Joystick Values
+            
+            % Filter out the rest joystick values
             if tempX <= 125 && tempX >= 123
-               tempX = 0;
-            else 
-               tempX = (tempX - 125) ./ 107; 
+                tempX = 0;
+            else
+                tempX = (tempX - 125) ./ 107;
             end
             
-            % Filter out the rest values
+            % Filter out the rest joystick values
             if tempY <= 132 && tempY >= 127
                 tempY = 0;
             else
@@ -91,7 +100,7 @@ classdef arduinoController < handle
                     self.joyX = -(((50 .^ (-tempX)) - 1) * 0.025) .* rotScaleFactor;
                 end
             else
-               self.joyX = 0;
+                self.joyX = 0;
             end
             
             % Value must be above threshold to move
@@ -102,16 +111,16 @@ classdef arduinoController < handle
                 else
                     self.joyY = -(((50 .^ (- tempY)) - 1) * 0.025) .* advScaleFactor;
                 end
-                    
+                
             else
-               self.joyY = 0;
+                self.joyY = 0;
             end
             
             %% Tendon Values
             if self.buttonC
                 % Release tendon
                 self.zdir = -1;
-            else 
+            else
                 if self.buttonZ
                     % Tension tendon
                     self.zdir = 1;
@@ -121,36 +130,6 @@ classdef arduinoController < handle
             end
             
             self.zdir = self.zdir * tendonScaleFactor;
-        end
-        
-        function updateJoyValues(self)
-            %UPDATEVALUES Update the values of the arduino object
-            %   Read the joystick and other values and store them in the
-            %   arduino object. Depricated
-            
-            threshold = 0.1; % Threshold value to avoid drift of joystick
-            scaleFactor = 0.1; % To reduce the intensity
-            
-            tempX = readVoltage(self.arduino, 'A1');
-            tempY = readVoltage(self.arduino, 'A0');
-            self.joySel = readDigitalPin(self.arduino, 'D2');
-            
-            fprintf("X: %d | Y: %d | SEL: %d \n", tempX, tempY, self.joySel);
-            % Put controller between -1 and 1;
-            tempX = (tempX - 2.5) ./ 2.5; 
-            tempY = (tempY - 2.5) ./ 2.5;
-            fprintf("TempX: %d, TempY: %d \n", tempX, tempY);
-            if abs(tempX) > threshold
-               self.joyX = tempX .* scaleFactor;
-            else
-               self.joyX = 0;
-            end
-            
-            if abs(tempY) > threshold
-               self.joyY = tempY .* scaleFactor; 
-            else
-               self.joyY = 0;
-            end
         end
     end
 end

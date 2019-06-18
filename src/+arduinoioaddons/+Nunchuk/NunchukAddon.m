@@ -1,5 +1,5 @@
 classdef NunchukAddon < matlabshared.addon.LibraryBase
-    %NUNCHUKADDON Custom Add-on for Arduino
+    % NUNCHUKADDON Custom Add-on for Arduino
     %   Custom Add-on for Arduino to allow the Arduino library
     %   ArduinoNunchuk.h to communicate with MATLAB
     
@@ -102,12 +102,10 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
             self.buttonC = out(12);
             
             catch ME, 
-                disp(ME);
-               % Do nothing with this error
+                % Timeout will throw an error, so catch it and do nothing
+                % disp(ME);
+                % Do nothing with this error
             end
-            % Debugging -- Print Raw values
-            % fprintf("|joyX: %d | joyY: %d | Ax: %d | Ay: %d | Az: %d | bZ: %d | bC: %d | \n", self.analogX, self.analogY, self.accelX, self.accelY, self.accelZ, self.buttonZ, self.buttonC);
-            
             % Return the values from the update function
             nunchukResults = [self.analogX self.analogY self.accelX self.accelY self.accelZ self.buttonZ self.buttonC];
         end
