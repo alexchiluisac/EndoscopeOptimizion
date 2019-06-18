@@ -4,23 +4,24 @@ classdef appController < handle
     %       app as well as the ArduinoNunchuk control interface.
     
     properties
-        % configuration;      % Configuration of the wrist
-        
         app;                % Front-end Application Designer App
         error;              % Error flag to display error in app
-        arduinoControl;   % Arduino Controller object
-        % Controls Arduino and Hardware Control Interface, updates and
-        % reads the Nunchuk values from the arduino.
-        initialFlag; % Track whether this is the first loop or not
-        loopTimer % Looping call-back timer
-        drawingTimer % Looping draw timer
-        controlsTimer % Get controller values
-        % Controls the looping of the entire project
+        arduinoControl;     % Arduino Controller object
+            % Controls Arduino and Hardware Control Interface, updates and
+            % reads the Nunchuk values from the arduino.
+        
+        % Separate timers for different loops
+        loopTimer           % Looping call-back timer
+        drawingTimer        % Looping draw timer
+        controlsTimer       % Get controller values
+
+        % For debugging
         loopCounter = 0;
         
-        rayCastingPatch;
-        collisionScatter;
-        robotSurface;
+        % Different graphical objects stored here
+        rayCastingPatch;    % Ray casting model 
+        collisionScatter;   % Collision scatter plot
+        robotSurface;       % Robot surface model
     end
     
     methods
@@ -28,7 +29,7 @@ classdef appController < handle
             %APPCONTROLLER Construct an instance of the appController class
             %   The controller behind the front-end app
             
-            % Initialize the front-end app
+            % Initialize the front-end app (.mlapp)
             self.app = NotchedDesigner(ID, OD, nCutouts, cutouts);
             
             % Configure the robot configuration
@@ -37,8 +38,26 @@ classdef appController < handle
             % Initialize the arduino controller
             self.arduinoControl = arduinoController();
             
+            self.app.wrist.fwkine(self.app.configuration, eye(4));
+            self.app.wrist.makePhysicalModel();
+            
+            robotModel = self.app.wrist.robotModel;
+                        
+            % Draw the robot surface model
+            X = robotModel.surface.X;
+            Y = robotModel.surface.Y;
+            Z = robotModel.surface.Z;
+            
+            % Draw the new robot surface
+            self.robotSurface = surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
+                '#5cb5db', ...
+                'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
+            
             % Start the application
             self.startApp();
+            
+            % For debugging use loopingAlternative
+            % MATLAB does not have proper error statements for timers
             % self.loopingAlternative();
             
         end
@@ -47,8 +66,9 @@ classdef appController < handle
         function loopingAlternative(self)
             
             while ~self.app.stopFlag
-                self.updateValues(0,0);
-                self.updateGraphics(0,0);
+                self.updateValues(0, 0);
+                self.updateGraphics(0, 0);
+                self.updateControls(0, 0);
                 self.loopCounter = self.loopCounter + 1;
                 %disp(self.loopCounter);
                 pause(0.05);
@@ -59,9 +79,9 @@ classdef appController < handle
         function startApp(self)
             % Error handling statment
             try
-                % Initialize the looping timer
-                self.loopTimer = timer('Period', 0.05, 'BusyMode', 'drop', 'ExecutionMode', ...
-                    'fixedSpacing');
+                % Initialize the main looping timer
+                self.loopTimer = timer('Period', 0.10, 'BusyMode', 'drop', 'ExecutionMode', ...
+                    'fixedRate');
                 
                 % Configure the looping function
                 self.loopTimer.TimerFcn = @self.updateValues;
@@ -70,7 +90,7 @@ classdef appController < handle
                 % program
                 self.loopTimer.ErrorFcn = @self.delete;
                 
-                % Initialize the looping timer
+                % Initialize the drawing timer
                 self.drawingTimer = timer('Period', 0.1, 'BusyMode', 'drop', 'ExecutionMode', ...
                     'fixedRate');
                 
@@ -81,8 +101,8 @@ classdef appController < handle
                 % program
                 self.drawingTimer.ErrorFcn = @self.delete;
                 
-                                % Initialize the looping timer
-                self.controlsTimer = timer('Period', 0.1, 'BusyMode', 'drop', 'ExecutionMode', ...
+                % Initialize the control timer
+                self.controlsTimer = timer('Period', 0.12, 'BusyMode', 'drop', 'ExecutionMode', ...
                     'fixedRate');
                 
                 % Configure the looping function
@@ -106,9 +126,15 @@ classdef appController < handle
             
         end
         
+        % UPDATECONTROLS
+        % Used in timer callback loop to update controls
         function updateControls(self, obj, event)
-                        % Ask arduino to retrieve new Nunchuk values
             
+            if self.app.stopFlag
+                self.delete(self.loopTimer,0); % Terminate the program
+            end
+
+            % Ask arduino to retrieve new Nunchuk values
             self.arduinoControl.updateNunchukValues();
             %             self.arduinoControl.zdir = 0;
             %             self.arduinoControl.joyX = 0;
@@ -122,26 +148,29 @@ classdef appController < handle
                 self.app.configuration = self.app.configuration + [self.arduinoControl.zdir, 0, 0];
             end
             
+            % Update robot advancement if value is greater than 0 mm.
             if self.app.configuration(3) <= 0 && self.arduinoControl.joyY < 0
                 self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
             else
                 self.app.configuration = self.app.configuration + [0, 0, self.arduinoControl.joyY];
             end
             
+            % Rotation can always be updated
             self.app.configuration = self.app.configuration + [0, -self.arduinoControl.joyX, 0];
             
-             
             % Debugging -- print configuration change values
             % fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
             % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
            
-            
         end
         
         
         % UPDATEGRAPHICS
-        % Timer called function to update graphics
+        % Timer callback loop function to update graphics
         function updateGraphics(self, obj, event)
+            % Right now only the robot surface model is updated in this
+            % loop.
+            
             if self.app.stopFlag
                 self.delete(self.loopTimer,0); % Terminate the program
             end
@@ -160,12 +189,12 @@ classdef appController < handle
             Z = robotModel.surface.Z;
             
             % Delete the previous drawing
-            delete(self.robotSurface);
+            % delete(self.robotSurface);
             
-            % Draw the new robot surface
-            self.robotSurface = surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
-                '#5cb5db', ...
-                'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
+            % Update new robot surface data
+            set(self.robotSurface, 'XData', X);
+            set(self.robotSurface, 'YData', Y);
+            set(self.robotSurface, 'ZData', Z);
             
             hold(self.app.PlotAxes, 'off');
             
@@ -182,9 +211,6 @@ classdef appController < handle
             % disp(self.app.PlotAxes.Children)
             %% Updating values
             self.error = 0;
-            
-            %% CONTROL METHODS
-            
  
             %% Draw
             
@@ -206,10 +232,6 @@ classdef appController < handle
             else
                 self.app.printError([]);
             end
-            
-            % Force the draw, limited to 20 FPS
-            % drawnow limitrate;
-
         end
         
         % DELETE
@@ -218,13 +240,14 @@ classdef appController < handle
             stop(obj); % Stop the timer
             self.arduinoControl.delete(); % Delete the arduino controller children
             delete(self.arduinoControl); % Delete the arduino controller
-            self.app.delete(); % Delete this
+            self.app.delete(); % Delete the app
         end
         
         % UPDATESIMULATION
         % Update the Simulation and Kinematics of the app
         function updateSimulation(self)
-            hold(self.app.PlotAxes, 'on');
+            hold(self.app.PlotAxes, 'on'); % Hold the drawing
+            
             % Perform transform if necessary
             if ~isempty(self.app.transform)
                 % STL is loaded, draw wrist in STL
@@ -234,11 +257,6 @@ classdef appController < handle
                 self.app.wrist.fwkine(self.app.configuration, eye(4));
             end
             
-            % Draw red circles -- joints
-            % scatter3(self.app.PlotAxes, X, Y, Z, 50, 'r', 'filled');
-            
-            % Draw black line -- backbone
-            % plot3(self.app.PlotAxes, X, Y, Z, 'k', 'LineWidth', 2.0);
             
             self.app.wrist.makePhysicalModel();
             
@@ -283,6 +301,7 @@ classdef appController < handle
                 self.app.RayTraceAreaVisibilityCheckBox.Value = false;
             end
             
+            % Draw the red line coming out of the robot head
             if self.app.ToggleVisionLineCheckBox.Value
                 self.drawVisionLine();
             end

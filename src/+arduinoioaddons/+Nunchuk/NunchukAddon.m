@@ -91,7 +91,8 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
             
             % Data is configured in bytes, so retrieve the different
             % individual bytes
-            out = sendCommand(self, self.LibraryName, cmdID, []);
+            try
+            out = sendCommand(self, self.LibraryName, cmdID, [], 0.1);
             self.analogX = 256 * out(1) + out(2);
             self.analogY = 256 * out(3) + out(4);
             self.accelX = 256 * out(5) + out(6);
@@ -100,6 +101,10 @@ classdef NunchukAddon < matlabshared.addon.LibraryBase
             self.buttonZ = out(11);
             self.buttonC = out(12);
             
+            catch ME, 
+                disp(ME);
+               % Do nothing with this error
+            end
             % Debugging -- Print Raw values
             % fprintf("|joyX: %d | joyY: %d | Ax: %d | Ay: %d | Az: %d | bZ: %d | bC: %d | \n", self.analogX, self.analogY, self.accelX, self.accelY, self.accelZ, self.buttonZ, self.buttonC);
             

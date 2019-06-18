@@ -28,5 +28,11 @@ cutouts.u = [1 1 1 1];
 cutouts.h = [1 1 1 1];
 cutouts.alpha = [0 0 pi/2 0];
 
+id = 1.3; % Inner-diameter of the robot (mm)
+od = 1.5; % Outer-diameter of the robot (mm)
+nCutouts = 4; % Number of cutouts in the robot
+
+%% Start-up
+
 % Create the controller object, start the interface
-controller = appController(1.3, 1.5, 4, cutouts);
+controller = appController(id, od, nCutouts, cutouts);
