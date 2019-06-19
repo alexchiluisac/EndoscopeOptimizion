@@ -23,6 +23,7 @@ To read more about Notched Tube Endoscopes, visit the links below.
 3. [Through the Eustachian Tube and Beyond: A New Miniature Robotic Endoscope to See Into the Middle Ear](https://ieeexplore.ieee.org/abstract/document/7855722)
 
 # Screenshots
-![Main Screen](images/main.png)
-![Editor Screen](images/editor.png)
-![Ray Tracing](images/raytrace.png)
+![Main Screen](https://github.com/comet-lab/Shoemaker-Levy/blob/wrist_designer/images/main.PNG)
+![Editor Screen](https://github.com/comet-lab/Shoemaker-Levy/blob/wrist_designer/images/editor.PNG)
+![Ray Tracing](https://github.com/comet-lab/Shoemaker-Levy/blob/wrist_designer/images/raytrace.PNG)
+
