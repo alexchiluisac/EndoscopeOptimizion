@@ -5,10 +5,7 @@ classdef appController < handle
     
     properties
         app;                % Front-end Application Designer App
-        error;              % Error flag to display error in app
-        arduinoControl;     % Arduino Controller object
-            % Controls Arduino and Hardware Control Interface, updates and
-            % reads the Nunchuk values from the arduino.
+        error;              % Error flag to display error in app     
         
         % Separate timers for different loops
         loopTimer           % Looping call-back timer
@@ -36,7 +33,7 @@ classdef appController < handle
             self.app.configuration = [self.app.robotDisplacement, self.app.robotRotation, self.app.robotAdvancement];
             
             % Initialize the arduino controller
-            self.arduinoControl = arduinoController();
+            % self.arduinoControl = arduinoController();
             
             self.app.wrist.fwkine(self.app.configuration, eye(4));
             self.app.wrist.makePhysicalModel();
@@ -52,7 +49,14 @@ classdef appController < handle
             self.robotSurface = surface(self.app.PlotAxes, X, Y, Z, 'FaceColor', ...
                 '#5cb5db', ...
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
+            comME = MException("APPCONTROLLER:enterCOM", "Enter COM Port number and press Connect Arduino! \n");
+            self.app.printError(comME);
+            while isempty(self.app.arduinoController)
+               % Do nothing
+               pause(0.05);
+            end
             
+            self.app.printError([]);
             % Start the application
             self.startApp();
             
@@ -133,30 +137,30 @@ classdef appController < handle
             if self.app.stopFlag
                 self.delete(self.loopTimer,0); % Terminate the program
             end
-
+            
             % Ask arduino to retrieve new Nunchuk values
-            self.arduinoControl.updateNunchukValues();
+            self.app.arduinoController.updateNunchukValues();
             %             self.arduinoControl.zdir = 0;
             %             self.arduinoControl.joyX = 0;
             %             self.arduinoControl.joyY = 0;
             
             % Update the robot configuration based on control values
             % Only if the robot tendon displacement is greater than 0
-            if self.app.configuration(1) <= 0 && self.arduinoControl.zdir < 0
+            if self.app.configuration(1) <= 0 && self.app.arduinoController.zdir < 0
                 self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
             else
-                self.app.configuration = self.app.configuration + [self.arduinoControl.zdir, 0, 0];
+                self.app.configuration = self.app.configuration + [self.app.arduinoController.zdir, 0, 0];
             end
             
             % Update robot advancement if value is greater than 0 mm.
-            if self.app.configuration(3) <= 0 && self.arduinoControl.joyY < 0
+            if self.app.configuration(3) <= 0 && self.app.arduinoController.joyY < 0
                 self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
             else
-                self.app.configuration = self.app.configuration + [0, 0, self.arduinoControl.joyY];
+                self.app.configuration = self.app.configuration + [0, 0, self.app.arduinoController.joyY];
             end
             
             % Rotation can always be updated
-            self.app.configuration = self.app.configuration + [0, -self.arduinoControl.joyX, 0];
+            self.app.configuration = self.app.configuration + [0, -self.app.arduinoController.joyX, 0];
             
             % Debugging -- print configuration change values
             % fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
@@ -238,8 +242,8 @@ classdef appController < handle
         % Delete this object and all its children
         function delete(self, obj, event)
             stop(obj); % Stop the timer
-            self.arduinoControl.delete(); % Delete the arduino controller children
-            delete(self.arduinoControl); % Delete the arduino controller
+            self.app.arduinoController.delete(); % Delete the arduino controller children
+            delete(self.app.arduinoController); % Delete the arduino controller
             self.app.delete(); % Delete the app
         end
         

@@ -15,7 +15,7 @@ Read more instructions at:
 
 
  --- YOUR NOTCHED TUBE --- 
-Created on: 17-Jun-2019 13:05:04 
+Created on: 18-Jun-2019 17:00:31 
 Notched Endoscope Parameters: 
 Notch 1 Parameters: 
 	 Spacing: 1 mm 

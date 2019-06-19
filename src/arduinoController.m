@@ -5,6 +5,8 @@ classdef arduinoController < handle
     properties (Access = public)
         arduino;    % The arduino object
         
+        ok = 0; % Confirm that this object has been created
+        
         % Nunchuk and joystick
         joyX = 0;       % The joystick x-axis value
         joyY = 0;       % The joystick y-axis value
@@ -30,16 +32,16 @@ classdef arduinoController < handle
     end
     
     methods (Access = public)
-        function self = arduinoController()
+        function self = arduinoController(comPortString)
             %ARDUINOCONTROLLER constructor method
             %   Create an arduino controller
             try
                 % Attempt to load arduino without building, if not possible
                 % do a rebuild of the code on the board
-                self.arduino = arduino('COM11', 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', false, 'Trace', true);
+                self.arduino = arduino(comPortString, 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', false, 'Trace', true);
             catch
                 disp("Rebuilding Arduino Code");
-                self.arduino = arduino('COM11', 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', true, 'Trace', true);
+                self.arduino = arduino(comPortString, 'Uno', 'Libraries', 'Nunchuk/Nunchuk', 'ForceBuildOn', true, 'Trace', true);
             end
             
             self.nunchukAdd = addon(self.arduino, 'Nunchuk/Nunchuk');
