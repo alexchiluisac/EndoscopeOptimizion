@@ -26,4 +26,3 @@ To read more about Notched Tube Endoscopes, visit the links below.
 ![Main Screen](https://github.com/comet-lab/Shoemaker-Levy/blob/wrist_designer/images/main.PNG)
 ![Editor Screen](https://github.com/comet-lab/Shoemaker-Levy/blob/wrist_designer/images/editor.PNG)
 ![Ray Tracing](https://github.com/comet-lab/Shoemaker-Levy/blob/wrist_designer/images/raytrace.PNG)
-
