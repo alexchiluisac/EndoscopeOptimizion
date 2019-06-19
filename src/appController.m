@@ -5,18 +5,18 @@ classdef appController < handle
     
     properties
         app;                % Front-end Application Designer App
-        error;              % Error flag to display error in app     
+        error;              % Error flag to display error in app
         
         % Separate timers for different loops
         loopTimer           % Looping call-back timer
         drawingTimer        % Looping draw timer
         controlsTimer       % Get controller values
-
+        
         % For debugging
         loopCounter = 0;
         
         % Different graphical objects stored here
-        rayCastingPatch;    % Ray casting model 
+        rayCastingPatch;    % Ray casting model
         collisionScatter;   % Collision scatter plot
         robotSurface;       % Robot surface model
     end
@@ -39,7 +39,7 @@ classdef appController < handle
             self.app.wrist.makePhysicalModel();
             
             robotModel = self.app.wrist.robotModel;
-                        
+            
             % Draw the robot surface model
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;
@@ -52,17 +52,17 @@ classdef appController < handle
             comME = MException("APPCONTROLLER:enterCOM", "Enter COM Port number and press Connect Arduino! \n");
             self.app.printError(comME);
             while isempty(self.app.arduinoController)
-               % Do nothing
-               pause(0.05);
+                % Do nothing
+                pause(0.05);
             end
             
             self.app.printError([]);
             % Start the application
-            self.startApp();
+            %self.startApp();
             
             % For debugging use loopingAlternative
             % MATLAB does not have proper error statements for timers
-            % self.loopingAlternative();
+            self.loopingAlternative();
             
         end
         
@@ -72,11 +72,14 @@ classdef appController < handle
             while ~self.app.stopFlag
                 self.updateValues(0, 0);
                 self.updateGraphics(0, 0);
-                self.updateControls(0, 0);
+                if ~(self.app.arduinoController.keyBoard)
+                    self.updateControls(0, 0);
+                end
                 self.loopCounter = self.loopCounter + 1;
                 %disp(self.loopCounter);
                 pause(0.05);
             end
+            
         end
         
         % Application start-up function
@@ -105,24 +108,31 @@ classdef appController < handle
                 % program
                 self.drawingTimer.ErrorFcn = @self.delete;
                 
-                % Initialize the control timer
-                self.controlsTimer = timer('Period', 0.12, 'BusyMode', 'drop', 'ExecutionMode', ...
-                    'fixedRate');
-                
-                % Configure the looping function
-                self.controlsTimer.TimerFcn = @self.updateControls;
-                
-                % Set-up and error function to handle termination of the
-                % program
-                self.controlsTimer.ErrorFcn = @self.delete;
-                
-                % Start the looping timer
                 start(self.loopTimer);
                 start(self.drawingTimer);
+                
+                if ~(self.app.arduinoController.keyBoard)
+                    % Initialize the control timer
+                    self.controlsTimer = timer('Period', 0.12, 'BusyMode', 'drop', 'ExecutionMode', ...
+                        'fixedRate');
+                    
+                    % Configure the looping function
+                    self.controlsTimer.TimerFcn = @self.updateControls;
+                    
+                    % Set-up and error function to handle termination of the
+                    % program
+                    self.controlsTimer.ErrorFcn = @self.delete;
+                    
+                    %                     comME = MException("APPCONTROLLER:keyboardEnabled", "Keyboard enabled!\n");
+                    %                     self.app.printError(comME);
+                    disp("Keyboard mode enabled");
+                end
+                % Start the looping timer
+                
                 start(self.controlsTimer);
             catch ME
-                % Error handling
-                % Remove all children objects
+                Error handling
+                Remove all children objects
                 controller.delete();
                 delete(controller);
                 rethrow(ME)
@@ -165,7 +175,7 @@ classdef appController < handle
             % Debugging -- print configuration change values
             % fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
             % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
-           
+            
         end
         
         
@@ -184,9 +194,9 @@ classdef appController < handle
             m = 2 * pi;
             self.app.Rotation.Text = num2str(mod(self.app.configuration(2), m));
             self.app.TendonDisplacement.Text = num2str(self.app.configuration(1));
-           
+            
             robotModel = self.app.wrist.robotModel;
-                        
+            
             % Draw the robot surface model
             X = robotModel.surface.X;
             Y = robotModel.surface.Y;
@@ -215,7 +225,7 @@ classdef appController < handle
             % disp(self.app.PlotAxes.Children)
             %% Updating values
             self.error = 0;
- 
+            
             %% Draw
             
             % Error handling for the graphics and kinematics

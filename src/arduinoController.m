@@ -5,7 +5,7 @@ classdef arduinoController < handle
     properties (Access = public)
         arduino;    % The arduino object
         
-        ok = 0; % Confirm that this object has been created
+        keyBoard = 0; % Keyboard is only used
         
         % Nunchuk and joystick
         joyX = 0;       % The joystick x-axis value
