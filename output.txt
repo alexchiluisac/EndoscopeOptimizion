@@ -15,29 +15,31 @@ Read more instructions at:
 
 
  --- YOUR NOTCHED TUBE --- 
-Created on: 18-Jun-2019 17:00:31 
+Created on: 20-Jun-2019 12:29:51 
+Loaded Model:  
+
 Notched Endoscope Parameters: 
 Notch 1 Parameters: 
 	 Spacing: 1 mm 
-	 Alpha:   1 radians
-	 Width:   1 mm
+	 Alpha:   0 radians
+	 Width:   1.275000e+00 mm
 	 Height:  1 mm
 
 Notch 2 Parameters: 
 	 Spacing: 1 mm 
-	 Alpha:   1 radians
-	 Width:   1 mm
+	 Alpha:   0 radians
+	 Width:   1.275000e+00 mm
 	 Height:  1 mm
 
 Notch 3 Parameters: 
 	 Spacing: 1 mm 
-	 Alpha:   1 radians
-	 Width:   1 mm
+	 Alpha:   1.570796e+00 radians
+	 Width:   1.275000e+00 mm
 	 Height:  1 mm
 
 Notch 4 Parameters: 
 	 Spacing: 1 mm 
-	 Alpha:   1 radians
-	 Width:   1 mm
+	 Alpha:   0 radians
+	 Width:   1.275000e+00 mm
 	 Height:  1 mm
 

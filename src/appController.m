@@ -53,12 +53,12 @@ classdef appController < handle
             self.app.printError(comME);
             while isempty(self.app.arduinoController)
                 % Do nothing
-                pause(0.05);
+                pause(0.5);
             end
             
             self.app.printError([]);
             % Start the application
-            %self.startApp();
+            % self.startApp();
             
             % For debugging use loopingAlternative
             % MATLAB does not have proper error statements for timers
@@ -73,7 +73,7 @@ classdef appController < handle
                 self.updateValues(0, 0);
                 self.updateGraphics(0, 0);
                 if ~(self.app.arduinoController.keyBoard)
-                    self.updateControls(0, 0);
+                    %self.updateControls(0, 0);
                 end
                 self.loopCounter = self.loopCounter + 1;
                 %disp(self.loopCounter);
@@ -110,26 +110,8 @@ classdef appController < handle
                 
                 start(self.loopTimer);
                 start(self.drawingTimer);
+                                
                 
-                if ~(self.app.arduinoController.keyBoard)
-                    % Initialize the control timer
-                    self.controlsTimer = timer('Period', 0.12, 'BusyMode', 'drop', 'ExecutionMode', ...
-                        'fixedRate');
-                    
-                    % Configure the looping function
-                    self.controlsTimer.TimerFcn = @self.updateControls;
-                    
-                    % Set-up and error function to handle termination of the
-                    % program
-                    self.controlsTimer.ErrorFcn = @self.delete;
-                    
-                    %                     comME = MException("APPCONTROLLER:keyboardEnabled", "Keyboard enabled!\n");
-                    %                     self.app.printError(comME);
-                    disp("Keyboard mode enabled");
-                end
-                % Start the looping timer
-                
-                start(self.controlsTimer);
             catch ME
                 Error handling
                 Remove all children objects
@@ -140,20 +122,14 @@ classdef appController < handle
             
         end
         
-        % UPDATECONTROLS
-        % Used in timer callback loop to update controls
-        function updateControls(self, obj, event)
+        % UPDATEGRAPHICS
+        % Timer callback loop function to update graphics
+        function updateGraphics(self, obj, event)
+            % Right now only the robot surface model is updated in this
+            % loop.
             
-            if self.app.stopFlag
-                self.delete(self.loopTimer,0); % Terminate the program
-            end
-            
-            % Ask arduino to retrieve new Nunchuk values
-            self.app.arduinoController.updateNunchukValues();
-            %             self.arduinoControl.zdir = 0;
-            %             self.arduinoControl.joyX = 0;
-            %             self.arduinoControl.joyY = 0;
-            
+            % lol = [self.app.arduinoController.joyX self.app.arduinoController.joyY self.app.arduinoController.zdir]
+            try
             % Update the robot configuration based on control values
             % Only if the robot tendon displacement is greater than 0
             if self.app.configuration(1) <= 0 && self.app.arduinoController.zdir < 0
@@ -163,7 +139,7 @@ classdef appController < handle
             end
             
             % Update robot advancement if value is greater than 0 mm.
-            if self.app.configuration(3) <= 0 && self.app.arduinoController.joyY < 0
+            if self.app.configuration(3) <= 0 && self.app.arduinoController.joyY < 0 
                 self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
             else
                 self.app.configuration = self.app.configuration + [0, 0, self.app.arduinoController.joyY];
@@ -171,25 +147,22 @@ classdef appController < handle
             
             % Rotation can always be updated
             self.app.configuration = self.app.configuration + [0, -self.app.arduinoController.joyX, 0];
+            catch
+                
+            end
             
             % Debugging -- print configuration change values
             % fprintf("| X: %d | Y: %d | Z: %d | C: %d | \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.buttonZ, self.arduinoControl.buttonC);
             % fprintf("X: %d | Y: %d | SEL: %d \n", self.arduinoControl.joyX, self.arduinoControl.joyY, self.arduinoControl.joySel);
-            
-        end
-        
-        
-        % UPDATEGRAPHICS
-        % Timer callback loop function to update graphics
-        function updateGraphics(self, obj, event)
-            % Right now only the robot surface model is updated in this
-            % loop.
             
             if self.app.stopFlag
                 self.delete(self.loopTimer,0); % Terminate the program
             end
             
             % Display robot configuration on the App screen
+            if self.app.configuration(3) > 1000;
+                self.app.configuration(3) = 0;
+            end
             self.app.Advancement.Text = num2str(self.app.configuration(3));
             m = 2 * pi;
             self.app.Rotation.Text = num2str(mod(self.app.configuration(2), m));

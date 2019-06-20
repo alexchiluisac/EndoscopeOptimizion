@@ -37,16 +37,21 @@ fprintf(fileID, 'Read more instructions at: \n\n\n');
 % Print different cutout statistics
 fprintf(fileID, ' --- YOUR NOTCHED TUBE --- \n');
 fprintf(fileID, 'Created on: %s \n', datetime('now'));
-fprintf(fileID, 'Notched Endoscope Parameters: \n');
+try
+fprintf(fileID,'Loaded Model: %s \n\n', app.loadedSTLName);
+catch
+end
+fprintf(fileID,'Notched Endoscope Parameters: \n');
 
 for i= 1:nCutouts
-    fprintf(fileID, 'Notch %d Parameters: \n', i);
-    fprintf(fileID, '\t Spacing: %d mm \n', differentCutouts(i, 1));
-    fprintf(fileID, '\t Alpha:   %d radians\n', differentCutouts(i, 1));
-    fprintf(fileID, '\t Width:   %d mm\n', differentCutouts(i, 1));
-    fprintf(fileID, '\t Height:  %d mm\n', differentCutouts(i, 1));
-    fprintf(fileID, '\n');
+    fprintf(fileID,'Notch %d Parameters: \n', i);
+    fprintf(fileID,'\t Spacing: %d mm \n', differentCutouts(i, 1));
+    fprintf(fileID,'\t Alpha:   %d radians\n', differentCutouts(i, 2));
+    fprintf(fileID,'\t Width:   %d mm\n', differentCutouts(i, 3));
+    fprintf(fileID,'\t Height:  %d mm\n', differentCutouts(i, 4));
+    fprintf(fileID,'\n');
 end
+
 
 % Close the file
 fclose(fileID);
@@ -70,15 +75,19 @@ fprintf('Read more instructions at: \n\n\n');
 
 % Print different cutout statistics
 fprintf(' --- YOUR NOTCHED TUBE --- \n');
-fprintf('Created on: %s \n\n', datetime('now'));
+fprintf('Created on: %s \n', datetime('now'));
+try
+fprintf('Loaded Model: %s \n\n', app.loadedSTLName);
+catch
+end
 fprintf('Notched Endoscope Parameters: \n');
 
 for i= 1:nCutouts
     fprintf('Notch %d Parameters: \n', i);
     fprintf('\t Spacing: %d mm \n', differentCutouts(i, 1));
-    fprintf('\t Alpha:   %d radians\n', differentCutouts(i, 1));
-    fprintf('\t Width:   %d mm\n', differentCutouts(i, 1));
-    fprintf('\t Height:  %d mm\n', differentCutouts(i, 1));
+    fprintf('\t Alpha:   %d radians\n', differentCutouts(i, 2));
+    fprintf('\t Width:   %d mm\n', differentCutouts(i, 3));
+    fprintf('\t Height:  %d mm\n', differentCutouts(i, 4));
     fprintf('\n');
 end
 
