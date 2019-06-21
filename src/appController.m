@@ -58,11 +58,11 @@ classdef appController < handle
             
             self.app.printError([]);
             % Start the application
-            % self.startApp();
+            self.startApp();
             
             % For debugging use loopingAlternative
             % MATLAB does not have proper error statements for timers
-            self.loopingAlternative();
+            % self.loopingAlternative();
             
         end
         

@@ -27,7 +27,7 @@ function [seenFaces, seenVertices] = visibilitymap(viewPoint, approachVec, anato
   %approachVecRep
   %approachVec
   product = sum(approachVecRep' .* raysu);
-  FOV =  90 * pi / 180;
+  FOV =  120 * pi / 180;
   seenVertices = (product > cos(FOV / 2));
   
 %   osVertices = osVertices';

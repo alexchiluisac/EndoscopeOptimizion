@@ -8,7 +8,6 @@ function runApp()
 % Close all previous windows and add folders, sub-folders to path
 clc; close all; clear classes;
 addpath("src");
-addpath("anatomical-models");
 addpath('src/cost-functions'); 
 addpath('src/utils');
 addpath('src/utils/stlTools/');
@@ -19,7 +18,7 @@ addpath('src/utils/ray-casting/');
 addpath('src/gui');
 addpath('src/gui/images');
 addpath('src/collision/MatlabCode');
-
+addpath("anatomical-models");
 %% Robot Settings
 
 % Defining cut-outs
