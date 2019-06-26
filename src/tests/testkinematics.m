@@ -50,5 +50,5 @@ robotModel = robot.makePhysicalModel(configuration, eye(4));
 X = robotModel.surface.X;
 Y = robotModel.surface.Y;
 Z = robotModel.surface.Z;
-surf(X, Y, Z, 'FaceColor','blue');
+surf(X, Y, Z, 'FaceColor','green');
 

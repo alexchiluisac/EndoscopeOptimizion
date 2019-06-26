@@ -1,14 +1,16 @@
-function seenFaces = visibilitymap(viewPoint, approachVec, anatomyModel)
+function [seenFaces, seenVertices] = visibilitymap(viewPoint, approachVec, anatomyModel)
 %% WE'LL WRITE THE DOCUMENTATION LATER
 %  03/14/2019 still no documentation, dammit
-
-  faces = anatomyModel.faces';
-  vertices = anatomyModel.vertices';
   
+  faces = anatomyModel.faces;
+  vertices = anatomyModel.vertices;
+  viewPoint = viewPoint';
   % Cast rays from the viewPoint to each of the centroids
   rays = bsxfun(@minus, vertices, viewPoint);
-  
+%   size(rays)
+%   length(rays)
   % Convert rays into unit vectors
+  
   raysu = zeros(size(rays, 1), size(rays, 2));
   
   for k = 1 : length(rays)
@@ -16,17 +18,30 @@ function seenFaces = visibilitymap(viewPoint, approachVec, anatomyModel)
   end
   
   % Make as many copies of approachVec as the number of rays we generated
-  approachVecRep = repmat(approachVec, 1, length(raysu));
+  approachVecRep = repmat(approachVec, size(raysu,2), 1);
   
   % See what rays fall within the "field of view" of the camera
-  product = sum(approachVecRep .* raysu);
-  FOV =  90 * pi / 180;
+%   size(raysu)
+%   size(approachVec)
+%   size(approachVecRep)
+  %approachVecRep
+  %approachVec
+  product = sum(approachVecRep' .* raysu);
+  FOV =  120 * pi / 180;
   seenVertices = (product > cos(FOV / 2));
+  
+%   osVertices = osVertices';
+% 
+%   osFaces = osFaces';
+%   vertices = horzcat(vertices, osVertices);
+%   
+  % vertices = [vertices osVertices];
+  %size(faces)
+%   %size(osFaces)
+%   facesUpdate = osFaces + max(max(faces));
+%   faces = horzcat(faces, facesUpdate);
   seenVertices = visualrange(viewPoint, vertices, double(seenVertices), faces-1);
   
   seenFaces = seenVertices(faces);
-  seenFaces = sum(seenFaces, 1);
-  seenFaces(seenFaces < 3) = 0;
-  seenFaces(seenFaces == 3) = 1;
   
 end

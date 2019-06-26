@@ -20,12 +20,12 @@ addpath('../../anatomical-models')
 
 
 % define the robot's range of motion
-maxfprintflacement = 1; % [mm]
+maxfprintflacement = 1; % [m    m]
 maxRotation     = 4*pi; % [rad]
 maxAdvancement  = 10; % [mm]
 
 % Load cavity model
-path = fullfile('..', '..', 'anatomical-models', 'synthetic-model.stl');
+path = fullfile( '..', 'anatomical-models', 'synthetic-model.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
@@ -55,7 +55,7 @@ fprintf('Running RRT...\n')
 fprintf(['RRT execution complete. Total sampled points: ' num2str(size(pList,2)) ' \n\n']);
 
 % Load cavity model (finer mesh this time)
-path = fullfile('..', '..', 'anatomical-models', 'synthetic-model-finer.stl');
+path = fullfile('..', 'anatomical-models', 'synthetic-model-finer.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;

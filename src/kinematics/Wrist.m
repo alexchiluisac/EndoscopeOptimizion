@@ -1,10 +1,11 @@
-classdef Wrist % !FIXME this should be a subclass of Robot
+classdef Wrist < handle % !FIXME this should be a subclass of Robot
     % WRIST This class encapsulates the design parameters of a
     % notched-tube wrist.
     %
     %   Author: Loris Fichera <lfichera@wpi.edu>
     %
-    %   Latest revision: 03/01/2019
+    %   Edited by Floris van Rossum to make optimization changes.
+    %   Latest revision: 06/05/2019
     properties
         ID        % [mm] tube inner diameter
         OD        % [mm] tube outer diameter
@@ -14,6 +15,13 @@ classdef Wrist % !FIXME this should be a subclass of Robot
         %   [h - height of i-th cutout             ]
         %   [w - width of i-th cutout              ]
         %   [phi - orientation of i-th cutout      ]
+        
+        % Forward Kinematics Parameters
+        pose                % The position and orientation
+        transformations     % Transformation matrix
+        curvature           % Curvature of the wrist links
+        arcLength           % Arc length of the wrist links
+        robotModel          % A model of the robot
     end
     
     methods
@@ -24,7 +32,7 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             self.cutouts = cutouts;
         end
         
-        function [pose, transformations, curvature, arcLength] = fwkine(self, configuration, baseTransform)
+        function fwkine(self, configuration, baseTransform)
             % Get the endoscope configuration
             t_displ = configuration(1) * 10^-3;
             t_rot   = configuration(2);
@@ -69,8 +77,6 @@ classdef Wrist % !FIXME this should be a subclass of Robot
                 0          0           1 0; ...
                 0          0           0 1];
             
-            options = optimoptions('fsolve', 'TolFun', 1e-14, 'Display', 'off'); %set fsolve options.
-            
             %% Calculations
             % Calculate ybar (Equation 1 from [Swaney2017]).
             % Use Hunter's integral formula calculation. It yields the same thing as the formula in the paper.
@@ -83,15 +89,26 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             kappa = zeros(1, n);
             s =     zeros(1, n);
             
+            
                         
             for ii = 1 : n
-                A(ii) = integral2(@(r,theta) r.*fA(r,theta), ri, ro, ...
-                                  @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
-                                  'AbsTol', 1e-12, 'RelTol', 1e-12);
+                phio = 2 * acos(d(ii) / ro);
+                phii = 2 * acos(d(ii) / ri);
                 
-                ybar(ii) = 1 / A(ii) * integral2(@(r,theta) r.*fy(r,theta), ri, ro, ...
-                                             @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
-                                             'AbsTol',1e-12,'RelTol', 1e-9);
+                ybaro = (4 * ro * (sin(0.5 * phio)) ^ 3)/ (3 * (phio - sin(phio)));
+                ybari = (4 * ri * (sin(0.5 * phii)) ^ 3)/ (3 * (phii - sin(phii)));
+                
+                Ao = ( (ro ^ 2) * ( phio - sin(phio))) / 2;
+                Ai = ( (ri ^ 2) * ( phii - sin(phii))) / 2;
+                
+                ybar(ii) = (ybaro * Ao - ybari * Ai) / (Ao - Ai);
+%                 A(ii) = integral2(@(r,theta) r.*fA(r,theta), ri, ro, ...
+%                                   @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
+%                                   'AbsTol', 1e-12, 'RelTol', 1e-12);
+%                 
+%                 ybar(ii) = 1 / A(ii) * integral2(@(r,theta) r.*fy(r,theta), ri, ro, ...
+%                                              @(c) -acos(d(ii)./c), @(c) acos(d(ii)./c), ...
+%                                              'AbsTol',1e-12,'RelTol', 1e-9);
                 
                 % Calculate the maximum bending for this cutout
                 theta_max(ii) = h(ii) / (ro + ybar(ii));
@@ -103,11 +120,20 @@ classdef Wrist % !FIXME this should be a subclass of Robot
                 if t_displ > deltal_max(ii)
                     disp('Warning. Tendon displacement runs over hard stop.');
                     disp(deltal_max * 1000);
+                    
+                    % Throw an error
+                    % Used to interrupt interface drawing
+                    msgID = 'WRIST:TENDON_ERR';
+                    msg = 'Tendon displacement runs over hard stop.';
+                    tendonStop = MException(msgID, msg);
+                    throw(tendonStop);
                 end
                 
                 % Get kappa of single cutout
-                kappa(ii) = fsolve(@(k) (-t_displ + h(ii) - 2 * (1/k - ri) * sin(k*h(ii)/(2*(1+ybar(ii)*k)))), ...
-                    500, options); % original -t
+                
+                kappa(ii) = (t_displ) / (h(ii) * (ri + ybar(ii)) - t_displ * ybar(ii));
+                % kappa(ii) = fsolve(@(k) (-t_displ + h(ii) - 2 * (1/k - ri) * sin(k*h(ii)/(2*(1+ybar(ii)*k)))), ...
+                    % 500, options); % original -t
                 
                 % Get arc length of single cutout
                 s(ii) = h(ii) / ( 1 + ybar(ii) * kappa(ii)); % original kappa
@@ -148,21 +174,22 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             end
             
             % Extract the tube pose and return
-            pose = pose(1:3,:) .* 1000;
-            transformations = T;
-            transformations(1:3,4,:) = transformations(1:3,4,:) .*1000;
-            
+            self.pose = pose(1:3,:) .* 1000;
+            self.transformations = T;
+            self.transformations(1:3,4,:) = self.transformations(1:3,4,:) .*1000;
             % Return the curvature and arc length of each cut section
-            curvature = kappa;
-            arcLength = s;
+            self.curvature = kappa;
+            self.arcLength = s;
         end
         
         
-        function robotModel = makePhysicalModel(self, configuration, baseTransform)
-            ptsPerMm = 10;
+        function robotModel = makePhysicalModel(self)
+            ptsPerMm = 5;
             
-            [P,T,kappa,s] = self.fwkine(configuration, baseTransform);
-            
+            P = self.pose;
+            T = self.transformations;
+            kappa = self.curvature;
+            s = self.arcLength;
             %!FIXME kappa and s are different for each cutout - need to change
             %the code below to account for this
             kappa = kappa(1);
@@ -223,12 +250,13 @@ classdef Wrist % !FIXME this should be a subclass of Robot
             %robotBackbone = applytransform(robotBackbone, baseTransform);
             
             radiusVec = self.OD/2*ones(1,size(robotBackbone,2));
-            [X,Y,Z] = gencyl(robotBackbone, radiusVec);
+            [X,Y,Z] = gencyl(robotBackbone, radiusVec, 2, 7);
             
             robotModel.backbone = robotBackbone;
             robotModel.surface.X = X;
             robotModel.surface.Y = Y;
             robotModel.surface.Z = Z;
+            self.robotModel = robotModel;
         end
     end
 end

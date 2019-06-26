@@ -1,4 +1,4 @@
-function in = intriangulation(vertices,faces,testp,heavytest)
+function [in, pointReturn] = intriangulation(vertices,faces,testp,heavytest)
 % intriangulation: Test points in 3d wether inside or outside a (closed) triangulation
 % usage: in = intriangulation(vertices,faces,testp,heavytest)
 %
@@ -19,7 +19,7 @@ function in = intriangulation(vertices,faces,testp,heavytest)
 %  in - a vector of length size(testp,1), containing 0 and 1.
 %       in(nr) =  0: testp(nr,:) is outside the triangulation
 %       in(nr) =  1: testp(nr,:) is inside the triangulation
-%       in(nr) = -1: unable to decide for testp(nr,:) 
+%       in(nr) = -1: unable to decide for testp(nr,:)
 %
 % Thanks to Adam A for providing the FEX submission voxelise. The
 % algorithms of voxelise form the algorithmic kernel of intriangulation.
@@ -70,7 +70,7 @@ end
 inreturn = zeros(size(testp,1),1);VER = vertices;TESTP = testp;
 
 for n = 1:heavytest+1,
-
+    
     % Randomize
     if n>1,
         v=rand(1,3);D=rotmatrix(v/norm(v),rand*180/pi);vertices=VER*D;testp = TESTP*D;
@@ -83,7 +83,7 @@ for n = 1:heavytest+1,
     for loop = 1:3,
         meshXYZ(:,:,loop) = vertices(faces(:,loop),:);
     end
-
+    
     % Basic idea (ingenious from FeX-submission voxelise):
     % If point is inside, it will cross the triangulation an uneven number of times in each direction (x, -x, y, -y, z, -z).
     
@@ -92,11 +92,12 @@ for n = 1:heavytest+1,
     
     % z-direction:
     % intialization of results and correction list
-    [in,cl] = VOXELISEinternal(testp(:,1),testp(:,2),testp(:,3),meshXYZ);
+    [in,cl, pointReturn] = VOXELISEinternal(testp(:,1),testp(:,2),testp(:,3),meshXYZ);
     
     % x-direction:
     % has only to be done for those points, that were not determinable in the first step --> cl
-    [in2,cl2] = VOXELISEinternal(testp(cl,2),testp(cl,3),testp(cl,1),meshXYZ(:,[2,3,1],:));
+    [in2,cl2, pointReturn2] = VOXELISEinternal(testp(cl,2),testp(cl,3),testp(cl,1),meshXYZ(:,[2,3,1],:));
+    %pointReturn = [pointReturn; pointReturn2];
     % Use results of x-direction that determined "inside"
     in(cl(in2==1)) = 1;
     % remaining indices with unclear result
@@ -104,8 +105,8 @@ for n = 1:heavytest+1,
     
     % y-direction:
     % has only to be done for those points, that were not determinable in the first and second step --> cl
-    [in3,cl3] = VOXELISEinternal(testp(cl,3),testp(cl,1),testp(cl,2),meshXYZ(:,[3,1,2],:));
-    
+    [in3,cl3, pointReturn3] = VOXELISEinternal(testp(cl,3),testp(cl,1),testp(cl,2),meshXYZ(:,[3,1,2],:));
+    %pointReturn = [pointReturn ; pointReturn3];
     % Use results of y-direction that determined "inside"
     in(cl(in3==1)) = 1;
     % remaining indices with unclear result
@@ -114,19 +115,20 @@ for n = 1:heavytest+1,
     % mark those indices, where all three tests have failed
     in(cl) = -1;
     
+    
     if n==1,
         inreturn = in;  % Starting guess
     else,
         % if ALWAYS inside, use as inside!
-%        I = find(inreturn ~= in);
-%        inreturn(I(in(I)==0)) = 0;
+        %        I = find(inreturn ~= in);
+        %        inreturn(I(in(I)==0)) = 0;
         
         % if AT LEAST ONCE inside, use as inside!
         I = find(inreturn ~= in);
         inreturn(I(in(I)==1)) = 1;
         
     end
-
+    
 end
 
 in = inreturn;
@@ -134,7 +136,7 @@ in = inreturn;
 end
 
 %==========================================================================
-function [OUTPUT,correctionLIST] = VOXELISEinternal(testx,testy,testz,meshXYZ)
+function [OUTPUT,correctionLIST, pointReturn] = VOXELISEinternal(testx,testy,testz,meshXYZ)
 
 % Prepare logical array to hold the logical data:
 OUTPUT = false(size(testx,1),1);
@@ -168,15 +170,16 @@ correctionLIST = [];   %Prepare to record all rays that fail the voxelisation.  
 % each x,y coordinate of the testpoints, and finding the locations where the rays cross the mesh.
 facetCROSSLIST = zeros(1,1e3);  % uses countindex: nf
 nm = size(meshXYZmin,1);
+pointReturn = [];
 for loop = 1:length(OUTPUT),
     
     nf = 0;
-%    % - 1a - Find which mesh facets could possibly be crossed by the ray:
-%    possibleCROSSLISTy = find( meshXYZmin(:,2)<=testy(loop) & meshXYZmax(:,2)>=testy(loop) );
-
-%    % - 1b - Find which mesh facets could possibly be crossed by the ray:
-%    possibleCROSSLIST = possibleCROSSLISTy( meshXYZmin(possibleCROSSLISTy,1)<=testx(loop) & meshXYZmax(possibleCROSSLISTy,1)>=testx(loop) );
-
+    %    % - 1a - Find which mesh facets could possibly be crossed by the ray:
+    %    possibleCROSSLISTy = find( meshXYZmin(:,2)<=testy(loop) & meshXYZmax(:,2)>=testy(loop) );
+    
+    %    % - 1b - Find which mesh facets could possibly be crossed by the ray:
+    %    possibleCROSSLIST = possibleCROSSLISTy( meshXYZmin(possibleCROSSLISTy,1)<=testx(loop) & meshXYZmax(possibleCROSSLISTy,1)>=testx(loop) );
+    
     % Do - 1a - and - 1b - faster
     possibleCROSSLISTy = find((testy(loop)-meshXYZmin(:,2)).*(meshXYZmax(:,2)-testy(loop))>0);
     possibleCROSSLISTx = (testx(loop)-meshXYZmin(possibleCROSSLISTy,1)).*(meshXYZmax(possibleCROSSLISTy,1)-testx(loop))>0;
@@ -206,9 +209,9 @@ for loop = 1:length(OUTPUT),
             YRpredicted = meshXYZ(loopCHECKFACET,2,2) - ((meshXYZ(loopCHECKFACET,2,2)-meshXYZ(loopCHECKFACET,2,3)) * (meshXYZ(loopCHECKFACET,1,2)-testx(loop))/(meshXYZ(loopCHECKFACET,1,2)-meshXYZ(loopCHECKFACET,1,3)));
             
             if (Y1predicted > meshXYZ(loopCHECKFACET,2,1) && YRpredicted > testy(loop)) || (Y1predicted < meshXYZ(loopCHECKFACET,2,1) && YRpredicted < testy(loop)) || (meshXYZ(loopCHECKFACET,2,2)-meshXYZ(loopCHECKFACET,2,3)) * (meshXYZ(loopCHECKFACET,1,2)-testx(loop)) == 0
-%                testV1 = 1;   %The ray is on the same side of the 2-3 edge as the 1st vertex.
+                %                testV1 = 1;   %The ray is on the same side of the 2-3 edge as the 1st vertex.
             else
-%                testV1 = 0;   %The ray is on the opposite side of the 2-3 edge to the 1st vertex.
+                %                testV1 = 0;   %The ray is on the opposite side of the 2-3 edge to the 1st vertex.
                 % As the check is for ALL three checks to be true, we can continue here, if only one check fails
                 continue;
             end %if
@@ -216,27 +219,28 @@ for loop = 1:length(OUTPUT),
             Y2predicted = meshXYZ(loopCHECKFACET,2,3) - ((meshXYZ(loopCHECKFACET,2,3)-meshXYZ(loopCHECKFACET,2,1)) * (meshXYZ(loopCHECKFACET,1,3)-meshXYZ(loopCHECKFACET,1,2))/(meshXYZ(loopCHECKFACET,1,3)-meshXYZ(loopCHECKFACET,1,1)));
             YRpredicted = meshXYZ(loopCHECKFACET,2,3) - ((meshXYZ(loopCHECKFACET,2,3)-meshXYZ(loopCHECKFACET,2,1)) * (meshXYZ(loopCHECKFACET,1,3)-testx(loop))/(meshXYZ(loopCHECKFACET,1,3)-meshXYZ(loopCHECKFACET,1,1)));
             if (Y2predicted > meshXYZ(loopCHECKFACET,2,2) && YRpredicted > testy(loop)) || (Y2predicted < meshXYZ(loopCHECKFACET,2,2) && YRpredicted < testy(loop)) || (meshXYZ(loopCHECKFACET,2,3)-meshXYZ(loopCHECKFACET,2,1)) * (meshXYZ(loopCHECKFACET,1,3)-testx(loop)) == 0
-%                testV2 = 1;   %The ray is on the same side of the 3-1 edge as the 2nd vertex.
+                %                testV2 = 1;   %The ray is on the same side of the 3-1 edge as the 2nd vertex.
             else
-%                testV2 = 0;   %The ray is on the opposite side of the 3-1 edge to the 2nd vertex.
+                %                testV2 = 0;   %The ray is on the opposite side of the 3-1 edge to the 2nd vertex.
                 % As the check is for ALL three checks to be true, we can continue here, if only one check fails
                 continue;
-            end %if            
+            end %if
             
             Y3predicted = meshXYZ(loopCHECKFACET,2,1) - ((meshXYZ(loopCHECKFACET,2,1)-meshXYZ(loopCHECKFACET,2,2)) * (meshXYZ(loopCHECKFACET,1,1)-meshXYZ(loopCHECKFACET,1,3))/(meshXYZ(loopCHECKFACET,1,1)-meshXYZ(loopCHECKFACET,1,2)));
             YRpredicted = meshXYZ(loopCHECKFACET,2,1) - ((meshXYZ(loopCHECKFACET,2,1)-meshXYZ(loopCHECKFACET,2,2)) * (meshXYZ(loopCHECKFACET,1,1)-testx(loop))/(meshXYZ(loopCHECKFACET,1,1)-meshXYZ(loopCHECKFACET,1,2)));
             if (Y3predicted > meshXYZ(loopCHECKFACET,2,3) && YRpredicted > testy(loop)) || (Y3predicted < meshXYZ(loopCHECKFACET,2,3) && YRpredicted < testy(loop)) || (meshXYZ(loopCHECKFACET,2,1)-meshXYZ(loopCHECKFACET,2,2)) * (meshXYZ(loopCHECKFACET,1,1)-testx(loop)) == 0
-%                testV3 = 1;   %The ray is on the same side of the 1-2 edge as the 3rd vertex.
+                %                testV3 = 1;   %The ray is on the same side of the 1-2 edge as the 3rd vertex.
             else
-%                testV3 = 0;   %The ray is on the opposite side of the 1-2 edge to the 3rd vertex.
+                %                testV3 = 0;   %The ray is on the opposite side of the 1-2 edge to the 3rd vertex.
                 % As the check is for ALL three checks to be true, we can continue here, if only one check fails
+
                 continue;
             end %if
-    
+            
             nf=nf+1;facetCROSSLIST(nf)=loopCHECKFACET;
             
         end %for
-
+        
         % Use only values ~=0
         facetCROSSLIST = facetCROSSLIST(1:nf);
         
@@ -265,14 +269,14 @@ for loop = 1:length(OUTPUT),
             end
             
             gridCOzCROSS(facetCROSSLIST==loopFINDZ) = (- planecoD - planecoA*testx(loop) - planecoB*testy(loop)) / planecoC;
-            
+            pointReturn = [pointReturn; testx(loop) testy(loop) testz(loop)];
         end %for
-
+        
         if isempty(gridCOzCROSS),continue;end
         
         %Remove values of gridCOzCROSS which are outside of the mesh limits (including a 1e-12 margin for error).
         gridCOzCROSS = gridCOzCROSS( gridCOzCROSS>=meshZmin-1e-12 & gridCOzCROSS<=meshZmax+1e-12 );
-
+        
         %Round gridCOzCROSS to remove any rounding errors, and take only the unique values:
         gridCOzCROSS = round(gridCOzCROSS*1e10)/1e10;
         
@@ -284,11 +288,13 @@ for loop = 1:length(OUTPUT),
         if rem(numel(gridCOzCROSS),2)==0  % Only rays which cross an even number of facets are voxelised
             
             for loopASSIGN = 1:(numel(gridCOzCROSS)/2)
+                
                 voxelsINSIDE = (testz(loop)>gridCOzCROSS(2*loopASSIGN-1) & testz(loop)<gridCOzCROSS(2*loopASSIGN));
+                
                 OUTPUT(loop) = voxelsINSIDE;
                 if voxelsINSIDE,break;end
             end %for
-
+            
             
         elseif numel(gridCOzCROSS)~=0    % Remaining rays which meet the mesh in some way are not voxelised, but are labelled for correction later.
             correctionLIST = [ correctionLIST; loop ];
@@ -319,34 +325,34 @@ countCORRECTIONLIST = size(correctionLIST,1);
 
 if countCORRECTIONLIST>0
     
-  %If necessary, add a one-pixel border around the x and y edges of the
-  %array.  This prevents an error if the code tries to interpolate a ray at
-  %the edge of the x,y grid.
-  if min(correctionLIST(:,1))==1 || max(correctionLIST(:,1))==numel(gridCOx) || min(correctionLIST(:,2))==1 || max(correctionLIST(:,2))==numel(gridCOy)
-    gridOUTPUT     = [zeros(1,voxcountY+2,voxcountZ);zeros(voxcountX,1,voxcountZ),gridOUTPUT,zeros(voxcountX,1,voxcountZ);zeros(1,voxcountY+2,voxcountZ)];
-    correctionLIST = correctionLIST + 1;
-  end
-  
-  for loopC = 1:countCORRECTIONLIST
-    voxelsforcorrection = squeeze( sum( [ gridOUTPUT(correctionLIST(loopC,1)-1,correctionLIST(loopC,2)-1,:) ,...
-                                          gridOUTPUT(correctionLIST(loopC,1)-1,correctionLIST(loopC,2),:)   ,...
-                                          gridOUTPUT(correctionLIST(loopC,1)-1,correctionLIST(loopC,2)+1,:) ,...
-                                          gridOUTPUT(correctionLIST(loopC,1),correctionLIST(loopC,2)-1,:)   ,...
-                                          gridOUTPUT(correctionLIST(loopC,1),correctionLIST(loopC,2)+1,:)   ,...
-                                          gridOUTPUT(correctionLIST(loopC,1)+1,correctionLIST(loopC,2)-1,:) ,...
-                                          gridOUTPUT(correctionLIST(loopC,1)+1,correctionLIST(loopC,2),:)   ,...
-                                          gridOUTPUT(correctionLIST(loopC,1)+1,correctionLIST(loopC,2)+1,:) ,...
-                                         ] ) );
-    voxelsforcorrection = (voxelsforcorrection>=4);
-    gridOUTPUT(correctionLIST(loopC,1),correctionLIST(loopC,2),voxelsforcorrection) = 1;
-  end %for
-
-  %Remove the one-pixel border surrounding the array, if this was added
-  %previously.
-  if size(gridOUTPUT,1)>numel(gridCOx) || size(gridOUTPUT,2)>numel(gridCOy)
-    gridOUTPUT = gridOUTPUT(2:end-1,2:end-1,:);
-  end
-  
+    %If necessary, add a one-pixel border around the x and y edges of the
+    %array.  This prevents an error if the code tries to interpolate a ray at
+    %the edge of the x,y grid.
+    if min(correctionLIST(:,1))==1 || max(correctionLIST(:,1))==numel(gridCOx) || min(correctionLIST(:,2))==1 || max(correctionLIST(:,2))==numel(gridCOy)
+        gridOUTPUT     = [zeros(1,voxcountY+2,voxcountZ);zeros(voxcountX,1,voxcountZ),gridOUTPUT,zeros(voxcountX,1,voxcountZ);zeros(1,voxcountY+2,voxcountZ)];
+        correctionLIST = correctionLIST + 1;
+    end
+    
+    for loopC = 1:countCORRECTIONLIST
+        voxelsforcorrection = squeeze( sum( [ gridOUTPUT(correctionLIST(loopC,1)-1,correctionLIST(loopC,2)-1,:) ,...
+            gridOUTPUT(correctionLIST(loopC,1)-1,correctionLIST(loopC,2),:)   ,...
+            gridOUTPUT(correctionLIST(loopC,1)-1,correctionLIST(loopC,2)+1,:) ,...
+            gridOUTPUT(correctionLIST(loopC,1),correctionLIST(loopC,2)-1,:)   ,...
+            gridOUTPUT(correctionLIST(loopC,1),correctionLIST(loopC,2)+1,:)   ,...
+            gridOUTPUT(correctionLIST(loopC,1)+1,correctionLIST(loopC,2)-1,:) ,...
+            gridOUTPUT(correctionLIST(loopC,1)+1,correctionLIST(loopC,2),:)   ,...
+            gridOUTPUT(correctionLIST(loopC,1)+1,correctionLIST(loopC,2)+1,:) ,...
+            ] ) );
+        voxelsforcorrection = (voxelsforcorrection>=4);
+        gridOUTPUT(correctionLIST(loopC,1),correctionLIST(loopC,2),voxelsforcorrection) = 1;
+    end %for
+    
+    %Remove the one-pixel border surrounding the array, if this was added
+    %previously.
+    if size(gridOUTPUT,1)>numel(gridCOx) || size(gridOUTPUT,2)>numel(gridCOy)
+        gridOUTPUT = gridOUTPUT(2:end-1,2:end-1,:);
+    end
+    
 end %if
 
 %disp([' Ray tracing result: ',num2str(countCORRECTIONLIST),' rays (',num2str(countCORRECTIONLIST/(voxcountX*voxcountY)*100,'%5.1f'),'% of all rays) exactly crossed a facet edge and had to be computed by interpolation.'])

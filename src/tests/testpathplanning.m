@@ -26,7 +26,7 @@ maxRotation     = 2*pi; % [rad]
 maxAdvancement  = 10; % [mm]
 
 % Load cavity model
-path = fullfile('..', '..', 'anatomical-models', 'synthetic-model.stl');
+path = fullfile( '..', 'anatomical-models', 'synthetic-model.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
