@@ -51,7 +51,7 @@ classdef appController < handle
                 'AmbientStrength',0.5, 'EdgeColor', '#585d68', 'LineWidth', 0.003);
             comME = MException("APPCONTROLLER:enterCOM", "Enter COM Port number and press Connect Arduino! \n");
             self.app.printError(comME);
-            while isempty(self.app.arduinoController)
+            while ~(self.app.startWaitFlag)
                 % Do nothing
                 pause(0.5);
             end
@@ -62,7 +62,7 @@ classdef appController < handle
             
             % For debugging use loopingAlternative
             % MATLAB does not have proper error statements for timers
-            % self.loopingAlternative();
+            %self.loopingAlternative();
             
         end
         
@@ -72,12 +72,9 @@ classdef appController < handle
             while ~self.app.stopFlag
                 self.updateValues(0, 0);
                 self.updateGraphics(0, 0);
-                if ~(self.app.arduinoController.keyBoard)
-                    %self.updateControls(0, 0);
-                end
                 self.loopCounter = self.loopCounter + 1;
                 %disp(self.loopCounter);
-                pause(0.05);
+                pause(0.1);
             end
             
         end
@@ -110,7 +107,7 @@ classdef appController < handle
                 
                 start(self.loopTimer);
                 start(self.drawingTimer);
-                                
+                
                 
             catch ME
                 Error handling
@@ -130,23 +127,24 @@ classdef appController < handle
             
             % lol = [self.app.arduinoController.joyX self.app.arduinoController.joyY self.app.arduinoController.zdir]
             try
-            % Update the robot configuration based on control values
-            % Only if the robot tendon displacement is greater than 0
-            if self.app.configuration(1) <= 0 && self.app.arduinoController.zdir < 0
-                self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
-            else
-                self.app.configuration = self.app.configuration + [self.app.arduinoController.zdir, 0, 0];
-            end
-            
-            % Update robot advancement if value is greater than 0 mm.
-            if self.app.configuration(3) <= 0 && self.app.arduinoController.joyY < 0 
-                self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
-            else
-                self.app.configuration = self.app.configuration + [0, 0, self.app.arduinoController.joyY];
-            end
-            
-            % Rotation can always be updated
-            self.app.configuration = self.app.configuration + [0, -self.app.arduinoController.joyX, 0];
+                % Update the robot configuration based on control values
+                % Only if the robot tendon displacement is greater than 0
+                if self.app.configuration(1) <= 0 && self.app.arduinoController.zdir < 0
+                    self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
+                else
+                    self.app.configuration = self.app.configuration + [self.app.arduinoController.zdir, 0, 0];
+                end
+                
+                % Update robot advancement if value is greater than 0 mm.
+                if self.app.configuration(3) <= 0 && self.app.arduinoController.joyY < 0
+                    self.app.configuration = self.app.configuration + [0, 0, 0]; % Do nothing
+                else
+                    self.app.configuration = self.app.configuration + [0, 0, self.app.arduinoController.joyY];
+                end
+                
+                % Rotation can always be updated
+                self.app.configuration = self.app.configuration + [0, -self.app.arduinoController.joyX, 0];
+                
             catch
                 
             end
@@ -160,9 +158,7 @@ classdef appController < handle
             end
             
             % Display robot configuration on the App screen
-            if self.app.configuration(3) > 1000;
-                self.app.configuration(3) = 0;
-            end
+
             self.app.Advancement.Text = num2str(self.app.configuration(3));
             m = 2 * pi;
             self.app.Rotation.Text = num2str(mod(self.app.configuration(2), m));
@@ -272,7 +268,7 @@ classdef appController < handle
             end
             
             % Only perform ray-trace visibility if there is a model loaded
-            if self.app.RayTraceAreaVisibilityCheckBox.Value && ~isempty(self.app.osMesh)
+            if self.app.rayFlag && ~isempty(self.app.osMesh)
                 
                 % Perform ray tracing, return hit faces and vertices
                 [faces, vertices] = self.checkRayTrace();
@@ -287,7 +283,12 @@ classdef appController < handle
                     'AmbientStrength',0.5, 'EdgeColor', '#585d68', ...
                     'LineWidth', 0.003, 'FaceAlpha', 0.8);
                 
-                self.app.RayTraceAreaVisibilityCheckBox.Value = false;
+                self.app.rayFlag = 0;
+            end
+            
+            if self.app.clearRay
+               self.app.clearRay = 0;
+               delete(self.rayCastingPatch); 
             end
             
             % Draw the red line coming out of the robot head

@@ -96,7 +96,7 @@ classdef Wrist < handle % !FIXME this should be a subclass of Robot
                 phii = 2 * acos(d(ii) / ri);
                 
                 ybaro = (4 * ro * (sin(0.5 * phio)) ^ 3)/ (3 * (phio - sin(phio)));
-                ybari = (4 * ri * (sin(0.5 * phii)) ^ 3)/ (3 * (phio - sin(phii)));
+                ybari = (4 * ri * (sin(0.5 * phii)) ^ 3)/ (3 * (phii - sin(phii)));
                 
                 Ao = ( (ro ^ 2) * ( phio - sin(phio))) / 2;
                 Ai = ( (ri ^ 2) * ( phii - sin(phii))) / 2;
