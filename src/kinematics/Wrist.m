@@ -90,6 +90,9 @@ classdef Wrist < Robot
    
             % initialize a counter to iterate on the notches
             kk = 1;
+            
+            self.curvature = zeros(1,self.nLinks);
+            self.arcLength = zeros(1,self.nLinks);
    
             for jj = 0 : self.nLinks - 1
                 % Even-numbered links are notches
@@ -112,7 +115,7 @@ classdef Wrist < Robot
                         sjj = self.cutouts.u(kk-1) .* 10^-3; % Uncut section [m]
                         thetajj = 0;
                     end
-                 
+
                 else
                     % For a curved section (i.e. a notch), calculate the
                     % arc parameters using the relations in [Swaney2017]
@@ -120,16 +123,19 @@ classdef Wrist < Robot
                     sjj = h(kk) / ( 1 + self.ybar(kk) * kjj); % original kappa
                     thetajj = 0;
                     
-                    % Save the curvature and arc length of each notch
-                    % !FIXME this may be different for each cutout
-                    self.curvature = kjj;
-                    self.arcLength = sjj;
+%                     % Save the curvature and arc length of each notch
+%                     % !FIXME this may be different for each cutout
+%                     self.curvature = kjj;
+%                     self.arcLength = sjj;
                    
                     % move to the next cutout
                     kk = kk + 1;
                 end
                 
                 c(jj*3+1:jj*3+3) = [kjj sjj thetajj];
+                
+                self.curvature(jj+1) = kjj;
+                self.arcLength(jj+1) = sjj;
             end
         end
         
@@ -147,16 +153,12 @@ classdef Wrist < Robot
         end
         
         
-        function J = jacob0(self, q)
+        function [Jrobot,Jp] = jacob0(self, q)
             % Read the joint variables
             t_displ = q(1) * 10^-3; % tendon displacement [m]
-            t_rot   = q(2);         % tube rotation [m]
-            t_adv   = q(3) * 10^-3; % 
-            
+
             % Read the geometric design parameters
-            ro = self.OD * 10^-3 / 2; % outer radius of tube in [m];
-            ri = self.ID * 10^-3 / 2; % inner radius of tube in [m];
-            
+            ri = self.ID * 10^-3 / 2; % inner radius of tube in [m];     
             h = self.cutouts.h .* 10^-3; % Height of the cutouts in [m]
             
             % Map joint variables to arc parameters
@@ -216,63 +218,82 @@ classdef Wrist < Robot
                 cdotmatrix(jj*3+3,2) = thetadotjj;
             end
             
-            J = J*cdotmatrix;
+            % Calculate the forward kinematics - required to finalize
+            % calculation of the Jacobian
+            self.fwkine(q, eye(4));
+            pCurrent = self.pose(:,end) ./ 1000; % the forward kinematics returns values in mm
+            
+            Jrobot = J*cdotmatrix;
+            Jp = Jrobot(1:3,:) - skew(pCurrent) * Jrobot(4:6,:);
         end
-        %         function invkine(self, p, q)
-        %             qCurrent = q;
-%             cCurrent = c;
-%             
-%             while true
-%                 % calculate the current location
-%                 cCurrent = self.jointvar2arcparams(qCurrent);
-%                 self.fwkine(qCurrent, eye(4));                
-%                 pCurrent = self.pose(1:3,end);
-% 
+        
+        
+        function q = invkine(self, pTarget, qCurrent)
+            pTarget = pTarget .* 10^-3;
+                        
+            while true
+                % calculate the current location
+                self.fwkine(qCurrent, eye(4));
+                pCurrent = self.pose(1:3,end);
+                
+                % calculate the difference between current and target location
+                err = norm(pTarget - pCurrent)
+                
+                % if the difference < epsilon, return
+                if err < 1e-1, break; end
+                
+                % else, update the "joint" variables using the inverse of the
+                % jacobian
+                [~,Jp] = self.jacob0(qCurrent);
+                %Jp = J(1:3,:) - skew(pCurrent) * J(4:6,:)
+                Jpinv = pinv(Jp);
+                
+                K = diag([100 100 100]);
+                deltaQ = K * Jpinv * (pTarget - pCurrent);
+                deltaQ(1) = deltaQ(1) / 1000;
+                deltaQ(3) = deltaQ(3) / 1000;
+                qCurrent = qCurrent + deltaQ';
+                
+                RM = self.makePhysicalModel();
+                h.XData = RM.surface.X;
+                h.YData = RM.surface.Y;
+                h.ZData = RM.surface.Z;
+                
+                drawnow
+                
+                %
+                %                 triad('Matrix', eye(4), 'linewidth', 2.5);
+%                 triad('Matrix', self.transformations(:,:,end), 'linewidth', 2.5);
 %                 
-%                 % calculate the difference between current and target location
-%                 err = norm(pTarget - pCurrent);
+%                 RM = self.makePhysicalModel();
 %                 
-%                 % if the difference < epsilon, return
-%                 if err < 1e-1, break; end
-%                 
-%                 % else, update the "joint" variables using the inverse of the
-%                 % jacobian
-%                 J = r.jacob(c);
-%                 Jp = J(1:3,:) - skew(pCurrent) * J(4:6,:);
-%                 Jpinv = pinv(Jp);
-%                 
-%                 K = diag([1 1 1 1 1 1 0 1 1]);
-%                 deltaQ = K * Jpinv * (pTarget - pCurrent);
-%                 c = c + deltaQ;
-%             end
-%             
-%             
-%         end
-%         
+%                 X = RM.surface.X;
+%                 Y = RM.surface.Y;
+%                 Z = RM.surface.Z;
+%                 surf(X, Y, Z, 'FaceColor','green');
+%                 hold on
+%                 drawnow
+            end
+        end
+        
         
         function robotModel = makePhysicalModel(self)
             ptsPerMm = 5;
             
             P = self.pose;
             T = self.transformations;
+            
             kappa = self.curvature;
             s = self.arcLength;
-            %!FIXME kappa and s are different for each cutout - need to change
-            %the code below to account for this
-            kappa = kappa(1);
-            s = s(1);
             
-            kappa = kappa / 1000;
-            radius = 1 / kappa;
-            s = s * 1000;
+            kappa = kappa ./ 1000;
+            radius = 1 ./ kappa;
+            s = s .* 1000;
             
             robotBackbone = P(:,1);
-            %robotModel.surface.X = zeros(1, 21);
-            %robotModel.surface.Y = zeros(1, 21);
-            %robotModel.surface.Z = zeros(1, 21);
             
             for ii = 1 : size(P, 2) - 1
-                if mod(ii,2) == 1 || kappa == 0% straight sections
+                if kappa(ii) == 0 % straight sections
                     
                     % generate points along a straight line
                     distance = norm(P(:,ii+1) - P(:,ii));
@@ -282,35 +303,23 @@ classdef Wrist < Robot
                     Y = linspace(P(2,ii),P(2,ii+1), nPts);
                     Z = linspace(P(3,ii),P(3,ii+1), nPts);
                     
-                    robotBackbone = [robotBackbone [X;Y;Z]];
+                    robotBackbone = [robotBackbone [X(2:end);Y(2:end);Z(2:end)]];
                     
-                    %[Xcyl,Ycyl,Zcyl] = gencyl([X;Y;Z], self.OD/2*ones(length(X), 1));
-                    %robotModel.surface.X = [robotModel.surface.X; Xcyl];
-                    %robotModel.surface.Y = [robotModel.surface.Y; Ycyl];
-                    %robotModel.surface.Z = [robotModel.surface.Z; Zcyl];
-                
                 else % cutouts: curved sections
                     
                     % generate points along an arc of constant curvature
                     % and of length s
                     
                     % !FIXME ensure ptspermm is met                    
-                    theta = 0 : s*kappa/10 : s*kappa;
+                    theta = 0 : s(ii)*kappa(ii)/10 : s(ii)*kappa(ii);
                    
-                    pts = radius .* [(1-cos(theta));
+                    pts = radius(ii) .* [(1-cos(theta));
                                      zeros(1, length(theta));
                                      sin(theta);
-                                     ones(1, length(theta)) / radius];
+                                     ones(1, length(theta)) / radius(ii)];
                     
-                    %[Xcyl,Ycyl,Zcyl] = gencyl(pts(1:3,:), self.OD/2*ones(length(pts),1));
-
                     robotBackbone = [robotBackbone ...
-                        applytransform(pts(1:3,:), T(:,:,ii))]; 
-                    
-                    %[Xcyl,Ycyl,Zcyl] = gencyl([X;Y;Z], self.OD/2*ones(length(X),1));
-                    %robotModel.surface.X = [robotModel.surface.X; Xcyl];
-                    %robotModel.surface.Y = [robotModel.surface.Y; Ycyl];
-                    %robotModel.surface.Z = [robotModel.surface.Z; Zcyl];
+                        applytransform(pts(1:3,2:end), T(:,:,ii))]; 
                 end
             end 
             
