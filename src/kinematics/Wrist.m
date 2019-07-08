@@ -196,10 +196,12 @@ classdef Wrist < Robot
                         thetadotjj = 0;
                     end
                 else % for a notched section
-                    d = (h(kk) * (ri + self.ybar(kk)) - t_displ * self.ybar(kk));
-                    kdotjj = 1/d + self.ybar(kk) *  t_displ / d^2;
-                    sdotjj = -(h(kk) * self.ybar(kk) / d + self.ybar(kk)^2 * t_displ / d^2) * ...
-                        1 / (1 + (t_displ * self.ybar(kk)) / d)^2;
+%                     d = h(kk) * (ri + self.ybar(kk)) - t_displ * self.ybar(kk);
+%                     kdotjj = 1/d + self.ybar(kk) *  t_displ / d^2;
+%                     sdotjj = -(h(kk) * self.ybar(kk) / d + self.ybar(kk)^2 * t_displ / d^2) * ...
+%                         1 / (1 + (t_displ * self.ybar(kk)) / d)^2;
+                    kdotjj = 1/(h(kk)*(ri + self.ybar(kk)) - self.ybar(kk)*t_displ) + (self.ybar(kk)*t_displ)/(h(kk)*(ri + self.ybar(kk)) - self.ybar(kk)*t_displ)^2;
+                    sdotjj = -(h(kk)*((self.ybar(kk))/(h(kk)*(ri + self.ybar(kk)) - self.ybar(kk)*t_displ) + (self.ybar(kk)^2*t_displ)/(h(kk)*(ri + self.ybar(kk)) - self.ybar(kk)*t_displ)^2))/((self.ybar(kk)*t_displ)/(h(kk)*(ri + self.ybar(kk)) - self.ybar(kk)*t_displ) + 1)^2;
                     thetadotjj = 0;
                     
                     % move on to the next cutout

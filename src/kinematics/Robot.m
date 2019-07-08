@@ -1,7 +1,7 @@
 classdef Robot < handle
     % Robot This class implements the robot-independent kinematics of a continuum robot.
     %   Author: Loris Fichera <lfichera@wpi.edu>
-    %   Latest revision: 07/02/2019
+    %   Latest revision: 07/07/2019
 
     properties
         nLinks % number of links
@@ -43,7 +43,7 @@ classdef Robot < handle
         
         % this function calculates the Jacobian for a single link
         function J = jacobiansinglelink(~,k,s,theta)
-            if k == 0 % when curvature is null, the Jacobian is not well defined, need to apply the limit for k -> 0
+            if k == 0 % when curvature is null, need to apply the limit for k -> 0
                 J = [cos(theta) * -s^2 * 0.5  0 0;
                      sin(theta) * -s^2 * 0.5  0 0;
                      0                        1 0;
@@ -63,8 +63,10 @@ classdef Robot < handle
         
         % this function calculates the robot-independent Jacobian
         function J = jacob0(self, c)               
-             % add the jacobian for the first link
+             % initialize the Jacobian matrix
              J = zeros(6, 3 * self.nLinks);
+             
+             % Add the Jacobian for the first link
              J(:,1:3) = self.jacobiansinglelink(c(1), c(2), c(3));
              
              % iteratively calculate and stack the jacobians for the other
@@ -78,7 +80,7 @@ classdef Robot < handle
                  Ad = [T(1:3,1:3), skew(T(1:3,end)) * T(1:3,1:3);
                          zeros(3), T(1:3,1:3)];
                      
-                 % then calculate the jacobian for the link
+                 % then calculate the jacobian for the current link
                  Jii = self.jacobiansinglelink(c(ii*3+4), c(ii*3+5), c(ii*3+6)); 
                  J(:,ii*3+4:ii*3+6) = Ad * Jii;
              end
