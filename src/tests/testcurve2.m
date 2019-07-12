@@ -8,7 +8,7 @@ col = distinguishable_colors(10);
 
 % First, let's generate a constant curvature arc
 l = 1 * 10^-3; % [m] total arc length
-k = 1000;         % [m^-1] curvature
+k = 500;         % [m^-1] curvature
 r = 1/k;       % [m] radius of curvature
 
 theta = 0:l*k/20:l*k;
@@ -41,20 +41,24 @@ Ao = ( (ro ^ 2) * ( phio - sin(phio))) / 2;
 Ai = ( (ri ^ 2) * ( phii - sin(phii))) / 2;
 ybar = (ybaro * Ao - ybari * Ai) / (Ao - Ai);
     
-% height of the notch
-h = l/2 * (ro + ybar) / ro;
+% number of notches
+n = 2;
+
+% height of the notches
+h = k*l*(ro+ybar)/n;
 
 % length of the uncut section
-u = 2/k * sin(k*l/4);
+%u = 2/k * sin(k*l/4);
+u = (l - k*l*ro)/n;
 
-cutouts.w = [w*10^3 w*10^3];
-cutouts.u = [u*10^3 u*10^3];
-cutouts.h = [h*10^3 h*10^3];
-cutouts.alpha = [0 0];
+cutouts.w = w*10^3 .* ones(1,n);
+cutouts.u = u*10^3 .* ones(1,n);
+cutouts.h = h*10^3 .* ones(1,n);
+cutouts.alpha = zeros(1,n);
 
-configuration = [h*10^3, 0, 0];
+configuration = [0.42, 0, 0];
 
-robot = Wrist(ID*10^3, OD*10^3, 1, cutouts);
+robot = Wrist(ID*10^3, OD*10^3, n, cutouts);
 robot.fwkine(configuration, eye(4));
 
 % Display the wrist
@@ -66,7 +70,7 @@ robot.fwkine(configuration, eye(4));
 %hold on, axis equal
 
 robotModel = robot.makePhysicalModel();
-
+% 
 % X = robotModel.surface.X * 10^-3;
 % Y = robotModel.surface.Y * 10^-3;
 % Z = robotModel.surface.Z * 10^-3;

@@ -1,4 +1,4 @@
-function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel, nPoints)
+function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, nPoints, anatomyModel)
 % RRT implements the basic Rapidly-Exploring Random Trees algorithm for a
 % generic continuum robot
 %
@@ -6,7 +6,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
 %
 % Last revision: 3/6/2019
 
-    if nargin < 3
+    if nargin < 4
         collisionDetection = false;
     else
         collisionDetection = true;
@@ -26,7 +26,11 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
     
  
     % initialize the base transform
-    T_robot_in_env = anatomyModel.baseTransform;
+    if collisionDetection == 1
+        T_robot_in_env = anatomyModel.baseTransform;
+    else
+        T_robot_in_env = eye(4);
+    end
  
     robot.fwkine(qList(:,1), T_robot_in_env);
     T = robot.transformations;
@@ -46,20 +50,23 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
         displ = qNew(1) * maxDispl;  
         rot   = qNew(2) * maxRot;
         adv   = qNew(3) * maxAdv;
-%         
+        
         robot.fwkine([displ, rot, adv], T_robot_in_env);
         T = robot.transformations;
-        robotPM = robot.makePhysicalModel();
         
-        testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:)];
-        collision = intriangulation(anatomyModel.vertices, ...
-            anatomyModel.faces, testpts);
-        
-        collision = sum(collision);
-        
-        if collision > 1
-            disp('Collision detected.');
-            continue;
+        if collisionDetection == 1
+            robotPM = robot.makePhysicalModel();
+            
+            testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:)];
+            collision = intriangulation(anatomyModel.vertices, ...
+                anatomyModel.faces, testpts);
+            
+            collision = sum(collision);
+            
+            if collision > 1
+                disp('Collision detected.');
+                continue;
+            end
         end
          
         % If no collision, add this point to the tree

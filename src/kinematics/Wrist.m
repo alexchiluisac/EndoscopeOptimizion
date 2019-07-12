@@ -82,7 +82,6 @@ classdef Wrist < Robot
             
             h = self.cutouts.h .* 10^-3; % Height of the cutouts in [m]
             w = self.cutouts.w .* 10^-3; % Cut depth in [m]. See Figure 4 again.            
-            d = w-ro; % intermediate variable. Depth of cut as measured from y = 0. See Figure 4.
             
             % == Perform a robot-specific mapping from the joint variables q
             % to the vector of arc parameters c
@@ -121,7 +120,7 @@ classdef Wrist < Robot
                     % arc parameters using the relations in [Swaney2017]
                     kjj = (t_displ) / (h(kk) * (ri + self.ybar(kk)) - t_displ * self.ybar(kk));
                     sjj = h(kk) / ( 1 + self.ybar(kk) * kjj); % original kappa
-                    thetajj = 0;
+                    thetajj = self.cutouts.alpha(kk);
                     
 %                     % Save the curvature and arc length of each notch
 %                     % !FIXME this may be different for each cutout
@@ -280,7 +279,7 @@ classdef Wrist < Robot
         
         
         function robotModel = makePhysicalModel(self)
-            ptsPerMm = 5;
+            ptsPerMm = 25;
             
             P = self.pose;
             T = self.transformations;
