@@ -148,7 +148,7 @@ classdef Wrist < Robot
             % Save pose and transformations in local attributes
             self.pose = P(1:3,:) .* 1000;
             self.transformations = T;
-            self.transformations(1:3,4,:) = self.transformations(1:3,4,:) .*1000;
+            self.transformations(1:3,4,:) = self.transformations(1:3,4,:) .* 1000;
         end
         
         
