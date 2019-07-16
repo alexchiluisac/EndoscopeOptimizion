@@ -5,18 +5,21 @@ function curve = makecurve(varargin)
     defaultArcLength = 2e-3;
     defaultK         = @(s,arcLength) 100 .* ones(1, length(s));
     defaultTau       = @(s,arcLength) 0 * s/arcLength;
+    defaultPosition = [0; 0; 0]; 
     defaultPlot      = false;
     
     p = inputParser;
     addOptional(p, 'arcLength', defaultArcLength);
     addOptional(p, 'k', defaultK);
     addOptional(p, 'tau', defaultTau);
+    addOptional(p, 'initial', defaultPosition); % Representing the origin of the vector
     addParameter(p, 'plot', defaultPlot);
     parse(p, varargin{:});
     
     arcLength = p.Results.arcLength;
     k         = p.Results.k;
     tau       = p.Results.tau;
+    initialPosition = p.Results.initial;
     plot      = p.Results.plot;
     
     col = distinguishable_colors(10);
@@ -36,7 +39,7 @@ function curve = makecurve(varargin)
     b = [y(:,7) y(:,8) y(:,9)]';
     
     % Generate the arc points by integration of the t vector along s
-    arc = zeros(3, size(l, 1));
+    arc = initialPosition;
     
     for ii = 2 : size(l, 1)
         arc(:,ii) = [trapz(l(1:ii), t(1,1:ii));
