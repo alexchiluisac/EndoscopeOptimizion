@@ -13,6 +13,6 @@ addpath('kinematics');
 addpath('gui');
 addpath("anatomical-models");
 
-app = SynthesisApp();
+app = synthesisController();
 
 end
