@@ -11,7 +11,11 @@ classdef synthesisController < handle
             self.app = SynthesisApp();
             xlabel(self.app.PlotAxes, 'X [m]'), ylabel(self.app.PlotAxes, 'Y [m]'), zlabel(self.app.PlotAxes, 'Z [m]');
 
-            
+            while true
+               self.update()
+               self.draw()
+               pause(1);
+            end
 %             theta = 2*pi*linspace(0,2,100);
 %             x = cos(theta);
 %             y = sin(theta);
@@ -28,6 +32,7 @@ classdef synthesisController < handle
         end
         
         function update(self)
+            self.app.update();
             if self.app.startWaitFlag
                 self.app.arduinoController.updateNunchukValues();
             end
