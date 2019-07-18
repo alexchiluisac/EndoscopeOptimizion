@@ -6,24 +6,24 @@ function curve = makecurve(varargin)
     variableK = 100;
     defaultK         = @(s,arcLength) variableK .* ones(1, length(s));
     defaultTau       = @(s,arcLength) 0 * s/arcLength;
-    defaultInitial   = [0; 0; 0]; % Initial position of the 
-    defaultTransform = eye(4); 
+    defaultTransform = eye(4);
+    defaultRotation  = 0;
     defaultPlot      = false;
     
     p = inputParser;
     addOptional(p, 'arcLength', defaultArcLength);
     addOptional(p, 'k', defaultK);
     addOptional(p, 'tau', defaultTau);
-    addOptional(p, 'initial', defaultInitial);
     addOptional(p, 'transform', defaultTransform);
+    addOptional(p, 'rotation', defaultRotation);
     addParameter(p, 'plot', defaultPlot);
     parse(p, varargin{:});
     
     arcLength = p.Results.arcLength;
     k         = p.Results.k;
     tau       = p.Results.tau;
-    initialPosition = p.Results.initial;
     transform = p.Results.transform;
+    rotation  = p.Results.rotation;
     plot      = p.Results.plot;
     
     col = distinguishable_colors(10);
@@ -43,11 +43,17 @@ function curve = makecurve(varargin)
     b = [y(:,7) y(:,8) y(:,9)]';
     
     % Generate the arc points by integration of the t vector along s
+    initialPosition = transform(1:3, 4);
     arc = initialPosition;
     
     scalefactor = 10e2;
+    
+    Trotz = [cos(rotation) -sin(rotation) 0; ...
+              sin(rotation) cos(rotation)  0; ...
+              0          0           1];
+
     for ii = 2 : size(l, 1)
-        arc(:,ii) = initialPosition + ( (transform(1:3, 1:3) * [trapz(l(1:ii), t(1,1:ii));
+        arc(:,ii) = initialPosition + ( (transform(1:3, 1:3) * Trotz * [trapz(l(1:ii), t(1,1:ii));
             trapz(l(1:ii), t(2,1:ii));
             trapz(l(1:ii), t(3,1:ii))]) .* scalefactor);
     end
