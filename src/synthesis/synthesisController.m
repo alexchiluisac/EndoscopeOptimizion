@@ -14,7 +14,7 @@ classdef synthesisController < handle
             while true
                self.update()
                self.draw()
-               pause(1);
+               pause(0.5); % Update twice per second
             end
 %             theta = 2*pi*linspace(0,2,100);
 %             x = cos(theta);
@@ -33,10 +33,6 @@ classdef synthesisController < handle
         
         function update(self)
             self.app.update();
-            if self.app.startWaitFlag
-                self.app.arduinoController.updateNunchukValues();
-            end
-            self.app.generateCurve();
         end
     end
     
