@@ -1,34 +1,47 @@
-%% Script to test the wrist synthesis algorithm
-clc, clear, close all
+%% Script to synthesize a wrist
+% This script synthesizes the design parameters of a Nitinol-based
+% notched tube wrist. The synthesis is performed in such a way that the
+% wrist, once at full bending, articulates in a prescribed manner, which is
+% described by a 3D curve in space.
 
-addpath('../synthesis')
+% The output of the script is an object of class WRIST. The attribute
+% `cutouts' of the object contains the design parameters. See the
+% documentation of the WRIST class for a description of the data fields and
+% their meaning.
+
+clc, clear, close all
 addpath('../kinematics')
 addpath('../utils')
 
-col = distinguishable_colors(10);
+%% Inputs/parameters of the algorithm to be defined below:
 
-%% 1. Generate a curve
+% === Curve description ===
+% Arc Length (m)
+arcLength = 20e-3; % 20 mm
 
-% Arc Length in [m]
-arcLength = 13.45e-3;
-%arcLength = 20e-3;
-
-% Curvature Profile [1/m]
+% Curvature profile (1/m)
+k = @(s,arcLength) 150 .* s/arcLength; % increasing curvature
+%k = @(s,arcLength) 150 .* ones(1,length(s)); % constant curvature
 %k = @(s,arcLength) 96.65 .* ones(1,length(s));
-%k = @(s,arcLength) 150 .* ones(1,length(s));
-k = @(s,arcLength) 150 .* s/arcLength;
 
-% Torsional Profile
+% Torsional Profile [!FIXME not yet supported]
 tau = @(s,arcLength) 0 * s/arcLength; 
 
-% Create the curve with the MAKECURVE function
+% === Algorithm Parameters ===
+% Number of sections in which the original curve should be partitioned:
+m = 5; % this parameter is important in curves with varying curvature profiles - for a constant curvature arc, m can simply be equal to 1
+
+% Number of notches for each section
+n = 1 * ones(1, m); % increasing the number of notches will make the wrist better approximate the original curve
+
+%% === THERE SHOULD BE NO NEED TO CHANGE THE CODE BELOW ===
+% 1. Create the curve with the MAKECURVE function
 curve = makecurve(arcLength, k, tau, 'plot', true);
 
-%% 2. Partition the curve into m sections
-m = 5;
+% 2. Partition the curve into m sections
 partitionedCurve = partitioncurve(curve, m, 'plot', true);
 
-%% 3. Synthesize a wrist that bends like the curve
+% 3. Synthesize a wrist that bends like the curve
 OD = 1.85 * 10^-3; % [m] tube outer diameter
 ID = 1.60 * 10^-3; % [m] tube inner diameter
 ro = OD/2;         % [m] tube outer radius
@@ -47,9 +60,6 @@ Ao = ( (ro ^ 2) * ( phio - sin(phio))) / 2;
 Ai = ( (ri ^ 2) * ( phii - sin(phii))) / 2;
 ybar = (ybaro * Ao - ybari * Ai) / (Ao - Ai);
     
-% number of notches
-n = 1 * ones(1, m);
-
 % height of the notches and of the uncut sections
 h = zeros(1, m);
 u = zeros(1, m);
@@ -76,6 +86,8 @@ configuration = [sum(cutouts.h), 0, 0];
 
 robot = Wrist(ID*10^3, OD*10^3, sum(n), cutouts);
 robot.fwkine(configuration, T);
+
+col = distinguishable_colors(10);
 
 robotModel = robot.makePhysicalModel();    
 X = robotModel.surface.X * 10^-3;
@@ -104,4 +116,3 @@ title('Wrist pose vs target curve');
 set(gca,'FontSize',16);
 axis equal, axis tight, grid on
 view(0.26, 20.5)
-

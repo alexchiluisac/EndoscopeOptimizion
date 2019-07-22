@@ -2,10 +2,10 @@ function curve = makecurve(varargin)
     %% MAKECURVE generates a curve based on desired curvature and torsion profiles
 
     % Input handling
-    defaultArcLength = 2e-3;
-    defaultK         = @(s,arcLength) 100 .* ones(1, length(s));
-    defaultTau       = @(s,arcLength) 0 * s/arcLength;
-    defaultPlot      = false;
+    defaultArcLength = 20e-3;
+    defaultK         = @(s,arcLength) 500 * s/arcLength;%.* ones(1, length(s));
+    defaultTau       = @(s,arcLength) 500 * s/arcLength;
+    defaultPlot      = true;
     
     p = inputParser;
     addOptional(p, 'arcLength', defaultArcLength);

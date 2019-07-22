@@ -2,19 +2,19 @@ classdef Wrist < Robot
     % WRIST This class encapsulates the design parameters of a
     % notched-tube wrist.
     %
-    %   Author: Loris Fichera <lfichera@wpi.edu>
+    %   Authors: Loris Fichera <lfichera@wpi.edu>
+    %            Floris Van Rossum <fjvanrossum@wpi.edu>
     %
-    %   Edited by Floris van Rossum to make optimization changes.
-    %   Latest revision: 06/05/2019
+    %   Latest revision: 07/21/2019
     properties
         ID        % [mm] tube inner diameter
         OD        % [mm] tube outer diameter
         nCutouts  % [int] total number of cutouts
         cutouts   % struct array - each struct contains the following fields:
-        %   [u - spacing between i-1 and i-th notch]
-        %   [h - height of i-th cutout             ]
-        %   [w - width of i-th cutout              ]
-        %   [phi - orientation of i-th cutout      ]
+        %           [u - spacing between i-1 and i-th notch]
+        %           [h - height of i-th cutout             ]
+        %           [w - width of i-th cutout              ]
+        %           [phi - orientation of i-th cutout      ]
         
         % Forward Kinematics Parameters
         pose                % The position and orientation
@@ -70,18 +70,59 @@ classdef Wrist < Robot
             end
         end
         
+        function cutoutDispl = calcdispl(self, totalDisplacement)
+           % This function calculates the tendon displacement experienced
+           % by each individual cutout. By default, the total tendon
+           % displacement is simply uniformly redistributed among the
+           % existing cutouts. When a cutout hits the hard stop, it is no
+           % longer articulable.
+           
+           % First assign each cutout 1/n of the total displacement
+           cutoutDispl = totalDisplacement ./ self.nCutouts .* ...
+               ones(1, self.nCutouts);
+           
+           overHardStop = cutoutDispl > self.deltal_max;
+                      
+           if any(overHardStop)
+               while true
+                   % calculate the excess displacement on the cutouts that have
+                   % hit the full stop
+                   excessDisplacement = sum((cutoutDispl - self.deltal_max) .* double(overHardStop));
+                   
+                   % redestribute among the other cutouts
+                   cutoutDispl(overHardStop) = self.deltal_max(overHardStop);
+                   cutoutDispl(~overHardStop) = cutoutDispl(~overHardStop) + ...
+                       excessDisplacement ./ sum(~overHardStop);
+                   
+                   % check if any cutouts are still running over the hard
+                   % stop
+                   overHardStop = cutoutDispl > self.deltal_max;
+                   
+                   if all(cutoutDispl >= self.deltal_max)
+                       warning('All the cutouts hit the hard stop');
+                       cutoutDispl = self.deltal_max;
+                       break;
+                   elseif excessDisplacement < 1e-9
+                       break;
+                   end
+               end
+           end
+        end
+        
         function c = jointvar2arcparams(self, q)
             % == Get the endoscope joint variables q
-            t_displ = q(1) * 10^-3; % tendon displacement [m]
+            tendonDisplacement = q(1) * 10^-3; % tendon displacement [m]
             t_rot   = q(2);         % tube rotation [m]
             t_adv   = q(3) * 10^-3; % 
             
+            cutoutDispl = self.calcdispl(tendonDisplacement);
+            
             % == Read the geometric design parameters
-            ro = self.OD * 10^-3 / 2; % outer radius of tube in [m];
+            %ro = self.OD * 10^-3 / 2; % outer radius of tube in [m];
             ri = self.ID * 10^-3 / 2; % inner radius of tube in [m];
             
             h = self.cutouts.h .* 10^-3; % Height of the cutouts in [m]
-            w = self.cutouts.w .* 10^-3; % Cut depth in [m]. See Figure 4 again.            
+            %w = self.cutouts.w .* 10^-3; % Cut depth in [m]. See Figure 4 again.            
             
             % == Perform a robot-specific mapping from the joint variables q
             % to the vector of arc parameters c
@@ -118,7 +159,7 @@ classdef Wrist < Robot
                 else
                     % For a curved section (i.e. a notch), calculate the
                     % arc parameters using the relations in [Swaney2017]
-                    kjj = (t_displ) / (h(kk) * (ri + self.ybar(kk)) - t_displ * self.ybar(kk));
+                    kjj = (cutoutDispl(kk)) / (h(kk) * (ri + self.ybar(kk)) - cutoutDispl(kk) * self.ybar(kk));
                     sjj = h(kk) / ( 1 + self.ybar(kk) * kjj); % original kappa
                     thetajj = self.cutouts.alpha(kk);
                     

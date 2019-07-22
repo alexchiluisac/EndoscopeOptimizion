@@ -78,10 +78,10 @@ function newCurve = partitioncurve(varargin)
     
     if plot
         figure
-        scatter3(curve.arc(1,:), curve.arc(2,:), curve.arc(3,:),'MarkerEdgeColor', col(7,:), 'LineWidth', 2.5);
+        scatter3(curve.arc(1,:), curve.arc(2,:), curve.arc(3,:), 40, 'filled', 'MarkerFaceColor', col(7,:));
         axis equal, grid on, hold on
         triad('scale', 1e-3/2, 'linewidth', 2.5);
-        scatter3(dominantPts(1,:), dominantPts(2,:), dominantPts(3,:),'filled', 'MarkerEdgeColor', col(9,:), 'LineWidth', 2.5);
+        scatter3(dominantPts(1,:), dominantPts(2,:), dominantPts(3,:), 40, 'filled', 'MarkerFaceColor', col(5,:));
 %         xlim([min(curve.arc(1,:)) max(curve.arc(1,:))+0.01])
 %         ylim([min(curve.arc(2,:)) max(curve.arc(2,:))+0.01])
 %         zlim([min(curve.arc(3,:)) max(curve.arc(3,:))+0.01]);
