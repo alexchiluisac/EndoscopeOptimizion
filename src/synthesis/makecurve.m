@@ -3,9 +3,11 @@ function curve = makecurve(varargin)
 
     % Input handling
     defaultArcLength = 2e-3;
-    variableK = 100;
-    defaultK         = @(s,arcLength) variableK .* ones(1, length(s));
-    defaultTau       = @(s,arcLength) 0 * s/arcLength;
+    defaultKConstant = 100;
+    defaultK         = @(s,arcLength) defaultKConstant .* ones(1, length(s));
+    defaultTConstant = 0;
+    defaultTau       = @(s,arcLength) defaultTConstant * s/arcLength;
+    defaultInitial   = [0; 0; 0]; % Initial position of the curve
     defaultTransform = eye(4);
     defaultRotation  = 0;
     defaultPlot      = false;
@@ -14,6 +16,9 @@ function curve = makecurve(varargin)
     addOptional(p, 'arcLength', defaultArcLength);
     addOptional(p, 'k', defaultK);
     addOptional(p, 'tau', defaultTau);
+    addOptional(p, 'kConstant', defaultKConstant);
+    addOptional(p, 'tauConstant', defaultTConstant);
+    addOptional(p, 'initial', defaultInitial);
     addOptional(p, 'transform', defaultTransform);
     addOptional(p, 'rotation', defaultRotation);
     addParameter(p, 'plot', defaultPlot);
@@ -21,7 +26,10 @@ function curve = makecurve(varargin)
     
     arcLength = p.Results.arcLength;
     k         = p.Results.k;
+    kConstant = p.Results.kConstant;
+    tauConstant = p.Results.tauConstant;
     tau       = p.Results.tau;
+    initialPosition = p.Results.initial;
     transform = p.Results.transform;
     rotation  = p.Results.rotation;
     plot      = p.Results.plot;
@@ -61,7 +69,11 @@ function curve = makecurve(varargin)
     curve.arc   = arc ;
     curve.l     = l;
     curve.kappa = k(l,arcLength);
+    curve.kappas = k;
+    curve.kConstant = kConstant;
+    curve.tauConstant = tauConstant;
     curve.tau   = tau(l,arcLength);
+    curve.taus = tau;
     curve.t     = t;
     curve.n     = n;
     curve.b     = b;

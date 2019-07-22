@@ -7,11 +7,13 @@ function runSynthesisApp()
 %% Program Configuration
 % Close all previous windows and add folders, sub-folders to path
 
-addpath('utils');
-addpath('utils/stlTools/');
-addpath('kinematics'); 
-addpath('gui');
+addpath('src');
+addpath('src/utils');
+addpath('src/utils/stlTools/');
+addpath('src/kinematics'); 
+addpath('src/gui');
 addpath("anatomical-models");
+addpath("src/synthesis");
 
 app = synthesisController();
 
