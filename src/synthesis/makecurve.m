@@ -29,7 +29,6 @@ function curve = makecurve(varargin)
     kConstant = p.Results.kConstant;
     tauConstant = p.Results.tauConstant;
     tau       = p.Results.tau;
-    initialPosition = p.Results.initial;
     transform = p.Results.transform;
     rotation  = p.Results.rotation;
     plot      = p.Results.plot;
@@ -46,25 +45,52 @@ function curve = makecurve(varargin)
     
     [l,y] = ode45(f, [0 arcLength], [0 0 1 1 0 0 0 1 0]);
     
-    t = [y(:,1) y(:,2) y(:,3)]';
-    n = [y(:,4) y(:,5) y(:,6)]';
-    b = [y(:,7) y(:,8) y(:,9)]';
+%     t = ([y(:,1) y(:,2) y(:,3)] * transform(1:3, 1:3))';
+%     n = ([y(:,4) y(:,5) y(:,6)] * transform(1:3, 1:3))';
+%     b = ([y(:,7) y(:,8) y(:,9)] * transform(1:3, 1:3))';
+    t = ([y(:,1) y(:,2) y(:,3)])';
+    n = ([y(:,4) y(:,5) y(:,6)])';
+    b = ([y(:,7) y(:,8) y(:,9)])';
+                
+
     
     % Generate the arc points by integration of the t vector along s
     initialPosition = transform(1:3, 4);
     arc = initialPosition;
     
-    scalefactor = 10e2;
-    
     Trotz = [cos(rotation) -sin(rotation) 0; ...
               sin(rotation) cos(rotation)  0; ...
               0          0           1];
-
+          
+    scalefactor = 1;
     for ii = 2 : size(l, 1)
-        arc(:,ii) = initialPosition + ( (transform(1:3, 1:3) * Trotz * [trapz(l(1:ii), t(1,1:ii));
+        arc(:,ii) = ( ( [trapz(l(1:ii), t(1,1:ii));
             trapz(l(1:ii), t(2,1:ii));
             trapz(l(1:ii), t(3,1:ii))]) .* scalefactor);
     end
+%     t(:, 1:3) = (t' * transform(1:3, 1:3));
+%     n(:, 1:3) = (n' * transform(1:3, 1:3));
+%     b(:, 1:3) = (b' * transform(1:3, 1:3));
+%     
+    arc =  transform(1:3, 1:3) * Trotz * arc;
+    arc = arc(1:3, :) + initialPosition;
+    t(1:3, :) = (t' * transform(1:3, 1:3))';
+    n(1:3, :) = (n' * transform(1:3, 1:3))';
+    b(1:3, :) = (b' * transform(1:3, 1:3))';
+    
+%     tTransform = eye(3);
+%     tTransform(1:3, 1) = transform(1:3, 1);
+%     tTransform = eye(3);
+%     tTransform(1:3, 1) = transform(1:3, 1);
+%     tTransform = eye(3);
+%     tTransform(1:3, 1) = transform(1:3, 1);
+    
+    
+    nextTransform = eye(4);
+    nextTransform(1:3, 1:3) = [n(1:3, end) b(1:3, end) t(1:3, end)] ;
+    nextTransform(1:3, 4) = [arc(1, end); ...
+                             arc(2, end); ...
+                             arc(3, end)];
     
     curve.arc   = arc ;
     curve.l     = l;
@@ -77,6 +103,7 @@ function curve = makecurve(varargin)
     curve.t     = t;
     curve.n     = n;
     curve.b     = b;
+    curve.nextTransform = nextTransform;
     
     if plot
         % Plot the resulting line
