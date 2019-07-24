@@ -45,52 +45,28 @@ function curve = makecurve(varargin)
     
     [l,y] = ode45(f, [0 arcLength], [0 0 1 1 0 0 0 1 0]);
     
-%     t = ([y(:,1) y(:,2) y(:,3)] * transform(1:3, 1:3))';
-%     n = ([y(:,4) y(:,5) y(:,6)] * transform(1:3, 1:3))';
-%     b = ([y(:,7) y(:,8) y(:,9)] * transform(1:3, 1:3))';
     t = ([y(:,1) y(:,2) y(:,3)])';
     n = ([y(:,4) y(:,5) y(:,6)])';
     b = ([y(:,7) y(:,8) y(:,9)])';
-                
-
-    
+                 
     % Generate the arc points by integration of the t vector along s
-    initialPosition = transform(1:3, 4);
-    arc = initialPosition;
-    
-    Trotz = [cos(rotation) -sin(rotation) 0; ...
-              sin(rotation) cos(rotation)  0; ...
-              0          0           1];
-          
+    arc = zeros(3, length(l));
     scalefactor = 1;
+    
     for ii = 2 : size(l, 1)
         arc(:,ii) = ( ( [trapz(l(1:ii), t(1,1:ii));
             trapz(l(1:ii), t(2,1:ii));
             trapz(l(1:ii), t(3,1:ii))]) .* scalefactor);
     end
-%     t(:, 1:3) = (t' * transform(1:3, 1:3));
-%     n(:, 1:3) = (n' * transform(1:3, 1:3));
-%     b(:, 1:3) = (b' * transform(1:3, 1:3));
-%     
-    arc =  transform(1:3, 1:3) * Trotz * arc;
-    arc = arc(1:3, :) + initialPosition;
-    t(1:3, :) = (t' * transform(1:3, 1:3))';
-    n(1:3, :) = (n' * transform(1:3, 1:3))';
-    b(1:3, :) = (b' * transform(1:3, 1:3))';
-    
-%     tTransform = eye(3);
-%     tTransform(1:3, 1) = transform(1:3, 1);
-%     tTransform = eye(3);
-%     tTransform(1:3, 1) = transform(1:3, 1);
-%     tTransform = eye(3);
-%     tTransform(1:3, 1) = transform(1:3, 1);
-    
+%    
+     arc = applytransform(arc, transform);
+     t = applytransform(t, transform);
+     n = applytransform(n, transform);
+     b = applytransform(b, transform);
     
     nextTransform = eye(4);
-    nextTransform(1:3, 1:3) = [n(1:3, end) b(1:3, end) t(1:3, end)] ;
-    nextTransform(1:3, 4) = [arc(1, end); ...
-                             arc(2, end); ...
-                             arc(3, end)];
+    nextTransform(1:3, 1:3) = [n(:, end) b(:, end) t(:, end)] ;
+    nextTransform(1:3, 4) = arc(:,end);
     
     curve.arc   = arc ;
     curve.l     = l;
