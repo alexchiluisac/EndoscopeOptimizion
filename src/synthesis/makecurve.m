@@ -51,19 +51,18 @@ function curve = makecurve(varargin)
                  
     % Generate the arc points by integration of the t vector along s
     arc = zeros(3, length(l));
-    scalefactor = 1;
+    
     
     for ii = 2 : size(l, 1)
         arc(:,ii) = ( ( [trapz(l(1:ii), t(1,1:ii));
             trapz(l(1:ii), t(2,1:ii));
-            trapz(l(1:ii), t(3,1:ii))]) .* scalefactor);
+            trapz(l(1:ii), t(3,1:ii))]));
     end
-%    
      arc = applytransform(arc, transform);
      t = applytransform(t, transform);
      n = applytransform(n, transform);
      b = applytransform(b, transform);
-    
+     
     nextTransform = eye(4);
     nextTransform(1:3, 1:3) = [n(:, end) b(:, end) t(:, end)] ;
     nextTransform(1:3, 4) = arc(:,end);
