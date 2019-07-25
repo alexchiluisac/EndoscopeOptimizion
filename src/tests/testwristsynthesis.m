@@ -16,7 +16,7 @@ arcLength = 20e-3;
 % Curvature Profile [1/m]
 %k = @(s,arcLength) 96.65 .* ones(1,length(s));
 %k = @(s,arcLength) 150 .* ones(1,length(s));
-k = @(s,arcLength) 100 .* ones(1,length(s));
+k = @(s,arcLength) 500 .* s/arcLength;
 
 % Torsional Profile
 tau = @(s,arcLength) 0 * ones(1,length(s)); 
