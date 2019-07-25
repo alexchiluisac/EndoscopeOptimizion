@@ -20,12 +20,13 @@ addpath('../utils')
 arcLength = 20e-3; % 20 mm
 
 % Curvature profile (1/m)
-k = @(s,arcLength) 150 .* s/arcLength; % increasing curvature
-%k = @(s,arcLength) 150 .* ones(1,length(s)); % constant curvature
+%k = @(s,arcLength) 150 .* s/arcLength; % increasing curvature
+k = @(s,arcLength) 150 .* ones(1,length(s)); % constant curvature
 %k = @(s,arcLength) 96.65 .* ones(1,length(s));
 
 % Torsional Profile [!FIXME not yet supported]
-tau = @(s,arcLength) 0 * s/arcLength; 
+tau = @(s,arcLength) 0 .* s/arcLength; 
+
 
 % === Algorithm Parameters ===
 % Number of sections in which the original curve should be partitioned:
@@ -107,7 +108,8 @@ axis equal, axis tight, grid on
 view(0.26, 20.5)
 
 figure
-scatter3(curve.arc(1,:), curve.arc(2,:), curve.arc(3,:),'MarkerEdgeColor', col(5,:), 'LineWidth', 2.5);
+%scatter3(curve.arc(1,:), curve.arc(2,:), curve.arc(3,:),'MarkerEdgeColor', col(5,:), 'LineWidth', 2.5);
+plot3(curve.arc(1,:), curve.arc(2,:), curve.arc(3,:), 'LineWidth',3,'Color',(1/256)*[255 128 0]);
 hold on
 triad('scale', 1e-3/2, 'linewidth', 2.5);
 scatter3(X, Y, Z, 100, col(7,:), 'filled');

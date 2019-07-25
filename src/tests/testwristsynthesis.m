@@ -10,16 +10,16 @@ col = distinguishable_colors(10);
 %% 1. Generate a curve
 
 % Arc Length in [m]
-arcLength = 13.45e-3;
-%arcLength = 20e-3;
+%arcLength = 13.45e-3;
+arcLength = 20e-3;
 
 % Curvature Profile [1/m]
 %k = @(s,arcLength) 96.65 .* ones(1,length(s));
 %k = @(s,arcLength) 150 .* ones(1,length(s));
-k = @(s,arcLength) 150 .* s/arcLength;
+k = @(s,arcLength) 100 .* ones(1,length(s));
 
 % Torsional Profile
-tau = @(s,arcLength) 0 * s/arcLength; 
+tau = @(s,arcLength) 0 * ones(1,length(s)); 
 
 % Create the curve with the MAKECURVE function
 curve = makecurve(arcLength, k, tau, 'plot', true);

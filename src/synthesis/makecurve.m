@@ -3,8 +3,8 @@ function curve = makecurve(varargin)
 
     % Input handling
     defaultArcLength = 10e-3;
-    defaultK         = @(s,arcLength) 100 .* ones(1, length(s)); %* s/arcLength;
-    defaultTau       = @(s,arcLength) 200 .* ones(1, length(s));
+    defaultK         = @(s,arcLength) 500 * s/arcLength;
+    defaultTau       = @(s,arcLength) 0 .* ones(1, length(s));
     defaultPlot      = true;
     
     p = inputParser;
@@ -19,7 +19,7 @@ function curve = makecurve(varargin)
     tau       = p.Results.tau;
     plot      = p.Results.plot;
     
-    col = distinguishable_colors(10);
+    col = distinguishable_colors(100);
     
     % Numerically solve the Frenet-Serret equations
     % t -> x(1) x(2) x(3)
@@ -55,7 +55,8 @@ function curve = makecurve(varargin)
     if plot
         % Plot the resulting line
         figure
-        scatter3(arc(1,:), arc(2,:), arc(3,:),'MarkerEdgeColor', col(5,:), 'LineWidth', 2.5);
+        plot3(arc(1,:), arc(2,:), arc(3,:), 'LineWidth',3,'Color',(1/256)*[255 128 0]);
+        %scatter3(arc(1,:), arc(2,:), arc(3,:),'MarkerEdgeColor', col(5,:), 'LineWidth', 2.5);
         hold on, axis equal, grid on
         %xlim([-2e-3 2e-3]), ylim([-2e-3 2e-3]), zlim([0 5e-3]);
         xlabel('X [m]'), ylabel('Y [m]'), zlabel('Z [m]'),
