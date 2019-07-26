@@ -12,7 +12,7 @@ addpath('src/utils');
 addpath('src/utils/stlTools/');
 addpath('src/kinematics'); 
 addpath('src/gui');
-addpath("anatomical-models");
+addpath("anatomical-models/*");
 addpath("src/synthesis");
 
 app = synthesisController();
