@@ -3,58 +3,70 @@ function newCurve = partitioncurve(varargin)
     %curve
     
     % Input handling
-    defaultM = 5;
+    defaultM = 3;
     defaultPlot = false;
+    defaultTargetName = 'curvature';
     
     p = inputParser;
     addRequired(p, 'curve');
     addOptional(p, 'm', defaultM);
+    addOptional(p, 'target', defaultTargetName);
     addParameter(p, 'plot', defaultPlot);
     parse(p, varargin{:});
     
-    curve = p.Results.curve;
-    m     = p.Results.m;
-    plot  = p.Results.plot;
-        
-    % Split the curve into chords
-    % chords = vecnorm(diff(curve.arc')');
+    curve     = p.Results.curve;
+    targetVarName = p.Results.target;
+    m         = p.Results.m;
+    plot      = p.Results.plot;
     
-    % Calculate the integral of curvature
-    totalKappa = trapz(curve.l, curve.kappa);
+    if strcmp(targetVarName, 'curvature')
+        var = curve.kappa;
+    else
+        var = curve.tau;
+    end
+      
+    % Calculate the integral of {curvature | torsion}
+    total = trapz(curve.l, var);
     
     % Now partition the curve into sections.
-    % Each section should have total curvature == totalKappa / m
-    quantumKappa = totalKappa / m;
+    % Each section should have total {curvature | torsion} == totalKappa / m
+    quantum = total / m;
     
     t = zeros(1, m);
     arcIndexes = zeros(1, m);
     averageKappa = zeros(1, m);
-    kappaAcc = 0;
+    averageTau = zeros(1, m);
+    accVar = 0;
     ii = 2;
     
     
     for jj = 1 : m
-        targetKappa = jj * quantumKappa;
-        kappaArcSegment = 0;
+        targetVar = jj * quantum;
+        kappaSegment = 0;
+        tauSegment = 0;
         kk = 0;
         
-        while kappaAcc <= targetKappa
+        while accVar <= targetVar
             if ii == length(curve.arc)
                 break;
             end
             
-            kappaAcc = kappaAcc + ...
-                trapz(curve.l(ii-1:ii), curve.kappa(ii-1:ii)); 
+            accVar = accVar + ...
+                trapz(curve.l(ii-1:ii), var(ii-1:ii)); 
             
-            kappaArcSegment = kappaArcSegment + ...
+            kappaSegment = kappaSegment + ...
                 curve.kappa(ii);
+            
+            tauSegment = tauSegment + ...
+                curve.tau(ii);
             
             ii = ii + 1;
             kk = kk + 1;
         end
         
         t(jj) = curve.l(ii);
-        averageKappa(jj) = kappaArcSegment / kk;
+        averageKappa(jj) = kappaSegment / kk;
+        averageTau(jj) = tauSegment / kk;
         arcIndexes(jj) = ii;
     end
     
@@ -66,7 +78,8 @@ function newCurve = partitioncurve(varargin)
     newCurve.t   = [curve.t(:,1) curve.t(:,arcIndexes)];
     newCurve.n   = [curve.n(:,1) curve.n(:,arcIndexes)];
     newCurve.b   = [curve.b(:,1) curve.b(:,arcIndexes)];
-    newCurve.averageKappa = averageKappa;
+    newCurve.averageKappa = averageKappa
+    newCurve.averageTau = averageTau;
     
     if plot
         figure

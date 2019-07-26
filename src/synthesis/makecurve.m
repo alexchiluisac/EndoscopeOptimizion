@@ -3,8 +3,8 @@ function curve = makecurve(varargin)
 
     % Input handling
     defaultArcLength = 10e-3;
-    defaultK         = @(s,arcLength) 500 * s/arcLength;% s/arcLength;
-    defaultTau       = @(s,arcLength) 0 .* ones(1, length(s));
+    defaultK         = @increasing;
+    defaultTau       = @increasing;
     defaultPlot      = true;
     
     p = inputParser;
@@ -50,11 +50,17 @@ function curve = makecurve(varargin)
     
     curve.arc   = arc;
     curve.l     = l;
-    curve.kappa = k(l,arcLength);
-    curve.tau   = tau(l,arcLength);
     curve.t     = t;
     curve.n     = n;
     curve.b     = b;
+    
+    curve.kappa = zeros(1, length(l));
+    curve.tau   = zeros(1, length(l));
+    
+    for ii = 1 : length(l)
+        curve.kappa(ii) = k(l(ii),arcLength);
+        curve.tau(ii)   = tau(l(ii),arcLength);
+    end
     
     if plot
         % Plot the resulting line
@@ -70,14 +76,22 @@ function curve = makecurve(varargin)
         h = triad('scale', 1e-3/2, 'linewidth', 2.5);
         
         % Make an animation showing the Frenet-Serret frames
-        for ii = 2 : size(l, 1)
-            rot = [n(:,ii) b(:,ii) t(:,ii)];
-            transl = arc(:,ii);
-            T = [rot transl; 0 0 0 1];
-            
-            h.Matrix = T;
-            pause(0.1);
-            drawnow
-        end
+%         for ii = 2 : size(l, 1)
+%             rot = [n(:,ii) b(:,ii) t(:,ii)];
+%             transl = arc(:,ii);
+%             T = [rot transl; 0 0 0 1];
+%             
+%             h.Matrix = T;
+%             pause(0.1);
+%             drawnow
+%         end
     end
+end
+
+function v = uniform(s, arcLength)
+v = pi/(2 * arcLength);
+end
+
+function v = increasing(s, arcLength)
+v = 300 * s / arcLength;
 end

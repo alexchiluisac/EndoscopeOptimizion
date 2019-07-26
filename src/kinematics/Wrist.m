@@ -14,7 +14,7 @@ classdef Wrist < Robot
         %           [u - spacing between i-1 and i-th notch]
         %           [h - height of i-th cutout             ]
         %           [w - width of i-th cutout              ]
-        %           [phi - orientation of i-th cutout      ]
+        %           [alpha - orientation of i-th cutout    ]
         
         % Forward Kinematics Parameters
         pose                % The position and orientation
@@ -153,7 +153,7 @@ classdef Wrist < Robot
                         % rotation, and the advancement is given by the
                         % length of the uncut section itelf
                         sjj = self.cutouts.u(kk-1) .* 10^-3; % Uncut section [m]
-                        thetajj = 0;
+                        thetajj = self.cutouts.alpha(kk-1);
                     end
 
                 else
@@ -161,7 +161,7 @@ classdef Wrist < Robot
                     % arc parameters using the relations in [Swaney2017]
                     kjj = (cutoutDispl(kk)) / (h(kk) * (ri + self.ybar(kk)) - cutoutDispl(kk) * self.ybar(kk));
                     sjj = h(kk) / ( 1 + self.ybar(kk) * kjj); % original kappa
-                    thetajj = self.cutouts.alpha(kk);
+                    thetajj = 0;
                     
 %                     % Save the curvature and arc length of each notch
 %                     % !FIXME this may be different for each cutout
