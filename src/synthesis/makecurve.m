@@ -67,18 +67,18 @@ function curve = makecurve(varargin)
     nextTransform(1:3, 1:3) = [n(:, end) b(:, end) t(:, end)] ;
     nextTransform(1:3, 4) = arc(:,end);
     
-    curve.arc   = arc ;
-    curve.l     = l;
-    curve.kappa = k(l,arcLength);
-    curve.kappas = k;
-    curve.kConstant = kConstant;
-    curve.tauConstant = tauConstant;
-    curve.tau   = tau(l,arcLength);
-    curve.taus = tau;
-    curve.t     = t;
-    curve.n     = n;
-    curve.b     = b;
-    curve.nextTransform = nextTransform;
+    curve.arc   = arc ; % points in the curve
+    curve.l     = l; % The arclength
+    curve.kappa = k(l,arcLength); % The curvature at each arclength
+    curve.kappas = k; % The curvature equation
+    curve.kConstant = kConstant; % The constant curvature in the curvature equation
+    curve.tauConstant = tauConstant; % The constant torsion in the torsion equation
+    curve.tau   = tau(l,arcLength); % The torsion at each arclength
+    curve.taus = tau; % The torsion equation
+    curve.t     = t; % The T vector
+    curve.n     = n; % The N vector
+    curve.b     = b; % The B vector
+    curve.nextTransform = nextTransform; % The transformation matrix for the next curve
     
     if plot
         % Plot the resulting line
