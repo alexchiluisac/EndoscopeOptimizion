@@ -43,7 +43,7 @@ function curve = makecurve(varargin)
         -k(s,arcLength)*x(1) + tau(s,arcLength)*x(7); -k(s,arcLength)*x(2) + tau(s,arcLength)*x(8); -k(s,arcLength)*x(3) + tau(s,arcLength)*x(9);
         -tau(s,arcLength)*x(4); -tau(s,arcLength)*x(5); -tau(s,arcLength)*x(6)];
     
-    [l,y] = ode45(f, [0 arcLength], [0 0 1 1 0 0 0 1 0]);
+    [l,y] = ode45(f, 0:1e-4:arcLength, [0 0 1 1 0 0 0 1 0]);
     
     t = ([y(:,1) y(:,2) y(:,3)])';
     n = ([y(:,4) y(:,5) y(:,6)])';
