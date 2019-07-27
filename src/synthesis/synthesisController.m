@@ -11,11 +11,11 @@ classdef synthesisController < handle
             self.app = SynthesisApp();
             xlabel(self.app.PlotAxes, 'X [m]'), ylabel(self.app.PlotAxes, 'Y [m]'), zlabel(self.app.PlotAxes, 'Z [m]');
 
-            while true
-               self.update()
-               self.draw()
-               pause(0.5); % Update twice per second
-            end
+%             while true
+%                self.update()
+%                self.draw()
+%                pause(0.5); % Update twice per second
+%             end
         end
         
         function draw(self)
