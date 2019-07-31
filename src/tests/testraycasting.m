@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 100;
+nPoints = 50;
 
 fprintf('*** Ray Casting test ***\n')
 fprintf('This script uses a ray-casting algorithm to estimate the visual range of our robot.\n')
@@ -20,14 +20,14 @@ addpath('../anatomical-models')
 
 
 % define the robot's range of motion
-maxfprintflacement = 1; % [mm]
-maxRotation     = 4*pi; % [rad]
-maxAdvancement  = 10; % [mm]
+maxDisplacement = 1e-3; % [m]
+maxRotation     = 4*pi;    % [rad]
+maxAdvancement  = 10e-3;   % [m]
 
 % Load cavity model
 path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
 [vertices, faces, ~, ~] = stlRead(path);
-earModel.vertices = vertices;
+earModel.vertices = vertices .* 1e-3; % [m]
 earModel.faces = faces;
 
 % Calculate the base transform for the robot
@@ -39,16 +39,16 @@ earModel.baseTransform = T;
 % Create a robot
 alpha = 0;
 cutouts = [];
-cutouts.w = [1 1 1 1 1 1];
-cutouts.u = [1 1 1 1 1 1];
-cutouts.h = [1 1 1 1 1 1];
+cutouts.w = [1 1 1 1 1 1] * 1e-3;
+cutouts.u = [1 1 1 1 1 1] * 1e-3;
+cutouts.h = [1 1 1 1 1 1] * 1e-3;
 cutouts.alpha = [0 0 0 alpha 0 0];
-robot = Wrist(1.6, 1.85, 6, cutouts);
+robot = Wrist(1.6e-3, 1.85e-3, 6, cutouts);
 
 fprintf('Running RRT...\n')
 
 [~,qList,pList,aList] = rrt(robot, ...
-    [maxfprintflacement maxRotation maxAdvancement], ...
+    [maxDisplacement maxRotation maxAdvancement], ...
     earModel, ...
     nPoints);
 
@@ -57,7 +57,7 @@ fprintf(['RRT execution complete. Total sampled points: ' num2str(size(pList,2))
 % Load cavity model (finer mesh this time)
 path = fullfile('..', 'anatomical-models', 'synthetic-model-finer.stl');
 [vertices, faces, ~, ~] = stlRead(path);
-earModel.vertices = vertices;
+earModel.vertices = vertices * 1e-3;
 earModel.faces = faces;
 
 figure
@@ -91,7 +91,7 @@ while true
     h2.ZData = robotPhysicalModel.surface.Z;
     title(['Pose ' num2str(ii) ' of ' num2str(size(pList, 2))]);
     
-    fprintf(['Seen area: ' num2str(seenArea(earModel, seenMap)) ' mm2.\n']);
+    fprintf(['Seen area: ' num2str(seenArea(earModel, seenMap)) ' m2.\n']);
     fprintf('Press "n" to move forward or "p" to move back.\n')
     fprintf('Press any other key to exit.\n\n')
     

@@ -2,8 +2,10 @@ function seenFaces = visibilitymap(viewPoint, approachVec, anatomyModel)
 %% WE'LL WRITE THE DOCUMENTATION LATER
 %  03/14/2019 still no documentation, dammit
 
+  viewPoint = viewPoint .* 1e3;
+
   faces = anatomyModel.faces';
-  vertices = anatomyModel.vertices';
+  vertices = anatomyModel.vertices' * 1e3;
   
   % Cast rays from the viewPoint to each of the centroids
   rays = bsxfun(@minus, vertices, viewPoint);

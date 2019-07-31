@@ -7,8 +7,8 @@ classdef Wrist < Robot
     %
     %   Latest revision: 07/21/2019
     properties
-        ID        % [mm] tube inner diameter
-        OD        % [mm] tube outer diameter
+        ID        % [m] tube inner diameter
+        OD        % [m] tube outer diameter
         nCutouts  % [int] total number of cutouts
         cutouts   % struct array - each struct contains the following fields:
         %           [u - spacing between i-1 and i-th notch]
@@ -41,11 +41,11 @@ classdef Wrist < Robot
             self.cutouts = cutouts;
             
             % Pre-calculate some variables to make the forward kinematics run faster
-            ro = self.OD * 10^-3 / 2; % outer radius of tube in [m];
-            ri = self.ID * 10^-3 / 2; % inner radius of tube in [m];
+            ro = self.OD / 2; % outer radius of tube in [m];
+            ri = self.ID / 2; % inner radius of tube in [m];
             
-            h = self.cutouts.h .* 10^-3; % Height of the cutouts in [m]
-            w = self.cutouts.w .* 10^-3; % Cut depth in [m]. See Figure 4 again.            
+            h = self.cutouts.h; % Height of the cutouts in [m]
+            w = self.cutouts.w; % Cut depth in [m]. See Figure 4 again.            
             d = w-ro; % intermediate variable. Depth of cut as measured from y = 0. See Figure 4.
             
             
@@ -111,18 +111,16 @@ classdef Wrist < Robot
         
         function c = jointvar2arcparams(self, q)
             % == Get the endoscope joint variables q
-            tendonDisplacement = q(1) * 10^-3; % tendon displacement [m]
-            t_rot   = q(2);         % tube rotation [m]
-            t_adv   = q(3) * 10^-3; % 
+            tendonDisplacement = q(1); % tendon displacement [m]
+            t_rot   = q(2);            % tube rotation [m]
+            t_adv   = q(3);            % tube advancement [m]
             
             cutoutDispl = self.calcdispl(tendonDisplacement);
             
             % == Read the geometric design parameters
-            %ro = self.OD * 10^-3 / 2; % outer radius of tube in [m];
-            ri = self.ID * 10^-3 / 2; % inner radius of tube in [m];
+            ri = self.ID / 2; % inner radius of tube in [m];
             
-            h = self.cutouts.h .* 10^-3; % Height of the cutouts in [m]
-            %w = self.cutouts.w .* 10^-3; % Cut depth in [m]. See Figure 4 again.            
+            h = self.cutouts.h; % Height of the cutouts in [m]
             
             % == Perform a robot-specific mapping from the joint variables q
             % to the vector of arc parameters c
@@ -152,7 +150,7 @@ classdef Wrist < Robot
                         % For all successive uncut sections, there is no
                         % rotation, and the advancement is given by the
                         % length of the uncut section itelf
-                        sjj = self.cutouts.u(kk-1) .* 10^-3; % Uncut section [m]
+                        sjj = self.cutouts.u(kk-1); % Uncut section [m]
                         thetajj = self.cutouts.alpha(kk-1);
                     end
 
@@ -187,19 +185,19 @@ classdef Wrist < Robot
             [P,T] = fwkine@Robot(self, c, baseTransform);
             
             % Save pose and transformations in local attributes
-            self.pose = P(1:3,:) .* 1000;
+            self.pose = P(1:3,:);
             self.transformations = T;
-            self.transformations(1:3,4,:) = self.transformations(1:3,4,:) .* 1000;
+            self.transformations(1:3,4,:) = self.transformations(1:3,4,:);
         end
         
         
         function [Jrobot,Jp] = jacob0(self, q)
             % Read the joint variables
-            t_displ = q(1) * 10^-3; % tendon displacement [m]
+            t_displ = q(1); % tendon displacement [m]
 
             % Read the geometric design parameters
-            ri = self.ID * 10^-3 / 2; % inner radius of tube in [m];     
-            h = self.cutouts.h .* 10^-3; % Height of the cutouts in [m]
+            ri = self.ID / 2; % inner radius of tube in [m];     
+            h = self.cutouts.h; % Height of the cutouts in [m]
             
             % Map joint variables to arc parameters
             c = self.jointvar2arcparams(q);
@@ -263,7 +261,7 @@ classdef Wrist < Robot
             % Calculate the forward kinematics - required to finalize
             % calculation of the Jacobian
             self.fwkine(q, eye(4));
-            pCurrent = self.pose(:,end) ./ 1000; % the forward kinematics returns values in mm
+            pCurrent = self.pose(:,end); % the forward kinematics returns values in mm
             
             Jrobot = J*cdotmatrix;
             Jp = Jrobot(1:3,:) - skew(pCurrent) * Jrobot(4:6,:);
@@ -271,7 +269,7 @@ classdef Wrist < Robot
         
         
         function q = invkine(self, pTarget, qCurrent)
-            pTarget = pTarget .* 10^-3;
+            pTarget = pTarget;
                         
             while true
                 % calculate the current location
@@ -292,8 +290,8 @@ classdef Wrist < Robot
                 
                 K = diag([100 100 100]);
                 deltaQ = K * Jpinv * (pTarget - pCurrent);
-                deltaQ(1) = deltaQ(1) / 1000;
-                deltaQ(3) = deltaQ(3) / 1000;
+                deltaQ(1) = deltaQ(1);
+                deltaQ(3) = deltaQ(3);
                 qCurrent = qCurrent + deltaQ';
                 
                 RM = self.makePhysicalModel();
@@ -320,17 +318,14 @@ classdef Wrist < Robot
         
         
         function robotModel = makePhysicalModel(self)
-            ptsPerMm = 25;
+            ptsPerM = 25e3;
             
             P = self.pose;
             T = self.transformations;
             
             kappa = self.curvature;
-            s = self.arcLength;
-            
-            kappa = kappa ./ 1000;
             radius = 1 ./ kappa;
-            s = s .* 1000;
+            s = self.arcLength;
             
             robotBackbone = P(:,1);
             
@@ -339,7 +334,7 @@ classdef Wrist < Robot
                     
                     % generate points along a straight line
                     distance = norm(P(:,ii+1) - P(:,ii));
-                    nPts = round(distance * ptsPerMm);
+                    nPts = round(distance * ptsPerM);
                     
                     X = linspace(P(1,ii),P(1,ii+1), nPts);
                     Y = linspace(P(2,ii),P(2,ii+1), nPts);

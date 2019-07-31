@@ -21,14 +21,14 @@ addpath('../anatomical-models')
 %% Part 1. Step-by-step testing of RRT
 fprintf('Testing RRT...\n')
 % define the robot's range of motion
-maxDisplacement = 1; % [mm]
-maxRotation     = 2*pi; % [rad]
-maxAdvancement  = 10; % [mm]
+maxDisplacement = 1e-3;  % [m]
+maxRotation     = 2*pi;  % [rad]
+maxAdvancement  = 10e-3; % [m]
 
 % Load cavity model
 path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
 [vertices, faces, ~, ~] = stlRead(path);
-earModel.vertices = vertices;
+earModel.vertices = vertices .* 1e-3;
 earModel.faces = faces;
 
 % Calculate the base transform for the robot
@@ -40,11 +40,11 @@ earModel.baseTransform = T;
 % Create a robot
 alpha = pi;
 cutouts = [];
-cutouts.w = [1 1 1 1 1 1];
-cutouts.u = [1 1 1 1 1 1];
-cutouts.h = [1 1 1 1 1 1];
+cutouts.w = [1 1 1 1 1 1] * 1e-3;
+cutouts.u = [1 1 1 1 1 1] * 1e-3;
+cutouts.h = [1 1 1 1 1 1] * 1e-3;
 cutouts.alpha = [0 0 0 alpha 0 0];
-robot = Wrist(1.6, 1.85, 6, cutouts);
+robot = Wrist(1.6e-3, 1.85e-3, 6, cutouts);
 
 [qListNormalized,qList,pList,aList] = rrt(robot, ...
     [maxDisplacement maxRotation maxAdvancement], ...
@@ -97,6 +97,8 @@ while true
 end
 
 close all
+
+pList = pList * 1e3; % converting to mm for plotting
 
 fprintf('\n Generating reachable workspace...\n')
 shrinkFactor = 1;
