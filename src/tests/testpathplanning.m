@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 500;
+nPoints = 50;
 
 fprintf('*** RRT and estimation of reachable workspace test ***\n')
 fprintf('This script is divided in two parts:\n')
@@ -12,27 +12,27 @@ fprintf('Press any key to continue.\n')
 pause
 
 % add dependencies
-addpath('../kinematics')
-addpath('../utils')
-addpath('../utils/stlTools')
-addpath('../path-planning')
-addpath('../../anatomical-models')
+addpath('kinematics')
+addpath('utils')
+addpath('utils/stlTools')
+addpath('path-planning')
+addpath('../anatomical-models')
 
 %% Part 1. Step-by-step testing of RRT
 fprintf('Testing RRT...\n')
 % define the robot's range of motion
-maxfprintflacement = 1; % [mm]
+maxDisplacement = 1; % [mm]
 maxRotation     = 2*pi; % [rad]
 maxAdvancement  = 10; % [mm]
 
 % Load cavity model
-path = fullfile('..', '..', 'anatomical-models', 'synthetic-model.stl');
+path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
 
 % Calculate the base transform for the robot
-t = [35 10 10];
+t = [35 10 10] * 1e-3; % [mm]
 R = [0 0 -1; 0 1 0; 1 0 0];
 T = [R t'; 0 0 0 1];
 earModel.baseTransform = T;
@@ -47,7 +47,7 @@ cutouts.alpha = [0 0 0 alpha 0 0];
 robot = Wrist(1.6, 1.85, 6, cutouts);
 
 [qListNormalized,qList,pList,aList] = rrt(robot, ...
-    [maxfprintflacement maxRotation maxAdvancement], ...
+    [maxDisplacement maxRotation maxAdvancement], ...
     earModel, ...
     nPoints);
 
@@ -60,7 +60,7 @@ ii = 1;
 h1 = stlPlot(earModel.vertices, earModel.faces, 'Collision detection test.');
 hold on
 
-robotPhysicalModel = robot.makePhysicalModel(qList(:,1), T);
+robotPhysicalModel = robot.makePhysicalModel();
 h2 = surf(robotPhysicalModel.surface.X, ...
     robotPhysicalModel.surface.Y, ...
     robotPhysicalModel.surface.Z, ...
@@ -70,7 +70,8 @@ axis equal
 
 %for ii = 1 : size(pList, 2)
 while true
-    robotPhysicalModel = robot.makePhysicalModel(qList(:,ii), T);
+    robot.fwkine(qList(:,ii), T);
+    robotPhysicalModel = robot.makePhysicalModel();
     
     h2.XData = robotPhysicalModel.surface.X;
     h2.YData = robotPhysicalModel.surface.Y;

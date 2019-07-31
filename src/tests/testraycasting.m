@@ -31,7 +31,7 @@ earModel.vertices = vertices;
 earModel.faces = faces;
 
 % Calculate the base transform for the robot
-t = [35 10 10];
+t = [35 10 10] * 1e-3;
 R = [0 0 -1; 0 1 0; 1 0 0];
 T = [R t'; 0 0 0 1];
 earModel.baseTransform = T;
@@ -68,7 +68,8 @@ seenMap = visibilitymap(pList(:,ii), aList(:,ii), earModel);
 h1 = stlPlot(earModel.vertices, earModel.faces, 'Ray Casting test.', seenMap);
 hold on
 
-robotPhysicalModel = robot.makePhysicalModel(qList(:,1), T);
+
+robotPhysicalModel = robot.makePhysicalModel();
 h2 = surf(robotPhysicalModel.surface.X, ...
     robotPhysicalModel.surface.Y, ...
     robotPhysicalModel.surface.Z, ...
@@ -78,7 +79,8 @@ axis equal
 
 while true
     seenMap = visibilitymap(pList(:,ii), aList(:,ii), earModel);
-    robotPhysicalModel = robot.makePhysicalModel(qList(:,ii), T);
+    robot.fwkine(qList(:,ii), T);
+    robotPhysicalModel = robot.makePhysicalModel();
     
     colorMap = ones(length(h1.FaceVertexCData), 1);
     colorMap(logical(seenMap)) = 5;

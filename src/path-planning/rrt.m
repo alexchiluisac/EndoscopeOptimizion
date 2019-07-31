@@ -28,7 +28,8 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
     % initialize the base transform
     T_robot_in_env = anatomyModel.baseTransform;
  
-    [~,T] = robot.fwkine(qList(:,1), T_robot_in_env);
+    robot.fwkine(qList(:,1), T_robot_in_env);
+    T = robot.transformations(:,:,end);
     pList(:,1) = T(1:3,4,end);
     aList(:,1) = T(1:3,3,end);
     % iteratively build the tree
@@ -37,6 +38,10 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
     jj = 2;
     
     for ii = 1 : nPoints
+        if jj > nPoints
+            break;
+        end
+        
         qRand = rand(3,1);
         qNearest = nearestVertex(qRand, qListNormalized, jj);
         qNew = move(qNearest, qRand, deltaQ);
@@ -46,9 +51,9 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
         rot   = qNew(2) * maxRot;
         adv   = qNew(3) * maxAdv;
 %         
-        [P,T] = robot.fwkine([displ, rot, adv], T_robot_in_env);
-%         P = applytransform(P, T_robot_in_env); %!FIXME T_robot_in_env needs to be calculated
-        robotPM = robot.makePhysicalModel([displ, rot, adv], T_robot_in_env); %!FIXME T_robot_in_env needs to be calculated
+        robot.fwkine([displ, rot, adv], T_robot_in_env);
+        T = robot.transformations(:,:,end);
+        robotPM = robot.makePhysicalModel();
         
         testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:)];
         collision = intriangulation(anatomyModel.vertices, ...

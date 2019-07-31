@@ -9,10 +9,12 @@ cutouts.u = [1 1 1 1];
 cutouts.h = [1 1 1 1];
 cutouts.alpha = [0 0 pi 0];
 
-configuration = [0.6, 0, 2];
+configuration = [3, 0, 2];
 
 robot = Wrist(1.6, 1.85, 4, cutouts);
-[P, T] = robot.fwkine(configuration, eye(4));
+robot.fwkine(configuration, eye(4));
+P = robot.pose(:,end);
+T = robot.transformations;
 
 X = P(1,:);
 Y = P(2,:);
@@ -30,8 +32,6 @@ zlabel('Z[mm]')
 for ii = 1 : size(T,3)
     triad('Matrix', T(:,:,ii), 'linewidth', 2.5);    
 end
-%triad('Matrix', eye(4), 'linewidth', 2.5);
-%triad('Matrix', T(:,:,end), 'linewidth', 2.5);
 
 figure
 scatter3(X, Y, Z, 100, 'r', 'filled');
@@ -45,10 +45,9 @@ zlabel('Z[mm]')
 triad('Matrix', eye(4), 'linewidth', 2.5);
 triad('Matrix', T(:,:,end), 'linewidth', 2.5);
 
-robotModel = robot.makePhysicalModel(configuration, eye(4));
+robotModel = robot.makePhysicalModel();
 
 X = robotModel.surface.X;
 Y = robotModel.surface.Y;
 Z = robotModel.surface.Z;
 surf(X, Y, Z, 'FaceColor','blue');
-
