@@ -5,7 +5,7 @@ function curve = makecurve(varargin)
     defaultArcLength = 10e-3;
     defaultK         = @increasing;
     defaultTau       = @increasing;
-    defaultPlot      = true;
+    defaultPlot      = false;
     
     p = inputParser;
     addOptional(p, 'arcLength', defaultArcLength);
@@ -33,7 +33,7 @@ function curve = makecurve(varargin)
                -tau(s,arcLength)*x(5);
                -tau(s,arcLength)*x(6)];
     
-    [l,y] = ode45(f, 0:1e-4:arcLength, [0 0 1 1 0 0 0 1 0]);
+    [l,y] = ode45(f, 0:1e-6:arcLength, [0 0 1 1 0 0 0 1 0]);
     
     t = [y(:,1) y(:,2) y(:,3)]';
     n = [y(:,4) y(:,5) y(:,6)]';
