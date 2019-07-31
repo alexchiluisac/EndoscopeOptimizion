@@ -1,0 +1,16 @@
+ --- Curve Design Software --- 
+COgnitive MEdical Technology (COMET) Laboratory 
+Worcester Polytechnic Institute (WPI) 
+Professor Loris Fichera 
+Software by: Floris van Rossum 
+Repository: https://github.com/comet-lab/Shoemaker-Levy
+
+
+ --- INSTRUCTIONS --- 
+	 The following parameters show the frenet-seret curves. 
+The curvature and torsion equations are constant. 
+ --- YOUR Curves--- 
+Created on: 26-Jul-2019 14:07:36 
+Loaded Model:  
+
+Curve Parameters: 
