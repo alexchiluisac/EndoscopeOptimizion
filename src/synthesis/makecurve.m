@@ -4,7 +4,7 @@ function curve = makecurve(varargin)
     % Input handling
     defaultArcLength = 10e-3;
     defaultK         = @increasing;
-    defaultTau       = @increasing;
+    defaultTau       = @(s, arcLength) 0 * s/arcLength;
     defaultPlot      = false;
     
     p = inputParser;
