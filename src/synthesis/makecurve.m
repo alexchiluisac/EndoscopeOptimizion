@@ -3,8 +3,8 @@ function curve = makecurve(varargin)
 
     % Input handling
     defaultArcLength = 10e-3;
-    defaultK         = @increasing;
-    defaultTau       = @(s, arcLength) 0 * s/arcLength;
+    defaultK         = @(s, arcLength) 150 .* ones(1,length(arcLength));
+    defaultTau       = @(s, arcLength) 150 .* ones(1,length(arcLength));
     defaultPlot      = false;
     defaultBaseTransform = eye(4);
     
@@ -79,15 +79,15 @@ function curve = makecurve(varargin)
         h = triad('scale', 1e-3/2, 'linewidth', 2.5);
         
         % Make an animation showing the Frenet-Serret frames
-%         for ii = 2 : size(l, 1)
-%             rot = [n(:,ii) b(:,ii) t(:,ii)];
-%             transl = arc(:,ii);
-%             T = [rot transl; 0 0 0 1];
-%             
-%             h.Matrix = T;
-%             pause(0.1);
-%             drawnow
-%         end
+        for ii = 2 : size(l, 1)
+            rot = [n(:,ii) b(:,ii) t(:,ii)];
+            transl = arc(:,ii);
+            T = [rot transl; 0 0 0 1];
+            
+            h.Matrix = T;
+            pause(0.1);
+            drawnow
+        end
     end
 end
 
