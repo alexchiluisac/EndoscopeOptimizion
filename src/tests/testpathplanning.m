@@ -137,3 +137,5 @@ trisurf(k, pList(1,:)', pList(2,:)', pList(3,:)','FaceColor','red','FaceAlpha',0
 title('Reachable workspace');
 
 fprintf('Testing complete.\n')
+
+skew
