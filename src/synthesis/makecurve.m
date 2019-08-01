@@ -6,17 +6,20 @@ function curve = makecurve(varargin)
     defaultK         = @increasing;
     defaultTau       = @(s, arcLength) 0 * s/arcLength;
     defaultPlot      = false;
+    defaultBaseTransform = eye(4);
     
     p = inputParser;
     addOptional(p, 'arcLength', defaultArcLength);
     addOptional(p, 'k', defaultK);
     addOptional(p, 'tau', defaultTau);
+    addOptional(p, 'baseTransform', defaultBaseTransform);
     addParameter(p, 'plot', defaultPlot);
     parse(p, varargin{:});
     
     arcLength = p.Results.arcLength;
     k         = p.Results.k;
     tau       = p.Results.tau;
+    baseTransform = p.Results.baseTransform;
     plot      = p.Results.plot;
         
     % Numerically solve the Frenet-Serret equations
@@ -48,11 +51,11 @@ function curve = makecurve(varargin)
             trapz(l(1:ii), t(3,1:ii))];
     end
     
-    curve.arc   = arc;
+    curve.arc   = applytransform(arc, baseTransform);
     curve.l     = l;
-    curve.t     = t;
-    curve.n     = n;
-    curve.b     = b;
+    curve.t     = applytransform(t, baseTransform);
+    curve.n     = applytransform(n, baseTransform);
+    curve.b     = applytransform(b, baseTransform);
     
     curve.kappa = zeros(1, length(l));
     curve.tau   = zeros(1, length(l));
