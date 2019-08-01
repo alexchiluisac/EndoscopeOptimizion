@@ -4,13 +4,11 @@ function seenVertices = visibilitymap(viewPoint, approachVec, meModel, osModel)
 
   osFaces = osModel.Faces + length(meModel.Vertices);
   faces = [meModel.Faces; osFaces]';
-  vertices = [meModel.Vertices; osModel.Vertices]';
-
-%   faces = anatomyModel.Faces';
-%   vertices = anatomyModel.Vertices';
+  vertices = [meModel.Vertices; osModel.Vertices]' .* 1e3;
+  viewPoint = viewPoint .* 1e3;
   
   % Cast rays from the viewPoint to each of the centroids
-  rays = bsxfun(@minus, meModel.Vertices', viewPoint);
+  rays = bsxfun(@minus, meModel.Vertices' .* 1e3, viewPoint);
   
   % Convert rays into unit vectors
   raysu = zeros(size(rays, 1), size(rays, 2));
@@ -24,7 +22,7 @@ function seenVertices = visibilitymap(viewPoint, approachVec, meModel, osModel)
   
   % See what rays fall within the "field of view" of the camera
   product = sum(approachVecRep .* raysu);
-  FOV =  15 * pi / 180;
+  FOV =  90 * pi / 180;
   seenVertices = (product > cos(FOV / 2));
   seenVertices = visualrange(viewPoint, vertices, double(seenVertices), faces-1);
   
