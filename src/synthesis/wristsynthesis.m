@@ -13,27 +13,29 @@ clc, clear, close all
 addpath('../kinematics')
 addpath('../utils')
 
+col = distinguishable_colors(10);
+
 %% Inputs/parameters of the algorithm to be defined below:
 
 % === Curve description ===
 % Arc Length (m)
-arcLength = 20e-3; % 20 mm
+arcLength = 0.004; % [m]
 
 % Curvature profile (1/m)
 %k = @(s,arcLength) 150 .* s/arcLength; % increasing curvature
-k = @(s,arcLength) 150 .* ones(1,length(s)); % constant curvature
+k = @(s,arcLength) 444 .* ones(1,length(s)); % constant curvature
 %k = @(s,arcLength) 96.65 .* ones(1,length(s));
 
-% Torsional Profile [!FIXME not yet supported]
-tau = @(s,arcLength) 0 .* s/arcLength; 
+% Torsional Profile
+tau = @(s,arcLength) 1000 .* ones(1,length(s)); 
 
 
 % === Algorithm Parameters ===
 % Number of sections in which the original curve should be partitioned:
-m = 2; % this parameter is important in curves with varying curvature profiles - for a constant curvature arc, m can simply be equal to 1
+m = 10; % this parameter is important in curves with varying curvature profiles - for a constant curvature arc, m can simply be equal to 1
 
 % Number of notches for each section
-n = 4 * ones(1, m); % increasing the number of notches will make the wrist better approximate the original curve
+n = 1 * ones(1, m); % increasing the number of notches will make the wrist better approximate the original curve
 
 %% === THERE SHOULD BE NO NEED TO CHANGE THE CODE BELOW ===
 % 1. Create the curve with the MAKECURVE function
@@ -43,15 +45,16 @@ curve = makecurve(arcLength, k, tau, 'plot', true);
 partitionedCurve = partitioncurve(curve, m, 'plot', true);
 
 % 3. Synthesize a wrist that bends like the curve
-OD = 1.85 * 10^-3; % [m] tube outer diameter
-ID = 1.60 * 10^-3; % [m] tube inner diameter
+OD = 1.40 * 10^-3; % [m] tube outer diameter
+ID = 1.30 * 10^-3; % [m] tube inner diameter
 ro = OD/2;         % [m] tube outer radius
 ri = ID/2;         % [m] tube inner radius
 
 l = diff(partitionedCurve.l);
 kappa = partitionedCurve.averageKappa;
+tau = partitionedCurve.averageTau;
 
-w = .90 * OD; % [m]
+w = .85 * OD; % [m]
 d = w - ro;   % [m]
 phio = 2 * acos(d / ro); % [rad]
 phii = 2 * acos(d / ri); % [rad]
@@ -64,41 +67,43 @@ ybar = (ybaro * Ao - ybari * Ai) / (Ao - Ai);
 % height of the notches and of the uncut sections
 h = zeros(1, m);
 u = zeros(1, m);
+alpha = zeros(1, m);
 T = eye(4);
 
 cutouts.w = [];
 cutouts.u = [];
 cutouts.h = [];
 cutouts.alpha = [];
+l = diff(partitionedCurve.l);
 
 figure, hold on
 
 for ii = 1 : m
+    
     h(ii) = kappa(ii) * l(ii) * (ro+ybar)/n(ii);
     u(ii) = (l(ii) - kappa(ii)*l(ii)*ro)/n(ii);
+    alpha(ii) = tau(ii) * l(ii);
     
-    cutouts.w = [cutouts.w w .* ones(1,n(ii))];
-    cutouts.u = [cutouts.u u(ii) .* ones(1,n(ii))];
-    cutouts.h = [cutouts.h h(ii) .* ones(1,n(ii))];
-    cutouts.alpha = [cutouts.alpha zeros(1,n(ii))];
+    cutouts.w = [cutouts.w w*10^3 .* ones(1,n(ii))];
+    cutouts.u = [cutouts.u u(ii)*10^3 .* ones(1,n(ii))];
+    cutouts.h = [cutouts.h h(ii)*10^3 .* ones(1,n(ii))];
+    cutouts.alpha = [cutouts.alpha alpha(ii) zeros(1,n(ii)-1)];
 end
 
 configuration = [sum(cutouts.h), 0, 0];
 
-robot = Wrist(ID, OD, sum(n), cutouts);
+robot = Wrist(ID*10^3, OD*10^3, sum(n), cutouts);
 robot.fwkine(configuration, T);
 
-col = distinguishable_colors(10);
-
 robotModel = robot.makePhysicalModel();    
-X = robotModel.surface.X;
-Y = robotModel.surface.Y;
-Z = robotModel.surface.Z;
+X = robotModel.surface.X * 10^-3;
+Y = robotModel.surface.Y * 10^-3;
+Z = robotModel.surface.Z * 10^-3;
 surf(X, Y, Z, 'FaceColor',col(6,:));
 
-X = robotModel.backbone(1,:);
-Y = robotModel.backbone(2,:);
-Z = robotModel.backbone(3,:);
+X = robotModel.backbone(1,:) * 10^-3;
+Y = robotModel.backbone(2,:) * 10^-3;
+Z = robotModel.backbone(3,:) * 10^-3;
 scatter3(X, Y, Z, 100, col(7,:), 'filled');
 
 title('Wrist synthesis');
@@ -108,10 +113,9 @@ axis equal, axis tight, grid on
 view(0.26, 20.5)
 
 figure
-%scatter3(curve.arc(1,:), curve.arc(2,:), curve.arc(3,:),'MarkerEdgeColor', col(5,:), 'LineWidth', 2.5);
-plot3(curve.arc(1,:), curve.arc(2,:), curve.arc(3,:), 'LineWidth',3,'Color',(1/256)*[255 128 0]);
+scatter3(curve.arc(1,:), curve.arc(2,:), curve.arc(3,:),'MarkerEdgeColor', col(5,:), 'LineWidth', 2.5);
 hold on
-triad('scale', 1e-4, 'linewidth', 2.5);
+triad('scale', 1e-3/2, 'linewidth', 2.5);
 scatter3(X, Y, Z, 100, col(7,:), 'filled');
 xlabel('X [m]'), ylabel('Y [m]'), zlabel('Z [m]')
 title('Wrist pose vs target curve');

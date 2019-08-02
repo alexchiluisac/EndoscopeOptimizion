@@ -78,16 +78,16 @@ function curve = makecurve(varargin)
         triad('scale', 1e-3/2, 'linewidth', 2.5);
         h = triad('scale', 1e-3/2, 'linewidth', 2.5);
         
-        % Make an animation showing the Frenet-Serret frames
-        for ii = 2 : size(l, 1)
-            rot = [n(:,ii) b(:,ii) t(:,ii)];
-            transl = arc(:,ii);
-            T = [rot transl; 0 0 0 1];
-            
-            h.Matrix = T;
-            pause(0.1);
-            drawnow
-        end
+%         % Make an animation showing the Frenet-Serret frames
+%         for ii = 2 : size(l, 1)
+%             rot = [n(:,ii) b(:,ii) t(:,ii)];
+%             transl = arc(:,ii);
+%             T = [rot transl; 0 0 0 1];
+%             
+%             h.Matrix = T;
+%             pause(0.1);
+%             drawnow
+%         end
     end
 end
 
