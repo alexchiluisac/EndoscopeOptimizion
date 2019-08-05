@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 20;
+nPoints = 200;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
@@ -65,13 +65,14 @@ osModel.vertices = vertices;
 osModel.faces = faces;
 
 % Create a robot
+n = 6; % number of cutouts
 alpha = pi;
 cutouts = [];
-cutouts.w = [1 1 1 1] * 1e-3;
-cutouts.u = [1 1 1 1] * 1e-3;
-cutouts.h = [1 1 1 1] * 1e-3;
-cutouts.alpha = [0 0 0 0 0 0];
-robot = Wrist(1e-3, 1.1e-3, 4, cutouts);
+cutouts.w = ones(1,n) * 1.20  * 1e-3;
+cutouts.u = ones(1,n) * 1.2  * 1e-3;
+cutouts.h = ones(1,n) * 0.19  * 1e-3;
+cutouts.alpha = zeros(1,n);
+robot = Wrist(1.2e-3, 1.4e-3, n, cutouts);
 
 [qListNormalized,qList,pList,aList] = rrt(robot, ...
     [maxDisplacement maxRotation maxAdvancement], ...
@@ -81,13 +82,22 @@ robot = Wrist(1e-3, 1.1e-3, 4, cutouts);
 
 fprintf(['RRT execution complete. Total sampled points: ' num2str(size(qList,2)) ' \n\n']);
 
-figure
+figure('units','normalized','outerposition',[0 0 1 1])
 
 % Visualize the robot inside the cavity
 ii = 1;
 h1 = stlPlot(earModel.vertices, earModel.faces, 'Collision detection test.');
 stlPlot(osModel.vertices, osModel.faces, 'Collision detection test.');
 hold on
+
+ax = gca;
+outerpos = ax.OuterPosition;
+ti = ax.TightInset; 
+left = outerpos(1) + ti(1);
+bottom = outerpos(2) + ti(2);
+ax_width = outerpos(3) - ti(1) - ti(3);
+ax_height = outerpos(4) - ti(2) - ti(4);
+ax.Position = [left bottom ax_width ax_height];
 
 robot.fwkine(qList(:,ii), T);
 robotPhysicalModel = robot.makePhysicalModel();
