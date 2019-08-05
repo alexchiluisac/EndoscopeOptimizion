@@ -1,4 +1,4 @@
-function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel, nPoints)
+function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, ossiclesModel, nPoints)
 % RRT implements the basic Rapidly-Exploring Random Trees algorithm for a
 % generic continuum robot
 %
@@ -13,7 +13,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
     end
         
     % algorithm parameters
-    deltaQ = [0.05 0.05 0.05]; % step
+    deltaQ = [0.01 0.01 0.01]; % step
     maxDispl = qbounds(1);
     maxRot   = qbounds(2);
     maxAdv   = qbounds(3);
@@ -26,7 +26,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
     
  
     % initialize the base transform
-    T_robot_in_env = anatomyModel.baseTransform;
+    T_robot_in_env = earModel.baseTransform;
  
     robot.fwkine(qList(:,1), T_robot_in_env);
     T = robot.transformations(:,:,end);
@@ -56,12 +56,17 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
         robotPM = robot.makePhysicalModel();
         
         testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:)];
-        collision = ~intriangulation(anatomyModel.vertices, ...
-            anatomyModel.faces, testpts);
         
-        collision = sum(collision);
+        collisionMe = ~intriangulation(earModel.vertices, ...
+            earModel.faces, testpts);
         
-        if collision > 1
+        collisionOs = intriangulation(ossiclesModel.vertices, ...
+            ossiclesModel.faces, testpts);
+        
+        collisionMe = sum(collisionMe);
+        collisionOs = sum(collisionOs);
+        
+        if collisionMe > 1 || collisionOs > 1
             disp('Collision detected.');
             continue;
         end
