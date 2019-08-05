@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 50;
+nPoints = 10;
 
 fprintf('*** Ray Casting test ***\n')
 fprintf('This script uses a ray-casting algorithm to estimate the visual range of our robot.\n')
@@ -27,7 +27,7 @@ maxAdvancement  = 10e-3;   % [m]
 % Load cavity model
 path = fullfile('..', 'anatomical-models', 'synthetic-model.stl');
 [vertices, faces, ~, ~] = stlRead(path);
-earModel.vertices = vertices .* 1e-3; % [m]
+earModel.vertices = vertices * 1e-3; % [mm]
 earModel.faces = faces;
 
 % Calculate the base transform for the robot
@@ -64,7 +64,7 @@ figure
 
 % Visualize the visual range for each pose of the robot
 ii = 1;
-seenMap = visibilitymap(pList(:,ii), aList(:,ii), earModel);
+seenMap = visibilitymapsynthetic(pList(:,ii), aList(:,ii), earModel);
 h1 = stlPlot(earModel.vertices, earModel.faces, 'Ray Casting test.', seenMap);
 hold on
 
@@ -78,11 +78,11 @@ h2 = surf(robotPhysicalModel.surface.X, ...
 axis equal
 
 while true
-    seenMap = visibilitymap(pList(:,ii), aList(:,ii), earModel);
+    seenMap = visibilitymapsynthetic(pList(:,ii), aList(:,ii), earModel);
     robot.fwkine(qList(:,ii), T);
     robotPhysicalModel = robot.makePhysicalModel();
     
-    colorMap = ones(length(h1.FaceVertexCData), 1);
+    colorMap = zeros(length(h1.FaceVertexCData), 1);
     colorMap(logical(seenMap)) = 5;
     h1.FaceVertexCData = colorMap;
     
