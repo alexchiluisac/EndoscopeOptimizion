@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 200;
+nPoints =  1000;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
@@ -24,7 +24,7 @@ addpath('../anatomical-models')
 %% Part 1. Step-by-step testing of RRT
 fprintf('Testing RRT...\n')
 % define the robot's range of motion
-maxDisplacement = 4e-3;  % [m]
+maxDisplacement = 1.5e-3;  % [m]
 maxRotation     = 4*pi;  % [rad]
 maxAdvancement  = 15e-3; % [m]
 
@@ -65,7 +65,7 @@ osModel.vertices = vertices;
 osModel.faces = faces;
 
 % Create a robot
-n = 6; % number of cutouts
+n = 8; % number of cutouts
 alpha = pi;
 cutouts = [];
 cutouts.w = ones(1,n) * 1.20  * 1e-3;
