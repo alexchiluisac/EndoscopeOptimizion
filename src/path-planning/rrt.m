@@ -56,7 +56,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, anatomyModel,
         robotPM = robot.makePhysicalModel();
         
         testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:)];
-        collision = intriangulation(anatomyModel.vertices, ...
+        collision = ~intriangulation(anatomyModel.vertices, ...
             anatomyModel.faces, testpts);
         
         collision = sum(collision);
