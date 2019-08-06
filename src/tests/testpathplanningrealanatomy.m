@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints =  1000;
+nPoints =  100;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
@@ -53,7 +53,7 @@ R = eye(3) + skew(v) + skew(v)^2 * (1-dot([0 0 1], newZ))/norm(v)^2;
 t = entry_point .* 1e-3;
 T = [R t'; 0 0 0 1];
 
-path = fullfile('..', 'anatomical-models', modelID,'me.stl');
+path = fullfile('..', 'anatomical-models', modelID,'me-solid.stl');
 [vertices, faces, ~, ~] = stlRead(path);
 earModel.vertices = vertices;
 earModel.faces = faces;
@@ -75,7 +75,7 @@ cutouts.alpha = zeros(1,n);
 robot = Wrist(1.2e-3, 1.4e-3, n, cutouts);
 
 [qListNormalized,qList,pList,aList] = rrt(robot, ...
-    [maxDisplacement maxRotation maxAdvancement], ...
+    [0 maxDisplacement 0 maxRotation -8e-3 maxAdvancement], ...
     earModel, ...
     osModel, ...
     nPoints);

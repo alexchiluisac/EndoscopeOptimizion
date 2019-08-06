@@ -14,9 +14,12 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
         
     % algorithm parameters
     deltaQ = [0.05 0.05 0.05]; % step
-    maxDispl = qbounds(1);
-    maxRot   = qbounds(2);
-    maxAdv   = qbounds(3);
+    maxDispl = qbounds(2);
+    minDispl = qbounds(1);
+    maxRot   = qbounds(4);
+    minRot   = qbounds(3);
+    maxAdv   = qbounds(6);
+    minAdv   = qbounds(5);
             
     % initialize the tree and the starting point
     qListNormalized = zeros(3, nPoints);
@@ -49,7 +52,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
         % Check for potential collisions
         displ = qNew(1) * maxDispl;  
         rot   = qNew(2) * maxRot;
-        adv   = qNew(3) * maxAdv;
+        adv   = qNew(3) * maxAdv + minAdv;
 %         
         robot.fwkine([displ, rot, adv], T_robot_in_env);
         T = robot.transformations(:,:,end);
@@ -57,7 +60,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
         
         testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:)];
         
-        collisionMe = ~intriangulation(earModel.vertices, ...
+        collisionMe = intriangulation(earModel.vertices, ...
             earModel.faces, testpts);
         
         collisionOs = intriangulation(ossiclesModel.vertices, ...
@@ -66,7 +69,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
         collisionMe = sum(collisionMe);
         collisionOs = sum(collisionOs);
         
-        if collisionMe > 1 || collisionOs > 1
+        if collisionMe > 0 || collisionOs > 0
             disp('Collision detected.');
             continue;
         end
