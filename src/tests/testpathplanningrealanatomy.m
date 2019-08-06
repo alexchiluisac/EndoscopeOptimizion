@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints =  100;
+nPoints =  5;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
@@ -38,8 +38,9 @@ fclose(fid);
 configurations = cell2mat(text(2:end));
 line_no = find(strcmp(text{1}, modelID));
 
-path       = fullfile('meshes', text{1}(line_no));
-path       = path{:}; % converts cell to char
+path = fullfile('..', 'anatomical-models', modelID);
+%path       = fullfile('meshes', text{1}(line_no));
+%path       = path{:}; % converts cell to char
 image_size   = configurations(line_no, 1:3);
 voxel_size   = configurations(line_no, 4:6);
 entry_point  = configurations(line_no, 7:9);
@@ -53,14 +54,14 @@ R = eye(3) + skew(v) + skew(v)^2 * (1-dot([0 0 1], newZ))/norm(v)^2;
 t = entry_point .* 1e-3;
 T = [R t'; 0 0 0 1];
 
-path = fullfile('..', 'anatomical-models', modelID,'me-solid.stl');
-[vertices, faces, ~, ~] = stlRead(path);
+pathStl = fullfile(path, 'me-solid.stl');
+[vertices, faces, ~, ~] = stlRead(pathStl);
 earModel.vertices = vertices;
 earModel.faces = faces;
 earModel.baseTransform = T;
 
-path = fullfile('..', 'anatomical-models', modelID, 'ossicle.stl');
-[vertices, faces, ~, ~] = stlRead(path);
+pathStl = fullfile(path, 'ossicle.stl');
+[vertices, faces, ~, ~] = stlRead(pathStl);
 osModel.vertices = vertices;
 osModel.faces = faces;
 
