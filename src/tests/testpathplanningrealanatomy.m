@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints =  5;
+nPoints =  10;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
