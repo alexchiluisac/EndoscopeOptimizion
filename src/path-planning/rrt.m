@@ -13,7 +13,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
     end
         
     % algorithm parameters
-    deltaQ = [0.05 0.05 0.05]; % step
+    deltaQ = [0.02 0.02 0.02]; % step
     maxDispl = qbounds(2);
     minDispl = qbounds(1);
     maxRot   = qbounds(4);

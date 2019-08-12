@@ -24,18 +24,18 @@ arcLength = 5*1e-3; % [m]
 % Curvature profile (1/m)
 %k = @(s,arcLength) 150 .* s/arcLength; % increasing curvature
 %k = @(s,arcLength) 444 .* ones(1,length(s)); % constant curvature
-k = @(s,arcLength) 500 .* ones(1,length(s));
+k = @(s,arcLength) 100 .* ones(1,length(s));
 
 % Torsional Profile
-tau = @(s,arcLength) 1000 .* ones(1,length(s)); 
+tau = @(s,arcLength) 0 .* ones(1,length(s)); 
 
 
 % === Algorithm Parameters ===
 % Number of sections in which the original curve should be partitioned:
-m = 5; % this parameter is important in curves with varying curvature profiles - for a constant curvature arc, m can simply be equal to 1
+m = 1; % this parameter is important in curves with varying curvature profiles - for a constant curvature arc, m can simply be equal to 1
 
 % Number of notches for each section
-n = 2 * ones(1, m); % increasing the number of notches will make the wrist better approximate the original curve
+n = 5 * ones(1, m); % increasing the number of notches will make the wrist better approximate the original curve
 
 %% === THERE SHOULD BE NO NEED TO CHANGE THE CODE BELOW ===
 % 1. Create the curve with the MAKECURVE function
@@ -45,8 +45,8 @@ curve = makecurve(arcLength, k, tau, 'plot', true);
 partitionedCurve = partitioncurve(curve, m, 'plot', true);
 
 % 3. Synthesize a wrist that bends like the curve
-OD = 1.40 * 10^-3; % [m] tube outer diameter
-ID = 1.20 * 10^-3; % [m] tube inner diameter
+OD = 1.60 * 10^-3; % [m] tube outer diameter
+ID = 1.40 * 10^-3; % [m] tube inner diameter
 ro = OD/2;         % [m] tube outer radius
 ri = ID/2;         % [m] tube inner radius
 

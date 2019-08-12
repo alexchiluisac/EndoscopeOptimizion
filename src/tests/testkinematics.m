@@ -4,16 +4,21 @@ addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
 
-n = 15; % number of cutouts
+n = 5; % number of cutouts
 
-cutouts.w = 1.19 * ones(1,n) * 1e-3; % [m]
-cutouts.u = [1.56 * ones(1,10) * 1e-3, 0.35 * ones(1,5) * 1e-3]; % [m]
-cutouts.h = [0.073 * ones(1,10) * 1e-3, 0.40 * ones(1,5) * 1e-3]; % [m]
-cutouts.alpha = [zeros(1,10), 7, ones(1,4)];
+cutouts.w = 1.36 * ones(1,n) * 1e-3; % [m]
+cutouts.u = [0.92 * ones(1,n-1) * 1e-3, (4.5+0.92) * 1e-3]; % [m]
+cutouts.h = 0.17 * ones(1,n) * 1e-3; % [m]
+cutouts.alpha = zeros(1,n);
+
+% define the robot's range of motion
+maxDisplacement = sum(cutouts.h);  % [m]
+maxRotation     = 4*pi;  % [rad]
+maxAdvancement  = 03; % [m]
+
 
 configuration = [sum(cutouts.h), 0, 0];
-
-robot = Wrist(1.2e-3, 1.4e-3, n, cutouts);
+robot = Wrist(1.4e-3, 1.6e-3, n, cutouts);
 robot.fwkine(configuration, eye(4));
 robotModel = robot.makePhysicalModel();
 P = robot.pose(:,end);
