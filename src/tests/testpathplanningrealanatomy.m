@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints =  10;
+nPoints =  1000;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
@@ -23,10 +23,6 @@ addpath('../anatomical-models')
 
 %% Part 1. Step-by-step testing of RRT
 fprintf('Testing RRT...\n')
-% define the robot's range of motion
-maxDisplacement = 1.5e-3;  % [m]
-maxRotation     = 4*pi;  % [rad]
-maxAdvancement  = 15e-3; % [m]
 
 % Load ear model
 % Read the configuration file to extract information about the
@@ -66,13 +62,18 @@ osModel.vertices = vertices;
 osModel.faces = faces;
 
 % Create a robot
-n = 8; % number of cutouts
-alpha = pi;
-cutouts = [];
-cutouts.w = ones(1,n) * 1.20  * 1e-3;
-cutouts.u = ones(1,n) * 1.2  * 1e-3;
-cutouts.h = ones(1,n) * 0.19  * 1e-3;
-cutouts.alpha = zeros(1,n);
+n = 15; % number of cutouts
+
+cutouts.w = 1.19 * ones(1,n) * 1e-3; % [m]
+cutouts.u = [1.56 * ones(1,10) * 1e-3, 0.35 * ones(1,5) * 1e-3]; % [m]
+cutouts.h = [0.073 * ones(1,10) * 1e-3, 0.40 * ones(1,5) * 1e-3]; % [m]
+cutouts.alpha = [zeros(1,10), 7, ones(1,4)];
+
+% define the robot's range of motion
+maxDisplacement = sum(cutouts.h);  % [m]
+maxRotation     = 4*pi;  % [rad]
+maxAdvancement  = -2e-3; % [m]
+
 robot = Wrist(1.2e-3, 1.4e-3, n, cutouts);
 
 [qListNormalized,qList,pList,aList] = rrt(robot, ...

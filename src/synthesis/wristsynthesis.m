@@ -19,23 +19,23 @@ col = distinguishable_colors(10);
 
 % === Curve description ===
 % Arc Length (m)
-arcLength = 13.45*1e-3; % [m]
+arcLength = 5*1e-3; % [m]
 
 % Curvature profile (1/m)
 %k = @(s,arcLength) 150 .* s/arcLength; % increasing curvature
 %k = @(s,arcLength) 444 .* ones(1,length(s)); % constant curvature
-k = @(s,arcLength) 96.65 .* ones(1,length(s));
+k = @(s,arcLength) 500 .* ones(1,length(s));
 
 % Torsional Profile
-tau = @(s,arcLength) 0 .* ones(1,length(s)); 
+tau = @(s,arcLength) 1000 .* ones(1,length(s)); 
 
 
 % === Algorithm Parameters ===
 % Number of sections in which the original curve should be partitioned:
-m = 1; % this parameter is important in curves with varying curvature profiles - for a constant curvature arc, m can simply be equal to 1
+m = 5; % this parameter is important in curves with varying curvature profiles - for a constant curvature arc, m can simply be equal to 1
 
 % Number of notches for each section
-n = 10 * ones(1, m); % increasing the number of notches will make the wrist better approximate the original curve
+n = 2 * ones(1, m); % increasing the number of notches will make the wrist better approximate the original curve
 
 %% === THERE SHOULD BE NO NEED TO CHANGE THE CODE BELOW ===
 % 1. Create the curve with the MAKECURVE function

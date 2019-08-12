@@ -4,14 +4,16 @@ addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
 
-cutouts.w = [1 1 1 1] * 1e-3; % [m]
-cutouts.u = [1 1 1 1] * 1e-3; % [m]
-cutouts.h = [1 1 1 1] * 1e-3; % [m]
-cutouts.alpha = [0 0 0 0];
+n = 15; % number of cutouts
 
-configuration = [1e-3, 0, 0];
+cutouts.w = 1.19 * ones(1,n) * 1e-3; % [m]
+cutouts.u = [1.56 * ones(1,10) * 1e-3, 0.35 * ones(1,5) * 1e-3]; % [m]
+cutouts.h = [0.073 * ones(1,10) * 1e-3, 0.40 * ones(1,5) * 1e-3]; % [m]
+cutouts.alpha = [zeros(1,10), 7, ones(1,4)];
 
-robot = Wrist(1.6e-3, 1.85e-3, 4, cutouts);
+configuration = [sum(cutouts.h), 0, 0];
+
+robot = Wrist(1.2e-3, 1.4e-3, n, cutouts);
 robot.fwkine(configuration, eye(4));
 robotModel = robot.makePhysicalModel();
 P = robot.pose(:,end);
