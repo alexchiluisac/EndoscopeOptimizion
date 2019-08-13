@@ -13,7 +13,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
     end
         
     % algorithm parameters
-    deltaQ = [0.02 0.02 0.02]; % step
+    deltaQ = [0.1 0.001 0.01]; % step
     maxDispl = qbounds(2);
     minDispl = qbounds(1);
     maxRot   = qbounds(4);
@@ -38,12 +38,13 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
     % iteratively build the tree
     hw = waitbar(0, 'Sampling the configuration space. Please wait...');
     
-    jj = 2;
+    jj = 1;
     
-    for ii = 1 : nPoints
-        if jj > nPoints
-            break;
-        end
+    %for ii = 1 : nPoints
+    while true
+%         if jj > nPoints
+%             break;
+%         end
         
         qRand = rand(3,1);
         qNearest = nearestVertex(qRand, qListNormalized, jj);
@@ -52,7 +53,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
         % Check for potential collisions
         displ = qNew(1) * maxDispl;  
         rot   = qNew(2) * maxRot;
-        adv   = qNew(3) * maxAdv + minAdv;
+        adv   = qNew(3) * (maxAdv - minAdv) + minAdv;
 %         
         robot.fwkine([displ, rot, adv], T_robot_in_env);
         T = robot.transformations(:,:,end);
@@ -86,7 +87,11 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
         
         jj = jj + 1;
         
-        waitbar(ii/nPoints, hw, 'Sampling the configuration space. Please wait...');
+        if jj > nPoints
+            break;
+        end
+        
+        waitbar(jj/nPoints, hw, 'Sampling the configuration space. Please wait...');
     end
     
     close(hw);

@@ -2,7 +2,7 @@
 clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints =  1000;
+nPoints = 8000;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
@@ -71,8 +71,8 @@ cutouts.alpha = zeros(1,n);
 
 % define the robot's range of motion
 maxDisplacement = sum(cutouts.h);  % [m]
-maxRotation     = 4*pi;  % [rad]
-maxAdvancement  = 5e-3; % [m]
+maxRotation     = 2*pi;  % [rad]
+maxAdvancement  = 10e-3; % [m]
 
 robot = Wrist(1.4e-3, 1.6e-3, n, cutouts);
 
