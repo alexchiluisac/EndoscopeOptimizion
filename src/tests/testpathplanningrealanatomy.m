@@ -1,8 +1,9 @@
+function testpathplanningrealanatomy(u,h,n,minAdvancement)
 %% Script to test RRT and collision detection
-clc, clear, close all
+%clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 8000;
+nPoints = 10000;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
@@ -62,85 +63,86 @@ osModel.vertices = vertices;
 osModel.faces = faces;
 
 % Create a robot
-n = 5; % number of cutouts
+%n = 5; % number of cutouts
 
 cutouts.w = 1.36 * ones(1,n) * 1e-3; % [m]
-cutouts.u = [0.92 * ones(1,n-1) * 1e-3, (4.5+0.92) * 1e-3]; % [m]
-cutouts.h = 0.17 * ones(1,n) * 1e-3; % [m]
+cutouts.u = [u * ones(1,n-1) * 1e-3, 4.5 * 1e-3]; % [m]
+cutouts.h = h * ones(1,n) * 1e-3; % [m]
 cutouts.alpha = zeros(1,n);
 
 % define the robot's range of motion
 maxDisplacement = sum(cutouts.h);  % [m]
-maxRotation     = 2*pi;  % [rad]
-maxAdvancement  = 10e-3; % [m]
+maxRotation     = 3*pi;  % [rad]
+minAdvancement  = minAdvancement * 1e-3;  % [m]
+maxAdvancement  = 10e-3-minAdvancement; % [m]
 
 robot = Wrist(1.4e-3, 1.6e-3, n, cutouts);
 
 [qListNormalized,qList,pList,aList] = rrt(robot, ...
-    [0 maxDisplacement 0 maxRotation 0 maxAdvancement], ...
+    [0 maxDisplacement 0 maxRotation minAdvancement maxAdvancement], ...
     earModel, ...
     osModel, ...
     nPoints);
 
 fprintf(['RRT execution complete. Total sampled points: ' num2str(size(qList,2)) ' \n\n']);
 
-figure('units','normalized','outerposition',[0 0 1 1])
-
-% Visualize the robot inside the cavity
-ii = 1;
-h1 = stlPlot(earModel.vertices, earModel.faces, 'Collision detection test.');
-stlPlot(osModel.vertices, osModel.faces, 'Collision detection test.');
-hold on
-
-ax = gca;
-outerpos = ax.OuterPosition;
-ti = ax.TightInset; 
-left = outerpos(1) + ti(1);
-bottom = outerpos(2) + ti(2);
-ax_width = outerpos(3) - ti(1) - ti(3);
-ax_height = outerpos(4) - ti(2) - ti(4);
-ax.Position = [left bottom ax_width ax_height];
-
-robot.fwkine(qList(:,ii), T);
-robotPhysicalModel = robot.makePhysicalModel();
-h2 = surf(robotPhysicalModel.surface.X, ...
-    robotPhysicalModel.surface.Y, ...
-    robotPhysicalModel.surface.Z, ...
-    'FaceColor','blue');
-
-axis equal
-
-%for ii = 1 : size(pList, 2)
-while true
-    robot.fwkine(qList(:,ii), T);
-    robotPhysicalModel = robot.makePhysicalModel();
-    
-    h2.XData = robotPhysicalModel.surface.X;
-    h2.YData = robotPhysicalModel.surface.Y;
-    h2.ZData = robotPhysicalModel.surface.Z;
-    title(['Pose ' num2str(ii) ' of ' num2str(size(pList, 2))]);
-    
-    fprintf('Press "n" to move forward or "p" to move back.\n')
-    fprintf('Press any other key to stop testing and generate the reachable workspace.\n\n')
-    
-    while ~waitforbuttonpress, end
-    k = get(gcf, 'CurrentCharacter');
-    
-    switch k
-        case 'p'
-            ii = ii - 1;
-            if ii < 1, ii = 1; end
-        case 'n'
-            ii = ii + 1;
-            if ii > size(pList, 2), ii = size(pList, 2); end
-        otherwise
-            break
-    end
-end
-
-close all
-
-%pList = pList; % converting to mm for plotting
+% figure('units','normalized','outerposition',[0 0 1 1])
+% 
+% % Visualize the robot inside the cavity
+% ii = 1;
+% h1 = stlPlot(earModel.vertices, earModel.faces, 'Collision detection test.');
+% stlPlot(osModel.vertices, osModel.faces, 'Collision detection test.');
+% hold on
+% 
+% ax = gca;
+% outerpos = ax.OuterPosition;
+% ti = ax.TightInset;
+% left = outerpos(1) + ti(1);
+% bottom = outerpos(2) + ti(2);
+% ax_width = outerpos(3) - ti(1) - ti(3);
+% ax_height = outerpos(4) - ti(2) - ti(4);
+% ax.Position = [left bottom ax_width ax_height];
+% 
+% robot.fwkine(qList(:,ii), T);
+% robotPhysicalModel = robot.makePhysicalModel();
+% h2 = surf(robotPhysicalModel.surface.X, ...
+%     robotPhysicalModel.surface.Y, ...
+%     robotPhysicalModel.surface.Z, ...
+%     'FaceColor','blue');
+% 
+% axis equal
+% 
+% %for ii = 1 : size(pList, 2)
+% while true
+%     robot.fwkine(qList(:,ii), T);
+%     robotPhysicalModel = robot.makePhysicalModel();
+%     
+%     h2.XData = robotPhysicalModel.surface.X;
+%     h2.YData = robotPhysicalModel.surface.Y;
+%     h2.ZData = robotPhysicalModel.surface.Z;
+%     title(['Pose ' num2str(ii) ' of ' num2str(size(pList, 2))]);
+%     
+%     fprintf('Press "n" to move forward or "p" to move back.\n')
+%     fprintf('Press any other key to stop testing and generate the reachable workspace.\n\n')
+%     
+%     while ~waitforbuttonpress, end
+%     k = get(gcf, 'CurrentCharacter');
+%     
+%     switch k
+%         case 'p'
+%             ii = ii - 1;
+%             if ii < 1, ii = 1; end
+%         case 'n'
+%             ii = ii + 1;
+%             if ii > size(pList, 2), ii = size(pList, 2); end
+%         otherwise
+%             break
+%     end
+% end
+% 
+% close all
+% 
+% %pList = pList; % converting to mm for plotting
 
 fprintf('\n Generating reachable workspace...\n')
 shrinkFactor = 1;
@@ -181,3 +183,6 @@ trisurf(k, pList(1,:)', pList(2,:)', pList(3,:)','FaceColor','red','FaceAlpha',0
 title('Reachable workspace');
 
 fprintf('Testing complete.\n')
+
+save([num2str(n) '-simulation.mat']);
+end
