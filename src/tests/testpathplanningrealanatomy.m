@@ -1,19 +1,14 @@
-function testpathplanningrealanatomy(u,h,n,minAdvancement)
+function estimateReachableWorkspace(u,h,n,minAdvancement)
 %% Script to test RRT and collision detection
 %clc, clear, close all
 
 % How many configuration points should we sample for testing?
-nPoints = 10000;
+nPoints = 100;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
 
-fprintf('*** RRT and estimation of reachable workspace test ***\n')
-fprintf('This script is divided in two parts:\n')
-fprintf('1. "Step-by-step" testing of RRT\n');
-fprintf('2. Generation of plots to show the results of RRT and of the estimation of the reachable workspace\n\n')
-% fprintf('Press any key to continue.\n')
-% pause
+fprintf('*** RRT and estimation of reachable workspace ***\n')
 
 % add dependencies
 addpath('kinematics')
@@ -23,7 +18,7 @@ addpath('path-planning')
 addpath('../anatomical-models')
 
 %% Part 1. Step-by-step testing of RRT
-fprintf('Testing RRT...\n')
+fprintf('Running RRT...\n')
 
 % Load ear model
 % Read the configuration file to extract information about the
