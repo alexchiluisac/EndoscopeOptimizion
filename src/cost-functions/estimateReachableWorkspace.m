@@ -1,9 +1,21 @@
 function estimateReachableWorkspace(u,h,n,minAdvancement)
-%% Script to test RRT and collision detection
-%clc, clear, close all
+%% This function estimates the reachable workspace for a given endoscope configuration
+% Inputs:
+%         u: length of uncut sections [mm]
+%         h: length of cut sections   [mm]
+%         n: number of cutouts
+%         minAdvancement: distance between base of the robot and entry
+%         point into the ear, as defined in configurations.txt
+
+if nargin < 1
+    u = 0.92; % [mm]
+    h = 0.17; % [mm]
+    n = 2;    
+    minAdvancement = 3;
+end
 
 % How many configuration points should we sample for testing?
-nPoints = 100;
+nPoints = 5000;
 
 % Which anatomical model should we use?
 modelID = 'atlas';
@@ -33,8 +45,8 @@ line_no = find(strcmp(text{1}, modelID));
 path = fullfile('..', 'anatomical-models', modelID);
 %path       = fullfile('meshes', text{1}(line_no));
 %path       = path{:}; % converts cell to char
-image_size   = configurations(line_no, 1:3);
-voxel_size   = configurations(line_no, 4:6);
+%image_size   = configurations(line_no, 1:3);
+%voxel_size   = configurations(line_no, 4:6);
 entry_point  = configurations(line_no, 7:9);
 tip_base     = configurations(line_no, 10:12);
 %target_point = configurations(line_no, 13:15);
@@ -57,8 +69,6 @@ pathStl = fullfile(path, 'ossicle.stl');
 osModel.vertices = vertices;
 osModel.faces = faces;
 
-% Create a robot
-%n = 5; % number of cutouts
 
 cutouts.w = 1.36 * ones(1,n) * 1e-3; % [m]
 cutouts.u = [u * ones(1,n-1) * 1e-3, 4.5 * 1e-3]; % [m]
@@ -80,64 +90,6 @@ robot = Wrist(1.4e-3, 1.6e-3, n, cutouts);
     nPoints);
 
 fprintf(['RRT execution complete. Total sampled points: ' num2str(size(qList,2)) ' \n\n']);
-
-% figure('units','normalized','outerposition',[0 0 1 1])
-% 
-% % Visualize the robot inside the cavity
-% ii = 1;
-% h1 = stlPlot(earModel.vertices, earModel.faces, 'Collision detection test.');
-% stlPlot(osModel.vertices, osModel.faces, 'Collision detection test.');
-% hold on
-% 
-% ax = gca;
-% outerpos = ax.OuterPosition;
-% ti = ax.TightInset;
-% left = outerpos(1) + ti(1);
-% bottom = outerpos(2) + ti(2);
-% ax_width = outerpos(3) - ti(1) - ti(3);
-% ax_height = outerpos(4) - ti(2) - ti(4);
-% ax.Position = [left bottom ax_width ax_height];
-% 
-% robot.fwkine(qList(:,ii), T);
-% robotPhysicalModel = robot.makePhysicalModel();
-% h2 = surf(robotPhysicalModel.surface.X, ...
-%     robotPhysicalModel.surface.Y, ...
-%     robotPhysicalModel.surface.Z, ...
-%     'FaceColor','blue');
-% 
-% axis equal
-% 
-% %for ii = 1 : size(pList, 2)
-% while true
-%     robot.fwkine(qList(:,ii), T);
-%     robotPhysicalModel = robot.makePhysicalModel();
-%     
-%     h2.XData = robotPhysicalModel.surface.X;
-%     h2.YData = robotPhysicalModel.surface.Y;
-%     h2.ZData = robotPhysicalModel.surface.Z;
-%     title(['Pose ' num2str(ii) ' of ' num2str(size(pList, 2))]);
-%     
-%     fprintf('Press "n" to move forward or "p" to move back.\n')
-%     fprintf('Press any other key to stop testing and generate the reachable workspace.\n\n')
-%     
-%     while ~waitforbuttonpress, end
-%     k = get(gcf, 'CurrentCharacter');
-%     
-%     switch k
-%         case 'p'
-%             ii = ii - 1;
-%             if ii < 1, ii = 1; end
-%         case 'n'
-%             ii = ii + 1;
-%             if ii > size(pList, 2), ii = size(pList, 2); end
-%         otherwise
-%             break
-%     end
-% end
-% 
-% close all
-% 
-% %pList = pList; % converting to mm for plotting
 
 fprintf('\n Generating reachable workspace...\n')
 shrinkFactor = 1;
@@ -173,7 +125,6 @@ title('Reachable points in the task space');
 figure, hold on
 stlPlot(earModel.vertices, earModel.faces, 'Ear Model');
 stlPlot(osModel.vertices, osModel.faces, 'Ear Model');
-%view([17.8 30.2]);
 trisurf(k, pList(1,:)', pList(2,:)', pList(3,:)','FaceColor','red','FaceAlpha',0.1)
 title('Reachable workspace');
 

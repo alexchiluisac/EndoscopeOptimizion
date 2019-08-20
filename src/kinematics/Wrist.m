@@ -318,7 +318,7 @@ classdef Wrist < Robot
         
         
         function robotModel = makePhysicalModel(self)
-            ptsPerM = 25e3;
+            ptsPerM = 3e3;
             
             P = self.pose;
             T = self.transformations;
@@ -348,7 +348,7 @@ classdef Wrist < Robot
                     % and of length s
                     
                     % !FIXME ensure ptspermm is met                    
-                    theta = 0 : s(ii)*kappa(ii)/10 : s(ii)*kappa(ii);
+                    theta = 0 : s(ii)*kappa(ii)/5 : s(ii)*kappa(ii);
                    
                     pts = radius(ii) .* [(1-cos(theta));
                                      zeros(1, length(theta));
@@ -363,7 +363,7 @@ classdef Wrist < Robot
             %robotBackbone = applytransform(robotBackbone, baseTransform);
             
             radiusVec = self.OD/2*ones(1,size(robotBackbone,2));
-            [X,Y,Z] = gencyl(robotBackbone, radiusVec, 2, 20);
+            [X,Y,Z] = gencyl(robotBackbone, radiusVec, 2, 10);
             
             robotModel.backbone = robotBackbone;
             robotModel.surface.X = X;
