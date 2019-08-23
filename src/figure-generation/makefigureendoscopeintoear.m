@@ -2,12 +2,12 @@ addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
 
-load 5-simulation.mat
+load 10-simulation.mat
 
-n = 5;
-w = 1.36;
-u = 0.84;
-h = 0.34;
+% n = 10;
+% w = 1.36;
+% u = 0.84;
+% h = 0.34;
 
 cutouts.w = 1.36 * ones(1,n) * 1e-3; % [m]
 cutouts.u = [u * ones(1,n-1) * 1e-3, 4.5 * 1e-3]; % [m]
@@ -48,7 +48,7 @@ earModel.baseTransform = T;
 
 
 
-configuration = qList(:,25);
+configuration = qList(:,1000);
 robot.fwkine(configuration, T);
 robotModel = robot.makePhysicalModel();
 

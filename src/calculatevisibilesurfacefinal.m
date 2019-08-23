@@ -1,6 +1,7 @@
 %visibility = zeros(1,7);
 
-for ii = 3 % : 9
+for ii = 10%3 : 9
+    load([num2str(ii) '-simulation.mat']);
     fid = fopen(fullfile('..', 'anatomical-models', 'configurations.txt'));
     text = textscan(fid, '%s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f');
     fclose(fid);
@@ -11,7 +12,7 @@ for ii = 3 % : 9
     image_size   = configurations(line_no, 1:3);
     voxel_size   = configurations(line_no, 4:6);
     
-    load([num2str(ii) '-simulation.mat']);
+
     path = fullfile('..', 'anatomical-models', modelID);
     load(fullfile(path, 'record.mat'));
     
@@ -44,7 +45,7 @@ for ii = 3 % : 9
     % Calculate the visual range
     seenMap = false(rawMeMesh.numverts, length(pList));
     
-    parfor jj = 1 : 2%length(pList)
+    parfor jj = 1 : length(pList)
         seenMap(:,jj) = visibilitymap(pList(:,jj), aList(:,jj), meMesh, osMesh);
     end
     
