@@ -68,7 +68,7 @@ T = [R t'; 0 0 0 1];
 % now slide the endoscope back by its length, so that all the different
 % designs start exploring from the same point
 Tz = eye(4);
-Tz(3,4) = -(sum(cutouts.u) + sum(cutouts.h));
+Tz(3,4) = -(sum(cutouts.u) + sum(cutouts.h)) + 8e-3;
 T = T * Tz;
 
 % Read the meshes from file

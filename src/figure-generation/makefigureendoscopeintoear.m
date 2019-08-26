@@ -2,7 +2,7 @@ addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
 
-load 5-simulation.mat
+load 3-simulation.mat
 
 % n = 10;
 % w = 1.36;
@@ -40,7 +40,7 @@ path = fullfile('..', 'anatomical-models', modelID);
 % t = entry_point .* 1e-3;
 % T = [R t'; 0 0 0 1];
 
-pathStl = fullfile(path, 'me-solid.stl');
+pathStl = fullfile(path, 'me.stl');
 [vertices, faces, ~, ~] = stlRead(pathStl);
 earModel.vertices = vertices;
 earModel.faces = faces;
