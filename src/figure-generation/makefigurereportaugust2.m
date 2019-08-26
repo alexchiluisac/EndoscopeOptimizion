@@ -5,7 +5,7 @@ addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
 
-load 10-simulation.mat
+load 2-simulation.mat
 
 figure('units','normalized','outerposition', [0 0 1 1])
 hold on

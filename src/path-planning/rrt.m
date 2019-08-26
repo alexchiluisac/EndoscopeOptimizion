@@ -8,7 +8,7 @@ function [qListNormalized,qList,pList,aList] = rrt(robot, qbounds, earModel, oss
 
 if nargin < 3
     collisionDetection = false;
-    nPoints = 100000;
+    nPoints = 1000;
 else
     collisionDetection = true;
 end
@@ -77,7 +77,7 @@ while true
         collisionOs = sum(collisionOs);
         
         if collisionMe > 0 || collisionOs > 0
-            disp('Collision detected.');
+            disp(['Collision detected. Current points: ' num2str(jj)]);
             continue;
         end
     end

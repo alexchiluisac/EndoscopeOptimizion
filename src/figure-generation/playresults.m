@@ -7,6 +7,7 @@ addpath('utils')
 
 load 10-simulation.mat
 
+path = fullfile('..', 'anatomical-models', modelID);
 pathStl = fullfile(path, 'me.stl');
 [vertices, faces, ~, ~] = stlRead(pathStl);
 earModel.vertices = vertices;
@@ -36,6 +37,7 @@ h2 = surf(robotPhysicalModel.surface.X, ...
     robotPhysicalModel.surface.Y, ...
     robotPhysicalModel.surface.Z, ...
     'FaceColor','blue');
+set(gca,'FontSize',14);
 
 axis equal
 
@@ -49,20 +51,24 @@ while true
     h2.ZData = robotPhysicalModel.surface.Z;
     title(['Pose ' num2str(ii) ' of ' num2str(size(pList, 2))]);
     
-    fprintf('Press "n" to move forward or "p" to move back.\n')
-    fprintf('Press any other key to stop testing and generate the reachable workspace.\n\n')
     
-    while ~waitforbuttonpress, end
-    k = get(gcf, 'CurrentCharacter');
+    %scatter3(pList(1,ii), pList(2,ii), pList(3,ii), 'filled', 'red');
+    drawnow
     
-    switch k
-        case 'p'
-            ii = ii - 1;
-            if ii < 1, ii = 1; end
-        case 'n'
-            ii = ii + 1;
-            if ii > size(pList, 2), ii = size(pList, 2); end
-        otherwise
-            break
-    end
+%     fprintf('Press "n" to move forward or "p" to move back.\n')
+%     fprintf('Press any other key to stop testing and generate the reachable workspace.\n\n')
+%     
+%     while ~waitforbuttonpress, end
+%     k = get(gcf, 'CurrentCharacter');
+    
+%     switch k
+%         case 'p'
+%             ii = ii - 1;
+%             if ii < 1, ii = 1; end
+%         case 'n'
+             ii = ii + 1;
+             if ii > size(pList, 2), break; end
+%         otherwise
+%             break
+%     end
 end

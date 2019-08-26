@@ -2,7 +2,7 @@ addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
 
-load 10-simulation.mat
+load 5-simulation.mat
 
 % n = 10;
 % w = 1.36;
@@ -28,17 +28,17 @@ configurations = cell2mat(text(2:end));
 line_no = find(strcmp(text{1}, modelID));
 
 path = fullfile('..', 'anatomical-models', modelID);
-image_size   = configurations(line_no, 1:3);
-voxel_size   = configurations(line_no, 4:6);
-entry_point  = configurations(line_no, 7:9);
-tip_base     = configurations(line_no, 10:12);
+% image_size   = configurations(line_no, 1:3);
+% voxel_size   = configurations(line_no, 4:6);
+% entry_point  = configurations(line_no, 7:9);
+% tip_base     = configurations(line_no, 10:12);
 
-newZ = tip_base .* 1e-3 - entry_point .* 1e-3;
-newZ = newZ ./ norm(newZ);
-v = cross([0 0 1], newZ);
-R = eye(3) + skew(v) + skew(v)^2 * (1-dot([0 0 1], newZ))/norm(v)^2;
-t = entry_point .* 1e-3;
-T = [R t'; 0 0 0 1];
+% newZ = tip_base .* 1e-3 - entry_point .* 1e-3;
+% newZ = newZ ./ norm(newZ);
+% v = cross([0 0 1], newZ);
+% R = eye(3) + skew(v) + skew(v)^2 * (1-dot([0 0 1], newZ))/norm(v)^2;
+% t = entry_point .* 1e-3;
+% T = [R t'; 0 0 0 1];
 
 pathStl = fullfile(path, 'me-solid.stl');
 [vertices, faces, ~, ~] = stlRead(pathStl);
@@ -48,7 +48,7 @@ earModel.baseTransform = T;
 
 
 
-configuration = qList(:,1000);
+configuration = qList(:,1);
 robot.fwkine(configuration, T);
 robotModel = robot.makePhysicalModel();
 
