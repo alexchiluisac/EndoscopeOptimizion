@@ -1,15 +1,15 @@
 vis = zeros(10,7);
 col = distinguishable_colors(10);
 
-for ii = 3:10
-   for jj = 1:8
+for ii = 1 : 10
+    for jj = 1:8
        vis(ii,jj) = visibility{ii}(jj);
    end
 end
 
 figure, hold on
 for ii = 1 : 8
-    plot(3:10, vis(3:end,ii), 'Color', col(ii,:), 'LineWidth', 2.5);
+    plot(1:10, vis(:,ii), 'Color', col(ii,:), 'LineWidth', 2.5);
 end
 xlabel('Number of cutouts');
 ylabel('Percentage visible surface');

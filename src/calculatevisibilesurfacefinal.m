@@ -1,6 +1,6 @@
 %visibility = zeros(1,7);
 
-for ii = 1
+for ii = 1 : 10
     load([num2str(ii) '-simulation.mat']);
     fid = fopen(fullfile('..', 'anatomical-models', 'configurations.txt'));
     text = textscan(fid, '%s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f');
