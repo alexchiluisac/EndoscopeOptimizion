@@ -94,7 +94,7 @@ while true
     
     jj = jj + 1;
     
-    if jj > nPoints
+    if jj == nPoints
         break;
     end
     
