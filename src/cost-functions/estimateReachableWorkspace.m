@@ -10,15 +10,15 @@ function estimateReachableWorkspace(u,h,n,minAdvancement)
 if nargin < 1
     u = 0.92; % [mm]
     h = 0.17; % [mm]
-    n = 3;    
-    minAdvancement = 0;
+    n = 5;
+    minAdvancement = 5e-3;
 end
 
 % How many configuration points should we sample for testing?
-nPoints = 10;
+nPoints = 50;
 
 % Which anatomical model should we use?
-modelID = 'atlas';
+modelID = '176';
 
 fprintf('*** RRT and estimation of reachable workspace ***\n')
 
@@ -68,7 +68,7 @@ T = [R t'; 0 0 0 1];
 % now slide the endoscope back by its length, so that all the different
 % designs start exploring from the same point
 Tz = eye(4);
-Tz(3,4) = -(sum(cutouts.u) + sum(cutouts.h)) + 8e-3;
+Tz(3,4) = -(sum(cutouts.u) + sum(cutouts.h)) + minAdvancement;
 T = T * Tz;
 
 % Read the meshes from file
@@ -86,13 +86,13 @@ osModel.faces = faces;
 % Define the robot's range of motion
 maxDisplacement = sum(cutouts.h);  % [m]
 maxRotation     = 3*pi;  % [rad]
-minAdvancement  = minAdvancement * 1e-3;  % [m]
-maxAdvancement  = 20e-3-minAdvancement; % [m]
+%minAdvancement  = minAdvancement * 1e-3;  % [m]
+maxAdvancement  = 20e-3; % [m]
 
 robot = Wrist(1.4e-3, 1.6e-3, n, cutouts);
 
 [qListNormalized,qList,pList,aList] = rrt(robot, ...
-    [0 maxDisplacement 0 maxRotation minAdvancement maxAdvancement], ...
+    [0 maxDisplacement 0 maxRotation 0 maxAdvancement], ...
     earModel, ...
     osModel, ...
     nPoints);
