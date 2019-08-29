@@ -5,12 +5,12 @@ addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
 
-load 1-simulation.mat
+load 10-simulation.mat
 
 figure('units','normalized','outerposition', [0 0 1 1])
 hold on
 
-pathStl = fullfile('..', 'anatomical-models', 'atlas', 'me.stl');
+pathStl = fullfile('..', 'anatomical-models', modelID, 'me.stl');
 [vertices, faces, ~, ~] = stlRead(pathStl);
 earModel.vertices = vertices;
 earModel.faces = faces;

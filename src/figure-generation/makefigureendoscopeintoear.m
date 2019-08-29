@@ -2,7 +2,7 @@ addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
 
-load 3-simulation.mat
+load 10-simulation.mat
 
 % n = 10;
 % w = 1.36;
