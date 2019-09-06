@@ -19,7 +19,7 @@ col = distinguishable_colors(10);
 
 % === Curve description ===
 % Arc Length (m)
-arcLength = 1e-3; % [m]
+arcLength = 5e-3; % [m]
 
 % Curvature profile (1/m)
 %k = @(s,arcLength) 150 .* s/arcLength; % increasing curvature
@@ -35,7 +35,7 @@ tau = @(s,arcLength) 0 .* ones(1,length(s));
 m = 1; % this parameter is important in curves with varying curvature profiles - for a constant curvature arc, m can simply be equal to 1
 
 % Number of notches for each section
-n = 1 * ones(1, m); % increasing the number of notches will make the wrist better approximate the original curve
+n = 5 * ones(1, m); % increasing the number of notches will make the wrist better approximate the original curve
 
 %% === THERE SHOULD BE NO NEED TO CHANGE THE CODE BELOW ===
 % 1. Create the curve with the MAKECURVE function
@@ -54,15 +54,22 @@ l = diff(partitionedCurve.l);
 kappa = partitionedCurve.averageKappa;
 tau = partitionedCurve.averageTau;
 
-w = .85 * OD; % [m]
+w = 1.40 * 10^-3; % [m]
 d = w - ro;   % [m]
 phio = 2 * acos(d / ro); % [rad]
 phii = 2 * acos(d / ri); % [rad]
 ybaro = (4 * ro * (sin(0.5 * phio)) ^ 3)/ (3 * (phio - sin(phio)));
-ybari = (4 * ri * (sin(0.5 * phii)) ^ 3)/ (3 * (phio - sin(phii)));
+ybari = (4 * ri * (sin(0.5 * phii)) ^ 3)/ (3 * (phii - sin(phii)));
 Ao = ( (ro ^ 2) * ( phio - sin(phio))) / 2;
 Ai = ( (ri ^ 2) * ( phii - sin(phii))) / 2;
-ybar = (ybaro * Ao - ybari * Ai) / (Ao - Ai);
+ybar1 = (ybaro * Ao - ybari * Ai) / (Ao - Ai);
+
+fy = @(r,theta) (r.*cos(theta)); 
+fA = @(r,theta) (1);
+phi = @(r) acos(d./r);
+A = integral2( @(r,theta) r.*fA(r,theta), ri,ro,@(c)-phi(c),@(c)phi(c),'AbsTol',1e-12,'RelTol',1e-12 );
+ybar = 1/A*integral2( @(r,theta) r.*fy(r,theta),ri,ro,@(c)-phi(c),@(c)phi(c),'AbsTol',1e-12,'RelTol',1e-9 );
+
     
 % height of the notches and of the uncut sections
 h = zeros(1, m);
