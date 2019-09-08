@@ -65,7 +65,8 @@ while true
     if collisionDetection
         robotPM = robot.makePhysicalModel();
         
-        testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:)];
+        testpts = [robotPM.surface.X(:) robotPM.surface.Y(:) robotPM.surface.Z(:);
+                   robot.pose(:,end)'];
         
         collisionMe = intriangulation(earModel.vertices, ...
             earModel.faces, testpts);
@@ -94,7 +95,7 @@ while true
     
     jj = jj + 1;
     
-    if jj == nPoints
+    if jj > nPoints
         break;
     end
     
