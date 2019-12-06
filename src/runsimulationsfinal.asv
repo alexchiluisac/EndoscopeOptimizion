@@ -2,7 +2,7 @@ for ii = 1 : 10
     experiment{ii}.u = 0.84;
     experiment{ii}.h = 0.30;
     experiment{ii}.n = ii;
-    experiment{ii}.minAdvancement = 12.5e-3;
+    experiment{ii}.minAdvancement = 8e-3;
 end
 
 parfor ii = 1 : 10

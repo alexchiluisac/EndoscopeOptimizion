@@ -8,14 +8,14 @@ function estimateReachableWorkspace(u,h,n,minAdvancement)
 %         point into the ear, as defined in configurations.txt
 
 if nargin < 1
-    u = 0.92; % [mm]
-    h = 0.17; % [mm]
-    n = 5;
-    minAdvancement = 5e-3;
+    u = 1.00; % [mm]
+    h = 0.81; % [mm]
+    n = 6;
+    minAdvancement = 12.5e-3;
 end
 
 % How many configuration points should we sample for testing?
-nPoints = 50;
+nPoints = 3000;
 
 % Which anatomical model should we use?
 modelID = '176';
@@ -33,7 +33,7 @@ addpath('../anatomical-models')
 fprintf('Running RRT...\n')
 
 % Define the endoscope model
-cutouts.w = 1.36 * ones(1,n) * 1e-3; % [m]
+cutouts.w = 1.32 * ones(1,n) * 1e-3; % [m]
 cutouts.u = [u * ones(1,n-1) * 1e-3, 4.5 * 1e-3]; % [m]
 cutouts.h = h * ones(1,n) * 1e-3; % [m]
 cutouts.alpha = zeros(1,n);
@@ -84,12 +84,13 @@ osModel.vertices = vertices;
 osModel.faces = faces;
 
 % Define the robot's range of motion
-maxDisplacement = sum(cutouts.h);  % [m]
+maxDisplacement = sum(cutouts.h); % [m]
+%maxDisplacement = 0;
 maxRotation     = 3*pi;  % [rad]
 %minAdvancement  = minAdvancement * 1e-3;  % [m]
 maxAdvancement  = 20e-3; % [m]
 
-robot = Wrist(1.4e-3, 1.6e-3, n, cutouts);
+robot = Wrist(1.4e-3, 1.62e-3, n, cutouts);
 
 [qListNormalized,qList,pList,aList] = rrt(robot, ...
     [0 maxDisplacement 0 maxRotation 0 maxAdvancement], ...
