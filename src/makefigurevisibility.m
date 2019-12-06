@@ -1,7 +1,9 @@
 %% Create a figure showing the different anatomical sub-regions of the year
 %  for the ISMR 2020 paper
+clear, close all
 
-load ('abme-atlas-steering-simulation.mat');
+load ('results/atlas/round2/5-simulation.mat');
+load ('results/atlas/round2/visibility_results.mat');
 fid = fopen(fullfile('..', 'anatomical-models', 'configurations.txt'));
 text = textscan(fid, '%s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f');
 fclose(fid);
@@ -36,7 +38,8 @@ meMesh.FaceVertexCData = ones(size(meMesh.Vertices, 1), 1);
 meMesh.LineStyle = 'none';
 meMesh.FaceColor = 'flat';
 meMesh.FaceAlpha = 0.4 ;
-meMesh.FaceVertexCData = recordnew(:);
+meMesh.FaceVertexCData = visi
+%recordnew(:);
 
 osMesh.FaceVertexCData = ones(size(osMesh.Vertices, 1), 1);
 osMesh.FaceColor = 'flat';
