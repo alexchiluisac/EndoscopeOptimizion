@@ -2,19 +2,19 @@ addpath('kinematics')
 addpath('path-planning')
 addpath('utils')
 
-load 10-simulation.mat
+load abme-atlas-steering-simulation.mat
 
 % n = 10;
 % w = 1.36;
 % u = 0.84;
 % h = 0.34;
 
-cutouts.w = 1.36 * ones(1,n) * 1e-3; % [m]
-cutouts.u = [u * ones(1,n-1) * 1e-3, 4.5 * 1e-3]; % [m]
-cutouts.h = h * ones(1,n) * 1e-3; % [m]
-cutouts.alpha = zeros(1,n);
-cutouts.alpha = zeros(1,n);
-robot = Wrist(1.4e-3, 1.6e-3, n, cutouts);
+%cutouts.w = 1.36 * ones(1,n) * 1e-3; % [m]
+%cutouts.u = [u * ones(1,n-1) * 1e-3, 4.5 * 1e-3]; % [m]
+%cutouts.h = h * ones(1,n) * 1e-3; % [m]
+%cutouts.alpha = zeros(1,n);
+%cutouts.alpha = zeros(1,n);
+%robot = Wrist(1.4e-3, 1.6e-3, n, cutouts);
 
 
 % Load ear model
@@ -48,7 +48,7 @@ earModel.baseTransform = T;
 
 
 
-configuration = qList(:,1);
+configuration = qList(:,2900);
 robot.fwkine(configuration, T);
 robotModel = robot.makePhysicalModel();
 
@@ -70,6 +70,6 @@ axis equal
 xlabel('X[m]')
 ylabel('Y[m]')
 zlabel('Z[m]')
-view(-76.12, 56.23);
+view(-118.5, 37.74);
 title(['Simulation of endoscope with ' num2str(n) ' notches']);
 set(gca,'FontSize',18);
